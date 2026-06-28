@@ -22,7 +22,9 @@ export function FactoryNode({ data }: NodeProps<FactoryNodeType>) {
 
   return (
     <div className="bg-slate-800 border border-slate-600 rounded-lg p-3 min-w-[190px] shadow-lg">
-      <Handle type="target" position={Position.Left} className="!bg-violet-500" />
+      {!result?.isRaw && (
+        <Handle type="target" position={Position.Left} className="!bg-violet-500" />
+      )}
 
       <div className="text-xs text-slate-400 mb-1 uppercase tracking-wider">
         {result?.machine ?? '—'}
@@ -39,13 +41,16 @@ export function FactoryNode({ data }: NodeProps<FactoryNodeType>) {
         {result ? `${result.ratePerMin.toFixed(2)}/min` : `${data.ratePerMin}/min`}
       </div>
 
-      {result && (
+      {result && !result.isRaw && (
         <div className="text-slate-300 text-xs mb-2">
           Buildings: <span className="text-amber-400 font-medium">{result.buildingCount}</span>
           {result.buildingCountExact !== result.buildingCount && (
             <span className="text-slate-500 ml-1">({result.buildingCountExact.toFixed(2)} exact)</span>
           )}
         </div>
+      )}
+      {result?.isRaw && (
+        <div className="text-slate-400 text-xs mb-2 italic">Raw resource</div>
       )}
 
       {hasVariants && (

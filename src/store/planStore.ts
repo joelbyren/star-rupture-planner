@@ -78,31 +78,45 @@ function recompute(
   });
 }
 
+const NODE_W = 240;
+const NODE_H = 130;
+
+function treeMaxDepth(node: NodeResult): number {
+  if (node.inputs.length === 0) return 0;
+  return 1 + Math.max(...node.inputs.map(treeMaxDepth));
+}
+
 function resultToNodes(result: NodeResult | null, existing: FactoryNodeType[]): FactoryNodeType[] {
   if (!result) return [];
 
   const posMap = new Map(existing.map(n => [n.id, n.position]));
   const nodes: FactoryNodeType[] = [];
-  let xOffset = 0;
+  let leafIndex = 0;
+  const maxDepth = treeMaxDepth(result);
 
-  function walk(node: NodeResult, depth: number) {
-    const id = `${node.recipeId}::${depth}::${xOffset}`;
-    const existing = posMap.get(id);
+  // Path-based IDs (e.g. "glass/silica/sand") are unique per tree position
+  // and stable across recomputations so saved positions survive recipe changes.
+  // X is flipped so raw materials sit on the left and the end product on the right.
+  function walk(node: NodeResult, depth: number, pathId: string) {
+    const startLeaf = leafIndex;
+    for (const child of node.inputs) walk(child, depth + 1, `${pathId}/${child.itemId}`);
+    const endLeaf = node.inputs.length === 0 ? ++leafIndex : leafIndex;
+
+    const savedPos = posMap.get(pathId);
+    const yCentered = ((startLeaf + endLeaf - 1) / 2) * NODE_H;
     nodes.push({
-      id,
+      id: pathId,
       type: 'factoryNode',
-      position: existing ?? { x: depth * 240, y: xOffset * 130 },
+      position: savedPos ?? { x: (maxDepth - depth) * NODE_W, y: yCentered },
       data: {
         itemId: node.itemId,
         ratePerMin: node.ratePerMin,
         result: node,
       },
     });
-    xOffset++;
-    for (const child of node.inputs) walk(child, depth + 1);
   }
 
-  walk(result, 0);
+  walk(result, 0, result.itemId);
   return nodes;
 }
 
@@ -110,23 +124,20 @@ function resultToEdges(result: NodeResult | null, nodes: FactoryNodeType[]): Edg
   if (!result || nodes.length < 2) return [];
 
   const edges: Edge[] = [];
-  let xOffset = 0;
 
-  function walk(node: NodeResult, depth: number, parentId: string | null) {
-    const id = `${node.recipeId}::${depth}::${xOffset}`;
+  function walk(node: NodeResult, depth: number, pathId: string, parentId: string | null) {
     if (parentId) {
       edges.push({
-        id: `e-${parentId}-${id}`,
-        source: id,
+        id: `e-${parentId}-${pathId}`,
+        source: pathId,
         target: parentId,
         animated: true,
       });
     }
-    xOffset++;
-    for (const child of node.inputs) walk(child, depth + 1, id);
+    for (const child of node.inputs) walk(child, depth + 1, `${pathId}/${child.itemId}`, pathId);
   }
 
-  walk(result, 0, null);
+  walk(result, 0, result.itemId, null);
   return edges;
 }
 
@@ -138,8 +149,8 @@ export const usePlanStore = create<PlanState>((set, get) => ({
   planId: crypto.randomUUID(),
   planName: 'New Plan',
   activeRecipes: {},
-  targetItemId: 'comp_glass',
-  targetRatePerMin: 20,
+  targetItemId: 'comp_rotor',
+  targetRatePerMin: 10,
   result: null,
   nodes: [],
   edges: [],

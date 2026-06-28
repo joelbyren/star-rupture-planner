@@ -48,7 +48,19 @@ export function calculateFromTarget(
   }
 
   const recipe = resolveRecipe(targetItemId, recipes, activeRecipes);
-  if (!recipe) return null; // raw resource — no recipe needed
+  if (!recipe) {
+    return {
+      recipeId: `raw::${targetItemId}`,
+      itemId: targetItemId,
+      machine: '',
+      buildingTier: null,
+      ratePerMin: targetRatePerMin,
+      buildingCount: 0,
+      buildingCountExact: 0,
+      inputs: [],
+      isRaw: true,
+    };
+  }
 
   const outputSpec = recipe.outputs.find(o => o.itemId === targetItemId);
   if (!outputSpec) return null;

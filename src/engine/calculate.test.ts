@@ -61,17 +61,23 @@ describe('calculateFromTarget — single recipe', () => {
   it('computes input rates correctly from per-craft ratios', () => {
     // 40 glass/min, 1 building = 20 IPM, input ratio: 2 calcium per 1 glass
     // → calcium powder needed: (2/1) × 20 × 2 buildings = 80/min
-    // Helium-3 is raw → no child node; Calcium Powder has a recipe → 1 child node
+    // Helium-3 is raw → leaf node; Calcium Powder has a recipe → processed node
     const result = calculateFromTarget('comp_glass', 40, { recipes: ALL_RECIPES });
-    expect(result!.inputs).toHaveLength(1);
-    const calciumNode = result!.inputs[0];
+    expect(result!.inputs).toHaveLength(2);
+    const heliumNode = result!.inputs[0];
+    expect(heliumNode.itemId).toBe('gas_helium3');
+    expect(heliumNode.isRaw).toBe(true);
+    const calciumNode = result!.inputs[1];
     expect(calciumNode.itemId).toBe('powder_calcium');
     expect(calciumNode.ratePerMin).toBeCloseTo(80);
   });
 
-  it('returns null for a raw resource (no recipe defined)', () => {
+  it('returns a raw leaf node for a resource with no recipe', () => {
     const result = calculateFromTarget('gas_helium3', 30, { recipes: ALL_RECIPES });
-    expect(result).toBeNull();
+    expect(result).not.toBeNull();
+    expect(result!.isRaw).toBe(true);
+    expect(result!.ratePerMin).toBeCloseTo(30);
+    expect(result!.inputs).toHaveLength(0);
   });
 
   it('rounds building count up (ceiling) for fractional demands', () => {
@@ -96,11 +102,10 @@ describe('calculateFromTarget — output quantity > 1', () => {
     // inputRatePerBuilding = (1/3) × 60 = 20 block_calcium/min.
     // For 1 building: 20 block_calcium/min consumed.
     const result = calculateFromTarget('powder_calcium', 60, { recipes: ALL_RECIPES });
-    // block_calcium is raw → no child, but the parent's rate check:
-    // 1 building at 60 IPM means 20 cycles/min × 1 block/cycle = 20 blocks/min consumed.
-    // (Verified by calculating required input before recursion.)
     expect(result!.buildingCount).toBe(1);
-    expect(result!.inputs).toHaveLength(0); // block_calcium is raw
+    expect(result!.inputs).toHaveLength(1); // block_calcium is raw → leaf node
+    expect(result!.inputs[0].isRaw).toBe(true);
+    expect(result!.inputs[0].ratePerMin).toBeCloseTo(20);
   });
 });
 
@@ -115,13 +120,14 @@ describe('calculateFromTarget — two-level chain', () => {
     expect(result).not.toBeNull();
     expect(result!.buildingCount).toBe(1);
 
-    const calcNode = result!.inputs[0];
+    const calcNode = result!.inputs[1];
     expect(calcNode.itemId).toBe('powder_calcium');
     expect(calcNode.ratePerMin).toBeCloseTo(40);
     expect(calcNode.buildingCountExact).toBeCloseTo(40 / 60);
     expect(calcNode.buildingCount).toBe(1);
     expect(calcNode.machine).toBe('Furnace');
-    expect(calcNode.inputs).toHaveLength(0); // block_calcium is raw
+    expect(calcNode.inputs).toHaveLength(1); // block_calcium is raw → leaf node
+    expect(calcNode.inputs[0].isRaw).toBe(true);
   });
 });
 

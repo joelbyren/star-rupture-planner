@@ -75,4 +75,6 @@ export interface NodeResult {
   /** Exact (possibly fractional) building count before ceiling */
   buildingCountExact: number;
   inputs: NodeResult[];
+  /** True for raw resources that have no production recipe (ores, etc.) */
+  isRaw?: boolean;
 }
