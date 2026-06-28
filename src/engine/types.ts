@@ -1,22 +1,38 @@
 export interface Item {
   id: string;
   name: string;
+  type: string;
+  stackSize: number | null;
 }
 
 export type BuildingTier = 'V1' | 'V2';
 
+/** Per-craft ingredient quantity. Engine derives input rate = quantity * outputRatePerMin / outputQuantity. */
+export interface RecipeIngredient {
+  itemId: string;
+  quantity: number;
+}
+
+/** RateSpec is kept for SubFactory ports, which deal in rates not per-craft quantities. */
 export interface RateSpec {
   itemId: string;
   ratePerMin: number;
 }
 
+// TODO: recipe variants (V1/V2) not present in this source — site models one recipe per item
 export interface Recipe {
   id: string;
-  /** The primary output item */
-  itemId: string;
-  buildingTier: BuildingTier;
-  inputs: RateSpec[];
-  outputs: RateSpec[];
+  outputItemId: string;
+  machine: string;
+  /** Always null until the source exposes variant data. */
+  buildingTier: BuildingTier | null;
+  /** Rate at which the building produces output, in items-per-minute. */
+  outputRatePerMin: number;
+  outputs: RecipeIngredient[];
+  inputs: RecipeIngredient[];
+  confidence: string | null;
+  lastVerified: string | null;
+  sourceUrl: string;
 }
 
 // ------------------------------------------------------------------
@@ -43,16 +59,20 @@ export interface SubFactory {
 
 // ------------------------------------------------------------------
 // Calculation results
+// NOTE: calc engine needs updating — Recipe.inputs now use quantity
+// not ratePerMin. Input rate = ingredient.quantity * recipe.outputRatePerMin
+// / outputIngredient.quantity.
 // ------------------------------------------------------------------
 
 export interface NodeResult {
   recipeId: string;
   itemId: string;
+  machine: string;
+  buildingTier: BuildingTier | null;
   ratePerMin: number;
   /** How many buildings are required (ceiling of fractional count) */
   buildingCount: number;
   /** Exact (possibly fractional) building count before ceiling */
   buildingCountExact: number;
-  buildingTier: BuildingTier;
   inputs: NodeResult[];
 }

@@ -1,40 +1,1238 @@
 [
   {
-    "id": "smelt-iron-v1",
-    "itemId": "iron-plate",
-    "buildingTier": "V1",
-    "inputs":  [{ "itemId": "iron-ore",   "ratePerMin": 30 }],
-    "outputs": [{ "itemId": "iron-plate", "ratePerMin": 20 }]
-  },
-  {
-    "id": "smelt-iron-v2",
-    "itemId": "iron-plate",
-    "buildingTier": "V2",
-    "inputs":  [{ "itemId": "iron-ore",   "ratePerMin": 45 }],
-    "outputs": [{ "itemId": "iron-plate", "ratePerMin": 30 }]
-  },
-  {
-    "id": "make-iron-rod",
-    "itemId": "iron-rod",
-    "buildingTier": "V1",
-    "inputs":  [{ "itemId": "iron-plate", "ratePerMin": 15 }],
-    "outputs": [{ "itemId": "iron-rod",   "ratePerMin": 15 }]
-  },
-  {
-    "id": "make-screw",
-    "itemId": "screw",
-    "buildingTier": "V1",
-    "inputs":  [{ "itemId": "iron-rod",  "ratePerMin": 10 }],
-    "outputs": [{ "itemId": "screw",     "ratePerMin": 40 }]
-  },
-  {
-    "id": "make-reinforced-plate",
-    "itemId": "reinforced-plate",
-    "buildingTier": "V1",
-    "inputs":  [
-      { "itemId": "iron-plate", "ratePerMin": 30 },
-      { "itemId": "screw",      "ratePerMin": 60 }
+    "id": "recipe_sheet_calcite",
+    "outputItemId": "sheet_calcite",
+    "machine": "Fabricator",
+    "buildingTier": null,
+    "outputRatePerMin": 60,
+    "outputs": [
+      {
+        "itemId": "sheet_calcite",
+        "quantity": 2
+      }
     ],
-    "outputs": [{ "itemId": "reinforced-plate", "ratePerMin": 5 }]
+    "inputs": [
+      {
+        "itemId": "block_calcium",
+        "quantity": 1
+      }
+    ],
+    "confidence": "High Confidence",
+    "lastVerified": "2026-01-09",
+    "sourceUrl": "https://starruptureplanner.com/items/sheet_calcite"
+  },
+  {
+    "id": "recipe_comp_glass",
+    "outputItemId": "comp_glass",
+    "machine": "Furnace",
+    "buildingTier": null,
+    "outputRatePerMin": 20,
+    "outputs": [
+      {
+        "itemId": "comp_glass",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "gas_helium3",
+        "quantity": 1
+      },
+      {
+        "itemId": "powder_calcium",
+        "quantity": 2
+      }
+    ],
+    "confidence": "High Confidence",
+    "lastVerified": "2026-01-09",
+    "sourceUrl": "https://starruptureplanner.com/items/comp_glass"
+  },
+  {
+    "id": "recipe_comp_electronics",
+    "outputItemId": "comp_electronics",
+    "machine": "Furnace",
+    "buildingTier": null,
+    "outputRatePerMin": 12,
+    "outputs": [
+      {
+        "itemId": "comp_electronics",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "comp_synthetic_silicon",
+        "quantity": 2
+      },
+      {
+        "itemId": "comp_inductor",
+        "quantity": 1
+      },
+      {
+        "itemId": "comp_stator",
+        "quantity": 1
+      }
+    ],
+    "confidence": "High Confidence",
+    "lastVerified": "2026-01-09",
+    "sourceUrl": "https://starruptureplanner.com/items/comp_electronics"
+  },
+  {
+    "id": "recipe_comp_rotor",
+    "outputItemId": "comp_rotor",
+    "machine": "Fabricator",
+    "buildingTier": null,
+    "outputRatePerMin": 10,
+    "outputs": [
+      {
+        "itemId": "comp_rotor",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "wire_wolfram",
+        "quantity": 2
+      },
+      {
+        "itemId": "rod_titanium",
+        "quantity": 2
+      }
+    ],
+    "confidence": "High Confidence",
+    "lastVerified": "2026-01-09",
+    "sourceUrl": "https://starruptureplanner.com/items/comp_rotor"
+  },
+  {
+    "id": "recipe_ingot_titanium",
+    "outputItemId": "ingot_titanium",
+    "machine": "Smelter",
+    "buildingTier": null,
+    "outputRatePerMin": 60,
+    "outputs": [
+      {
+        "itemId": "ingot_titanium",
+        "quantity": 2
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "ore_titanium",
+        "quantity": 2
+      }
+    ],
+    "confidence": "High Confidence",
+    "lastVerified": "2026-01-09",
+    "sourceUrl": "https://starruptureplanner.com/items/ingot_titanium"
+  },
+  {
+    "id": "recipe_ingot_wolfram",
+    "outputItemId": "ingot_wolfram",
+    "machine": "Smelter",
+    "buildingTier": null,
+    "outputRatePerMin": 60,
+    "outputs": [
+      {
+        "itemId": "ingot_wolfram",
+        "quantity": 2
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "ore_wolfram",
+        "quantity": 2
+      }
+    ],
+    "confidence": "High Confidence",
+    "lastVerified": "2026-01-09",
+    "sourceUrl": "https://starruptureplanner.com/items/ingot_wolfram"
+  },
+  {
+    "id": "recipe_comp_ceramics",
+    "outputItemId": "comp_ceramics",
+    "machine": "Furnace",
+    "buildingTier": null,
+    "outputRatePerMin": 60,
+    "outputs": [
+      {
+        "itemId": "comp_ceramics",
+        "quantity": 2
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "sheet_calcite",
+        "quantity": 1
+      },
+      {
+        "itemId": "powder_wolfram",
+        "quantity": 1
+      }
+    ],
+    "confidence": "High Confidence",
+    "lastVerified": "2026-01-09",
+    "sourceUrl": "https://starruptureplanner.com/items/comp_ceramics"
+  },
+  {
+    "id": "recipe_comp_synthetic_silicon",
+    "outputItemId": "comp_synthetic_silicon",
+    "machine": "Furnace",
+    "buildingTier": null,
+    "outputRatePerMin": 60,
+    "outputs": [
+      {
+        "itemId": "comp_synthetic_silicon",
+        "quantity": 2
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "powder_calcium",
+        "quantity": 2
+      },
+      {
+        "itemId": "gas_helium3",
+        "quantity": 1
+      },
+      {
+        "itemId": "comp_ceramics",
+        "quantity": 2
+      }
+    ],
+    "confidence": "High Confidence",
+    "lastVerified": "2026-01-09",
+    "sourceUrl": "https://starruptureplanner.com/items/comp_synthetic_silicon"
+  },
+  {
+    "id": "recipe_item_bbm",
+    "outputItemId": "item_bbm",
+    "machine": "Fabricator",
+    "buildingTier": null,
+    "outputRatePerMin": 300,
+    "outputs": [
+      {
+        "itemId": "item_bbm",
+        "quantity": 10
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "ore_titanium",
+        "quantity": 1
+      },
+      {
+        "itemId": "ore_wolfram",
+        "quantity": 1
+      }
+    ],
+    "confidence": "High Confidence",
+    "lastVerified": "2026-01-09",
+    "sourceUrl": "https://starruptureplanner.com/items/item_bbm"
+  },
+  {
+    "id": "recipe_fluid_crude_oil",
+    "outputItemId": "fluid_crude_oil",
+    "machine": "Chemicals at",
+    "buildingTier": null,
+    "outputRatePerMin": 20,
+    "outputs": [
+      {
+        "itemId": "fluid_crude_oil",
+        "quantity": 1
+      }
+    ],
+    "inputs": [],
+    "confidence": "High Confidence",
+    "lastVerified": "2026-01-09",
+    "sourceUrl": "https://starruptureplanner.com/items/fluid_crude_oil"
+  },
+  {
+    "id": "recipe_gas_helium3",
+    "outputItemId": "gas_helium3",
+    "machine": "Chemicals at",
+    "buildingTier": null,
+    "outputRatePerMin": 20,
+    "outputs": [
+      {
+        "itemId": "gas_helium3",
+        "quantity": 1
+      }
+    ],
+    "inputs": [],
+    "confidence": "High Confidence",
+    "lastVerified": "2026-01-09",
+    "sourceUrl": "https://starruptureplanner.com/items/gas_helium3"
+  },
+  {
+    "id": "recipe_fluid_sulfuric_acid",
+    "outputItemId": "fluid_sulfuric_acid",
+    "machine": "Refinery",
+    "buildingTier": null,
+    "outputRatePerMin": 120,
+    "outputs": [
+      {
+        "itemId": "fluid_sulfuric_acid",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "ore_sulfur",
+        "quantity": 2
+      },
+      {
+        "itemId": "comp_chemicals",
+        "quantity": 1
+      }
+    ],
+    "confidence": "Medium Confidence",
+    "lastVerified": "2026-01-09",
+    "sourceUrl": "https://starruptureplanner.com/items/fluid_sulfuric_acid"
+  },
+  {
+    "id": "recipe_block_calcium",
+    "outputItemId": "block_calcium",
+    "machine": "Smelter",
+    "buildingTier": null,
+    "outputRatePerMin": 60,
+    "outputs": [
+      {
+        "itemId": "block_calcium",
+        "quantity": 2
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "ore_calcium",
+        "quantity": 2
+      }
+    ],
+    "confidence": "High Confidence",
+    "lastVerified": "2026-01-09",
+    "sourceUrl": "https://starruptureplanner.com/items/block_calcium"
+  },
+  {
+    "id": "recipe_rod_titanium",
+    "outputItemId": "rod_titanium",
+    "machine": "Fabricator",
+    "buildingTier": null,
+    "outputRatePerMin": 30,
+    "outputs": [
+      {
+        "itemId": "rod_titanium",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "ingot_titanium",
+        "quantity": 1
+      }
+    ],
+    "confidence": "High Confidence",
+    "lastVerified": "2026-01-09",
+    "sourceUrl": "https://starruptureplanner.com/items/rod_titanium"
+  },
+  {
+    "id": "recipe_sheet_titanium",
+    "outputItemId": "sheet_titanium",
+    "machine": "Fabricator",
+    "buildingTier": null,
+    "outputRatePerMin": 60,
+    "outputs": [
+      {
+        "itemId": "sheet_titanium",
+        "quantity": 2
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "ingot_titanium",
+        "quantity": 1
+      }
+    ],
+    "confidence": "High Confidence",
+    "lastVerified": "2026-01-09",
+    "sourceUrl": "https://starruptureplanner.com/items/sheet_titanium"
+  },
+  {
+    "id": "recipe_beam_titanium",
+    "outputItemId": "beam_titanium",
+    "machine": "Fabricator",
+    "buildingTier": null,
+    "outputRatePerMin": 20,
+    "outputs": [
+      {
+        "itemId": "beam_titanium",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "ingot_titanium",
+        "quantity": 1
+      }
+    ],
+    "confidence": "High Confidence",
+    "lastVerified": "2026-01-09",
+    "sourceUrl": "https://starruptureplanner.com/items/beam_titanium"
+  },
+  {
+    "id": "recipe_comp_titanium_housing",
+    "outputItemId": "comp_titanium_housing",
+    "machine": "Furnace",
+    "buildingTier": null,
+    "outputRatePerMin": 30,
+    "outputs": [
+      {
+        "itemId": "comp_titanium_housing",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "beam_titanium",
+        "quantity": 1
+      },
+      {
+        "itemId": "sheet_titanium",
+        "quantity": 2
+      }
+    ],
+    "confidence": "High Confidence",
+    "lastVerified": "2026-01-09",
+    "sourceUrl": "https://starruptureplanner.com/items/comp_titanium_housing"
+  },
+  {
+    "id": "recipe_plate_wolfram",
+    "outputItemId": "plate_wolfram",
+    "machine": "Fabricator",
+    "buildingTier": null,
+    "outputRatePerMin": 60,
+    "outputs": [
+      {
+        "itemId": "plate_wolfram",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "ingot_wolfram",
+        "quantity": 1
+      }
+    ],
+    "confidence": "High Confidence",
+    "lastVerified": "2026-01-09",
+    "sourceUrl": "https://starruptureplanner.com/items/plate_wolfram"
+  },
+  {
+    "id": "recipe_wire_wolfram",
+    "outputItemId": "wire_wolfram",
+    "machine": "Fabricator",
+    "buildingTier": null,
+    "outputRatePerMin": 30,
+    "outputs": [
+      {
+        "itemId": "wire_wolfram",
+        "quantity": 2
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "ingot_wolfram",
+        "quantity": 1
+      }
+    ],
+    "confidence": "High Confidence",
+    "lastVerified": "2026-01-09",
+    "sourceUrl": "https://starruptureplanner.com/items/wire_wolfram"
+  },
+  {
+    "id": "recipe_powder_wolfram",
+    "outputItemId": "powder_wolfram",
+    "machine": "Furnace",
+    "buildingTier": null,
+    "outputRatePerMin": 90,
+    "outputs": [
+      {
+        "itemId": "powder_wolfram",
+        "quantity": 3
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "ingot_wolfram",
+        "quantity": 1
+      }
+    ],
+    "confidence": "High Confidence",
+    "lastVerified": "2026-01-09",
+    "sourceUrl": "https://starruptureplanner.com/items/powder_wolfram"
+  },
+  {
+    "id": "recipe_powder_calcium",
+    "outputItemId": "powder_calcium",
+    "machine": "Furnace",
+    "buildingTier": null,
+    "outputRatePerMin": 60,
+    "outputs": [
+      {
+        "itemId": "powder_calcium",
+        "quantity": 3
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "block_calcium",
+        "quantity": 1
+      }
+    ],
+    "confidence": "High Confidence",
+    "lastVerified": "2026-01-09",
+    "sourceUrl": "https://starruptureplanner.com/items/powder_calcium"
+  },
+  {
+    "id": "recipe_comp_tube",
+    "outputItemId": "comp_tube",
+    "machine": "Fabricator",
+    "buildingTier": null,
+    "outputRatePerMin": 60,
+    "outputs": [
+      {
+        "itemId": "comp_tube",
+        "quantity": 2
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "rod_titanium",
+        "quantity": 1
+      },
+      {
+        "itemId": "sheet_titanium",
+        "quantity": 1
+      }
+    ],
+    "confidence": "High Confidence",
+    "lastVerified": "2026-01-09",
+    "sourceUrl": "https://starruptureplanner.com/items/comp_tube"
+  },
+  {
+    "id": "recipe_comp_stator",
+    "outputItemId": "comp_stator",
+    "machine": "Fabricator",
+    "buildingTier": null,
+    "outputRatePerMin": 20,
+    "outputs": [
+      {
+        "itemId": "comp_stator",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "wire_wolfram",
+        "quantity": 1
+      },
+      {
+        "itemId": "comp_titanium_housing",
+        "quantity": 2
+      }
+    ],
+    "confidence": "High Confidence",
+    "lastVerified": "2026-01-09",
+    "sourceUrl": "https://starruptureplanner.com/items/comp_stator"
+  },
+  {
+    "id": "recipe_comp_stabilizer",
+    "outputItemId": "comp_stabilizer",
+    "machine": "Fabricator",
+    "buildingTier": null,
+    "outputRatePerMin": 10,
+    "outputs": [
+      {
+        "itemId": "comp_stabilizer",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "comp_rotor",
+        "quantity": 1
+      },
+      {
+        "itemId": "rod_titanium",
+        "quantity": 2
+      }
+    ],
+    "confidence": "High Confidence",
+    "lastVerified": "2026-01-09",
+    "sourceUrl": "https://starruptureplanner.com/items/comp_stabilizer"
+  },
+  {
+    "id": "recipe_comp_applicator",
+    "outputItemId": "comp_applicator",
+    "machine": "Fabricator",
+    "buildingTier": null,
+    "outputRatePerMin": 15,
+    "outputs": [
+      {
+        "itemId": "comp_applicator",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "comp_glass",
+        "quantity": 2
+      },
+      {
+        "itemId": "comp_tube",
+        "quantity": 8
+      }
+    ],
+    "confidence": "High Confidence",
+    "lastVerified": "2026-01-09",
+    "sourceUrl": "https://starruptureplanner.com/items/comp_applicator"
+  },
+  {
+    "id": "recipe_comp_inductor",
+    "outputItemId": "comp_inductor",
+    "machine": "Furnace",
+    "buildingTier": null,
+    "outputRatePerMin": 20,
+    "outputs": [
+      {
+        "itemId": "comp_inductor",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "comp_tube",
+        "quantity": 2
+      },
+      {
+        "itemId": "wire_wolfram",
+        "quantity": 1
+      },
+      {
+        "itemId": "comp_ceramics",
+        "quantity": 2
+      }
+    ],
+    "confidence": "High Confidence",
+    "lastVerified": "2026-01-09",
+    "sourceUrl": "https://starruptureplanner.com/items/comp_inductor"
+  },
+  {
+    "id": "recipe_comp_chemicals",
+    "outputItemId": "comp_chemicals",
+    "machine": "Furnace",
+    "buildingTier": null,
+    "outputRatePerMin": 60,
+    "outputs": [
+      {
+        "itemId": "comp_chemicals",
+        "quantity": 2
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "comp_synthetic_silicon",
+        "quantity": 1
+      },
+      {
+        "itemId": "powder_wolfram",
+        "quantity": 3
+      },
+      {
+        "itemId": "gas_helium3",
+        "quantity": 1
+      }
+    ],
+    "confidence": "High Confidence",
+    "lastVerified": "2026-01-09",
+    "sourceUrl": "https://starruptureplanner.com/items/comp_chemicals"
+  },
+  {
+    "id": "recipe_comp_supermagnet",
+    "outputItemId": "comp_supermagnet",
+    "machine": "Furnace",
+    "buildingTier": null,
+    "outputRatePerMin": 20,
+    "outputs": [
+      {
+        "itemId": "comp_supermagnet",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "fluid_sulfuric_acid",
+        "quantity": 5
+      },
+      {
+        "itemId": "plate_wolfram",
+        "quantity": 5
+      },
+      {
+        "itemId": "comp_chemicals",
+        "quantity": 2
+      }
+    ],
+    "confidence": "High Confidence",
+    "lastVerified": "2026-01-09",
+    "sourceUrl": "https://starruptureplanner.com/items/comp_supermagnet"
+  },
+  {
+    "id": "recipe_comp_valve",
+    "outputItemId": "comp_valve",
+    "machine": "Mega Press",
+    "buildingTier": null,
+    "outputRatePerMin": 6,
+    "outputs": [
+      {
+        "itemId": "comp_valve",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "comp_titanium_housing",
+        "quantity": 1
+      },
+      {
+        "itemId": "beam_titanium",
+        "quantity": 3
+      },
+      {
+        "itemId": "rod_titanium",
+        "quantity": 2
+      },
+      {
+        "itemId": "comp_nozzle",
+        "quantity": 1
+      }
+    ],
+    "confidence": "High Confidence",
+    "lastVerified": "2026-01-09",
+    "sourceUrl": "https://starruptureplanner.com/items/comp_valve"
+  },
+  {
+    "id": "recipe_comp_electromagnetic_coil",
+    "outputItemId": "comp_electromagnetic_coil",
+    "machine": "Mega Press",
+    "buildingTier": null,
+    "outputRatePerMin": 15,
+    "outputs": [
+      {
+        "itemId": "comp_electromagnetic_coil",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "comp_inductor",
+        "quantity": 1
+      },
+      {
+        "itemId": "fluid_pressurized_helium",
+        "quantity": 1
+      },
+      {
+        "itemId": "plate_wolfram",
+        "quantity": 6
+      },
+      {
+        "itemId": "comp_supermagnet",
+        "quantity": 1
+      }
+    ],
+    "confidence": "High Confidence",
+    "lastVerified": "2026-01-09",
+    "sourceUrl": "https://starruptureplanner.com/items/comp_electromagnetic_coil"
+  },
+  {
+    "id": "recipe_comp_turbine",
+    "outputItemId": "comp_turbine",
+    "machine": "Mega Press",
+    "buildingTier": null,
+    "outputRatePerMin": 10,
+    "outputs": [
+      {
+        "itemId": "comp_turbine",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "comp_impeller",
+        "quantity": 1
+      },
+      {
+        "itemId": "comp_stator",
+        "quantity": 1
+      },
+      {
+        "itemId": "comp_rotor",
+        "quantity": 2
+      },
+      {
+        "itemId": "fluid_sulfuric_acid",
+        "quantity": 2
+      }
+    ],
+    "confidence": "Medium Confidence",
+    "lastVerified": "2026-01-26",
+    "sourceUrl": "https://starruptureplanner.com/items/comp_turbine"
+  },
+  {
+    "id": "recipe_comp_impeller",
+    "outputItemId": "comp_impeller",
+    "machine": "Mega Press",
+    "buildingTier": null,
+    "outputRatePerMin": 15,
+    "outputs": [
+      {
+        "itemId": "comp_impeller",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "rod_titanium",
+        "quantity": 2
+      },
+      {
+        "itemId": "sheet_heat_resistant",
+        "quantity": 2
+      },
+      {
+        "itemId": "plate_wolfram",
+        "quantity": 1
+      },
+      {
+        "itemId": "comp_stabilizer",
+        "quantity": 1
+      }
+    ],
+    "confidence": "Medium Confidence",
+    "lastVerified": "2026-01-26",
+    "sourceUrl": "https://starruptureplanner.com/items/comp_impeller"
+  },
+  {
+    "id": "recipe_comp_hardening_agent",
+    "outputItemId": "comp_hardening_agent",
+    "machine": "Furnace",
+    "buildingTier": null,
+    "outputRatePerMin": 30,
+    "outputs": [
+      {
+        "itemId": "comp_hardening_agent",
+        "quantity": 2
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "fluid_sulfuric_acid",
+        "quantity": 5
+      },
+      {
+        "itemId": "comp_synthetic_silicon",
+        "quantity": 1
+      },
+      {
+        "itemId": "comp_applicator",
+        "quantity": 1
+      }
+    ],
+    "confidence": "Medium Confidence",
+    "lastVerified": "2026-01-26",
+    "sourceUrl": "https://starruptureplanner.com/items/comp_hardening_agent"
+  },
+  {
+    "id": "recipe_ammo_pistol",
+    "outputItemId": "ammo_pistol",
+    "machine": "Fabricator",
+    "buildingTier": null,
+    "outputRatePerMin": 375,
+    "outputs": [
+      {
+        "itemId": "ammo_pistol",
+        "quantity": 25
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "item_bbm",
+        "quantity": 14
+      }
+    ],
+    "confidence": "High Confidence",
+    "lastVerified": "2026-01-09",
+    "sourceUrl": "https://starruptureplanner.com/items/ammo_pistol"
+  },
+  {
+    "id": "recipe_ammo_standard",
+    "outputItemId": "ammo_standard",
+    "machine": "Mega Press",
+    "buildingTier": null,
+    "outputRatePerMin": 200,
+    "outputs": [
+      {
+        "itemId": "ammo_standard",
+        "quantity": 20
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "item_bbm",
+        "quantity": 18
+      },
+      {
+        "itemId": "powder_wolfram",
+        "quantity": 4
+      }
+    ],
+    "confidence": "High Confidence",
+    "lastVerified": "2026-02-08",
+    "sourceUrl": "https://starruptureplanner.com/items/ammo_standard"
+  },
+  {
+    "id": "recipe_ammo_heavy",
+    "outputItemId": "ammo_heavy",
+    "machine": "Mega Press",
+    "buildingTier": null,
+    "outputRatePerMin": 150,
+    "outputs": [
+      {
+        "itemId": "ammo_heavy",
+        "quantity": 15
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "item_bbm",
+        "quantity": 24
+      },
+      {
+        "itemId": "rod_titanium",
+        "quantity": 6
+      }
+    ],
+    "confidence": "High Confidence",
+    "lastVerified": "2026-02-08",
+    "sourceUrl": "https://starruptureplanner.com/items/ammo_heavy"
+  },
+  {
+    "id": "recipe_ammo_shotgun",
+    "outputItemId": "ammo_shotgun",
+    "machine": "Mega Press",
+    "buildingTier": null,
+    "outputRatePerMin": 150,
+    "outputs": [
+      {
+        "itemId": "ammo_shotgun",
+        "quantity": 15
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "item_bbm",
+        "quantity": 20
+      },
+      {
+        "itemId": "powder_calcium",
+        "quantity": 6
+      }
+    ],
+    "confidence": "High Confidence",
+    "lastVerified": "2026-02-08",
+    "sourceUrl": "https://starruptureplanner.com/items/ammo_shotgun"
+  },
+  {
+    "id": "recipe_sheet_heat_resistant",
+    "outputItemId": "sheet_heat_resistant",
+    "machine": "Furnace",
+    "buildingTier": null,
+    "outputRatePerMin": 15,
+    "outputs": [
+      {
+        "itemId": "sheet_heat_resistant",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "plate_wolfram",
+        "quantity": 1
+      },
+      {
+        "itemId": "sheet_titanium",
+        "quantity": 2
+      },
+      {
+        "itemId": "comp_glass",
+        "quantity": 1
+      }
+    ],
+    "confidence": "Medium Confidence",
+    "lastVerified": "2026-01-09",
+    "sourceUrl": "https://starruptureplanner.com/items/sheet_heat_resistant"
+  },
+  {
+    "id": "recipe_item_ibm",
+    "outputItemId": "item_ibm",
+    "machine": "Mega Press",
+    "buildingTier": null,
+    "outputRatePerMin": 250,
+    "outputs": [
+      {
+        "itemId": "item_ibm",
+        "quantity": 25
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "item_bbm",
+        "quantity": 40
+      },
+      {
+        "itemId": "comp_inductor",
+        "quantity": 2
+      },
+      {
+        "itemId": "comp_glass",
+        "quantity": 2
+      },
+      {
+        "itemId": "comp_titanium_housing",
+        "quantity": 2
+      }
+    ],
+    "confidence": "High Confidence",
+    "lastVerified": "2026-02-08",
+    "sourceUrl": "https://starruptureplanner.com/items/item_ibm"
+  },
+  {
+    "id": "recipe_comp_nozzle",
+    "outputItemId": "comp_nozzle",
+    "machine": "Mega Press",
+    "buildingTier": null,
+    "outputRatePerMin": 12,
+    "outputs": [
+      {
+        "itemId": "comp_nozzle",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "sheet_heat_resistant",
+        "quantity": 2
+      },
+      {
+        "itemId": "gas_helium3",
+        "quantity": 1
+      },
+      {
+        "itemId": "comp_stabilizer",
+        "quantity": 2
+      }
+    ],
+    "confidence": "High Confidence",
+    "lastVerified": "2026-02-08",
+    "sourceUrl": "https://starruptureplanner.com/items/comp_nozzle"
+  },
+  {
+    "id": "recipe_comp_battery",
+    "outputItemId": "comp_battery",
+    "machine": "Mega Press",
+    "buildingTier": null,
+    "outputRatePerMin": 15,
+    "outputs": [
+      {
+        "itemId": "comp_battery",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "comp_inductor",
+        "quantity": 2
+      },
+      {
+        "itemId": "comp_electronics",
+        "quantity": 2
+      },
+      {
+        "itemId": "fluid_sulfuric_acid",
+        "quantity": 1
+      }
+    ],
+    "confidence": "High Confidence",
+    "lastVerified": "2026-02-08",
+    "sourceUrl": "https://starruptureplanner.com/items/comp_battery"
+  },
+  {
+    "id": "recipe_comp_pump",
+    "outputItemId": "comp_pump",
+    "machine": "Mega Press",
+    "buildingTier": null,
+    "outputRatePerMin": 6,
+    "outputs": [
+      {
+        "itemId": "comp_pump",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "comp_valve",
+        "quantity": 1
+      },
+      {
+        "itemId": "comp_turbine",
+        "quantity": 1
+      },
+      {
+        "itemId": "comp_impeller",
+        "quantity": 1
+      },
+      {
+        "itemId": "fluid_sulfuric_acid",
+        "quantity": 3
+      }
+    ],
+    "confidence": "High Confidence",
+    "lastVerified": "2026-02-08",
+    "sourceUrl": "https://starruptureplanner.com/items/comp_pump"
+  },
+  {
+    "id": "recipe_fluid_pressurized_helium",
+    "outputItemId": "fluid_pressurized_helium",
+    "machine": "Refinery",
+    "buildingTier": null,
+    "outputRatePerMin": 30,
+    "outputs": [
+      {
+        "itemId": "fluid_pressurized_helium",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "ore_sulfur",
+        "quantity": 1
+      },
+      {
+        "itemId": "gas_helium3",
+        "quantity": 1
+      }
+    ],
+    "confidence": "High Confidence",
+    "lastVerified": "2026-02-08",
+    "sourceUrl": "https://starruptureplanner.com/items/fluid_pressurized_helium"
+  }
+,
+  {
+    "id": "recipe_rod_titanium_v2",
+    "outputItemId": "rod_titanium",
+    "machine": "Fabricator",
+    "buildingTier": "V2",
+    "outputRatePerMin": 120,
+    "outputs": [{ "itemId": "rod_titanium", "quantity": 4 }],
+    "inputs": [{ "itemId": "ingot_titanium", "quantity": 2 }],
+    "confidence": "High Confidence",
+    "lastVerified": "2026-06-28",
+    "sourceUrl": "https://starrupture.wiki.gg/wiki/Fabricator_v.2"
+  },
+  {
+    "id": "recipe_sheet_titanium_v2",
+    "outputItemId": "sheet_titanium",
+    "machine": "Fabricator",
+    "buildingTier": "V2",
+    "outputRatePerMin": 180,
+    "outputs": [{ "itemId": "sheet_titanium", "quantity": 6 }],
+    "inputs": [{ "itemId": "ingot_titanium", "quantity": 2 }],
+    "confidence": "High Confidence",
+    "lastVerified": "2026-06-28",
+    "sourceUrl": "https://starrupture.wiki.gg/wiki/Fabricator_v.2"
+  },
+  {
+    "id": "recipe_wire_wolfram_v2",
+    "outputItemId": "wire_wolfram",
+    "machine": "Fabricator",
+    "buildingTier": "V2",
+    "outputRatePerMin": 120,
+    "outputs": [{ "itemId": "wire_wolfram", "quantity": 8 }],
+    "inputs": [{ "itemId": "ingot_wolfram", "quantity": 2 }],
+    "confidence": "High Confidence",
+    "lastVerified": "2026-06-28",
+    "sourceUrl": "https://starrupture.wiki.gg/wiki/Fabricator_v.2"
+  },
+  {
+    "id": "recipe_plate_wolfram_v2",
+    "outputItemId": "plate_wolfram",
+    "machine": "Fabricator",
+    "buildingTier": "V2",
+    "outputRatePerMin": 150,
+    "outputs": [{ "itemId": "plate_wolfram", "quantity": 5 }],
+    "inputs": [
+      { "itemId": "ingot_wolfram", "quantity": 2 },
+      { "itemId": "powder_wolfram", "quantity": 1 }
+    ],
+    "confidence": "High Confidence",
+    "lastVerified": "2026-06-28",
+    "sourceUrl": "https://starrupture.wiki.gg/wiki/Fabricator_v.2"
+  },
+  {
+    "id": "recipe_comp_rotor_v2",
+    "outputItemId": "comp_rotor",
+    "machine": "Fabricator",
+    "buildingTier": "V2",
+    "outputRatePerMin": 60,
+    "outputs": [{ "itemId": "comp_rotor", "quantity": 6 }],
+    "inputs": [
+      { "itemId": "rod_titanium", "quantity": 1 },
+      { "itemId": "wire_wolfram", "quantity": 2 },
+      { "itemId": "plate_wolfram", "quantity": 1 }
+    ],
+    "confidence": "High Confidence",
+    "lastVerified": "2026-06-28",
+    "sourceUrl": "https://starrupture.wiki.gg/wiki/Fabricator_v.2"
+  },
+  {
+    "id": "recipe_comp_tube_v2",
+    "outputItemId": "comp_tube",
+    "machine": "Fabricator",
+    "buildingTier": "V2",
+    "outputRatePerMin": 240,
+    "outputs": [{ "itemId": "comp_tube", "quantity": 8 }],
+    "inputs": [
+      { "itemId": "ingot_goethite", "quantity": 1 },
+      { "itemId": "sheet_titanium", "quantity": 1 },
+      { "itemId": "powder_wolfram", "quantity": 1 }
+    ],
+    "confidence": "High Confidence",
+    "lastVerified": "2026-06-28",
+    "sourceUrl": "https://starrupture.wiki.gg/wiki/Fabricator_v.2"
+  },
+  {
+    "id": "recipe_comp_stator_v2",
+    "outputItemId": "comp_stator",
+    "machine": "Fabricator",
+    "buildingTier": "V2",
+    "outputRatePerMin": 60,
+    "outputs": [{ "itemId": "comp_stator", "quantity": 3 }],
+    "inputs": [
+      { "itemId": "comp_titanium_housing", "quantity": 1 },
+      { "itemId": "wire_wolfram", "quantity": 1 },
+      { "itemId": "sheet_titanium", "quantity": 1 }
+    ],
+    "confidence": "High Confidence",
+    "lastVerified": "2026-06-28",
+    "sourceUrl": "https://starrupture.wiki.gg/wiki/Fabricator_v.2"
   }
 ]

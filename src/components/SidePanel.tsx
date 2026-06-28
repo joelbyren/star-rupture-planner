@@ -58,7 +58,7 @@ function ChainSummary({ result, depth }: { result: NodeResult; depth: number }) 
         <span className="text-violet-400">{result.ratePerMin.toFixed(1)}/min</span>
       </div>
       <div className="text-xs text-slate-500">
-        {result.buildingTier} × {result.buildingCount}
+        {result.machine}{result.buildingTier ? ` ${result.buildingTier}` : ''} × {result.buildingCount}
       </div>
       {result.inputs.map((child, i) => (
         <ChainSummary key={i} result={child} depth={depth + 1} />

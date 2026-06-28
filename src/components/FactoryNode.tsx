@@ -15,7 +15,7 @@ export function FactoryNode({ data }: NodeProps<FactoryNodeType>) {
 
   const item = ALL_ITEMS.find(i => i.id === data.itemId);
   const result = data.result;
-  const variantRecipes = ALL_RECIPES.filter(r => r.itemId === data.itemId);
+  const variantRecipes = ALL_RECIPES.filter(r => r.outputItemId === data.itemId);
   const hasVariants = variantRecipes.length > 1;
 
   const activeRecipeId = activeRecipes[data.itemId] ?? variantRecipes[0]?.id;
@@ -25,7 +25,10 @@ export function FactoryNode({ data }: NodeProps<FactoryNodeType>) {
       <Handle type="target" position={Position.Left} className="!bg-violet-500" />
 
       <div className="text-xs text-slate-400 mb-1 uppercase tracking-wider">
-        {result?.buildingTier ?? '—'}
+        {result?.machine ?? '—'}
+        {result?.buildingTier && (
+          <span className="ml-1 text-violet-400">{result.buildingTier}</span>
+        )}
       </div>
 
       <div className="font-semibold text-white text-sm mb-1 truncate">
@@ -53,7 +56,7 @@ export function FactoryNode({ data }: NodeProps<FactoryNodeType>) {
         >
           {variantRecipes.map(r => (
             <option key={r.id} value={r.id}>
-              {r.buildingTier} — {r.outputs[0]?.ratePerMin}/min
+              {r.machine} — {r.outputRatePerMin}/min
             </option>
           ))}
         </select>

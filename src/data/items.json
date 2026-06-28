@@ -1,7 +1,350 @@
 [
-  { "id": "iron-ore",      "name": "Iron Ore" },
-  { "id": "iron-plate",    "name": "Iron Plate" },
-  { "id": "iron-rod",      "name": "Iron Rod" },
-  { "id": "screw",         "name": "Screw" },
-  { "id": "reinforced-plate", "name": "Reinforced Iron Plate" }
+  {
+    "id": "ore_goethite",
+    "name": "Goethite Ore",
+    "type": "Resource",
+    "stackSize": 100
+  },
+  {
+    "id": "ingot_goethite",
+    "name": "Goethite Ingot",
+    "type": "Component",
+    "stackSize": 100
+  },
+  {
+    "id": "ingot_goethite",
+    "name": "Goethite Ingot",
+    "type": "Component",
+    "stackSize": 100
+  },
+  {
+    "id": "sheet_calcite",
+    "name": "Calcite Sheets",
+    "type": "Component",
+    "stackSize": 100
+  },
+  {
+    "id": "comp_glass",
+    "name": "Glass",
+    "type": "Component",
+    "stackSize": 100
+  },
+  {
+    "id": "comp_electronics",
+    "name": "Electronics",
+    "type": "Component",
+    "stackSize": 50
+  },
+  {
+    "id": "ore_titanium",
+    "name": "Titanium Ore",
+    "type": "Resource",
+    "stackSize": 100
+  },
+  {
+    "id": "ore_wolfram",
+    "name": "Wolfram Ore",
+    "type": "Resource",
+    "stackSize": 100
+  },
+  {
+    "id": "comp_rotor",
+    "name": "Rotor",
+    "type": "Component",
+    "stackSize": 50
+  },
+  {
+    "id": "ingot_titanium",
+    "name": "Titanium Bar",
+    "type": "Component",
+    "stackSize": 50
+  },
+  {
+    "id": "ingot_wolfram",
+    "name": "Wolfram Bar",
+    "type": "Component",
+    "stackSize": 50
+  },
+  {
+    "id": "comp_ceramics",
+    "name": "Ceramics",
+    "type": "Component",
+    "stackSize": 100
+  },
+  {
+    "id": "comp_synthetic_silicon",
+    "name": "Synthetic Silicon",
+    "type": "Component",
+    "stackSize": 100
+  },
+  {
+    "id": "item_bbm",
+    "name": "Basic Building Material",
+    "type": "Component",
+    "stackSize": 200
+  },
+  {
+    "id": "ore_calcium",
+    "name": "Calcium Ore",
+    "type": "Resource",
+    "stackSize": 100
+  },
+  {
+    "id": "ore_sulfur",
+    "name": "Sulphur Ore",
+    "type": "Resource",
+    "stackSize": 100
+  },
+  {
+    "id": "fluid_crude_oil",
+    "name": "Crude Oil",
+    "type": "Fluid",
+    "stackSize": null
+  },
+  {
+    "id": "gas_helium3",
+    "name": "Helium-3",
+    "type": "Fluid",
+    "stackSize": null
+  },
+  {
+    "id": "fluid_sulfuric_acid",
+    "name": "Sulfuric Acid",
+    "type": "Fluid",
+    "stackSize": null
+  },
+  {
+    "id": "block_calcium",
+    "name": "Calcium Block",
+    "type": "Component",
+    "stackSize": 100
+  },
+  {
+    "id": "rod_titanium",
+    "name": "Titanium Rod",
+    "type": "Component",
+    "stackSize": 100
+  },
+  {
+    "id": "sheet_titanium",
+    "name": "Titanium Sheet",
+    "type": "Component",
+    "stackSize": 100
+  },
+  {
+    "id": "beam_titanium",
+    "name": "Titanium Beam",
+    "type": "Component",
+    "stackSize": 50
+  },
+  {
+    "id": "comp_titanium_housing",
+    "name": "Titanium Housing",
+    "type": "Component",
+    "stackSize": 50
+  },
+  {
+    "id": "plate_wolfram",
+    "name": "Wolfram Plate",
+    "type": "Component",
+    "stackSize": 100
+  },
+  {
+    "id": "wire_wolfram",
+    "name": "Wolfram Wire",
+    "type": "Component",
+    "stackSize": 200
+  },
+  {
+    "id": "powder_wolfram",
+    "name": "Wolfram Powder",
+    "type": "Powder",
+    "stackSize": 200
+  },
+  {
+    "id": "powder_calcium",
+    "name": "Calcium Powder",
+    "type": "Powder",
+    "stackSize": 200
+  },
+  {
+    "id": "comp_tube",
+    "name": "Tube",
+    "type": "Component",
+    "stackSize": 100
+  },
+  {
+    "id": "comp_stator",
+    "name": "Stator",
+    "type": "Component",
+    "stackSize": 50
+  },
+  {
+    "id": "comp_stabilizer",
+    "name": "Stabilizer",
+    "type": "Component",
+    "stackSize": 50
+  },
+  {
+    "id": "comp_applicator",
+    "name": "Applicator",
+    "type": "Component",
+    "stackSize": 50
+  },
+  {
+    "id": "comp_inductor",
+    "name": "Inductor",
+    "type": "Component",
+    "stackSize": 100
+  },
+  {
+    "id": "comp_chemicals",
+    "name": "Chemicals",
+    "type": "Component",
+    "stackSize": 100
+  },
+  {
+    "id": "comp_supermagnet",
+    "name": "Supermagnet",
+    "type": "Component",
+    "stackSize": 50
+  },
+  {
+    "id": "comp_valve",
+    "name": "Valve",
+    "type": "Component",
+    "stackSize": 100
+  },
+  {
+    "id": "comp_electromagnetic_coil",
+    "name": "Electromagnetic Coil",
+    "type": "Component",
+    "stackSize": 50
+  },
+  {
+    "id": "comp_turbine",
+    "name": "Turbine",
+    "type": "Component",
+    "stackSize": 50
+  },
+  {
+    "id": "comp_impeller",
+    "name": "Impeller",
+    "type": "Component",
+    "stackSize": 50
+  },
+  {
+    "id": "comp_hardening_agent",
+    "name": "Hardening Agent",
+    "type": "Fluid",
+    "stackSize": null
+  },
+  {
+    "id": "item_power_cell",
+    "name": "Power Cell",
+    "type": "Component",
+    "stackSize": 10
+  },
+  {
+    "id": "item_keycard",
+    "name": "Redleaf Keycard",
+    "type": "Component",
+    "stackSize": 1
+  },
+  {
+    "id": "wpn_pistol",
+    "name": "UPP-7 Pistol",
+    "type": "Weapon",
+    "stackSize": 1
+  },
+  {
+    "id": "ammo_pistol",
+    "name": "Pistol Ammo",
+    "type": "Ammo",
+    "stackSize": 500
+  },
+  {
+    "id": "ammo_standard",
+    "name": "Standard Ammo",
+    "type": "Ammo",
+    "stackSize": 500
+  },
+  {
+    "id": "ammo_heavy",
+    "name": "Heavy Ammo",
+    "type": "Ammo",
+    "stackSize": 500
+  },
+  {
+    "id": "ammo_shotgun",
+    "name": "Shotgun Ammo",
+    "type": "Ammo",
+    "stackSize": 500
+  },
+  {
+    "id": "wpn_grenade",
+    "name": "Fragmentation Grenade",
+    "type": "Weapon",
+    "stackSize": 10
+  },
+  {
+    "id": "ammo_explosive",
+    "name": "Explosive Ammo",
+    "type": "Ammo",
+    "stackSize": 200
+  },
+  {
+    "id": "item_war_bond",
+    "name": "War Bond",
+    "type": "Component",
+    "stackSize": 1
+  },
+  {
+    "id": "data_points",
+    "name": "Data Points",
+    "type": "Component",
+    "stackSize": 10000
+  },
+  {
+    "id": "sheet_heat_resistant",
+    "name": "Heat-Resistant Sheet",
+    "type": "Component",
+    "stackSize": 50
+  },
+  {
+    "id": "comp_biofilament",
+    "name": "Biofilament",
+    "type": "Component",
+    "stackSize": 100
+  },
+  {
+    "id": "item_ibm",
+    "name": "Intermediate Building Material",
+    "type": "Component",
+    "stackSize": 200
+  },
+  {
+    "id": "comp_nozzle",
+    "name": "Nozzle",
+    "type": "Component",
+    "stackSize": 50
+  },
+  {
+    "id": "comp_battery",
+    "name": "Battery",
+    "type": "Component",
+    "stackSize": 50
+  },
+  {
+    "id": "comp_pump",
+    "name": "Pump",
+    "type": "Component",
+    "stackSize": 50
+  },
+  {
+    "id": "fluid_pressurized_helium",
+    "name": "Pressurized Helium",
+    "type": "Fluid",
+    "stackSize": null
+  }
 ]

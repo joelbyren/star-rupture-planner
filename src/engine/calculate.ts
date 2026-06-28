@@ -20,10 +20,20 @@ export interface CalculateOptions {
  * required rate, exact + ceiled building count, and the recursively resolved
  * input subtree.
  *
+ * Rate model:
+ *   recipe.outputRatePerMin — total items/min produced by one building for the
+ *   primary output (as reported by the site; already accounts for output quantity).
+ *
+ *   outputSpec.quantity and inputSpec.quantity are per-craft amounts that define
+ *   the INPUT/OUTPUT RATIO only:
+ *     inputRatePerBuilding = inputSpec.quantity / outputSpec.quantity × outputRatePerMin
+ *
+ *   Building count uses outputRatePerMin directly (not × quantity):
+ *     buildingCountExact = targetRatePerMin / outputRatePerMin
+ *
  * TODO: A future javascript-lp-solver pass would slot in here, replacing the
  * greedy per-node expansion with an LP solve over the full graph to minimize
- * resource usage or building count. The NodeResult shape is already suitable
- * as the LP variable set; the inputs arrays become constraint rows.
+ * resource usage or building count.
  */
 export function calculateFromTarget(
   targetItemId: string,
@@ -40,16 +50,18 @@ export function calculateFromTarget(
   const recipe = resolveRecipe(targetItemId, recipes, activeRecipes);
   if (!recipe) return null; // raw resource — no recipe needed
 
-  // The recipe produces `outputRate` of targetItemId per building per minute.
   const outputSpec = recipe.outputs.find(o => o.itemId === targetItemId);
   if (!outputSpec) return null;
 
-  const buildingCountExact = targetRatePerMin / outputSpec.ratePerMin;
+  // outputRatePerMin is total items/min from one building — use it directly.
+  const buildingCountExact = targetRatePerMin / recipe.outputRatePerMin;
   const buildingCount = Math.ceil(buildingCountExact);
 
   const inputs: NodeResult[] = [];
   for (const inputSpec of recipe.inputs) {
-    const requiredInputRate = inputSpec.ratePerMin * buildingCountExact;
+    // Ratio: how many input items per output item, scaled to the target rate.
+    const inputRatePerBuilding = (inputSpec.quantity / outputSpec.quantity) * recipe.outputRatePerMin;
+    const requiredInputRate = inputRatePerBuilding * buildingCountExact;
     const child = calculateFromTarget(inputSpec.itemId, requiredInputRate, options, depth + 1);
     if (child) inputs.push(child);
   }
@@ -57,10 +69,11 @@ export function calculateFromTarget(
   return {
     recipeId: recipe.id,
     itemId: targetItemId,
+    machine: recipe.machine,
+    buildingTier: recipe.buildingTier,
     ratePerMin: targetRatePerMin,
     buildingCount,
     buildingCountExact,
-    buildingTier: recipe.buildingTier,
     inputs,
   };
 }
@@ -80,8 +93,6 @@ export function calculateFromSource(
   outputItemId: string,
   options: CalculateOptions,
 ): NodeResult | null {
-  // Find the recipe chain from outputItemId back to sourceItemId, then
-  // determine how much output the supply supports.
   const { recipes, activeRecipes = {} } = options;
 
   const outputRecipe = resolveRecipe(outputItemId, recipes, activeRecipes);
@@ -90,7 +101,6 @@ export function calculateFromSource(
   const outputSpec = outputRecipe.outputs.find(o => o.itemId === outputItemId);
   if (!outputSpec) return null;
 
-  // Walk the chain to find the input that references sourceItemId (direct link).
   const inputSpec = outputRecipe.inputs.find(i => i.itemId === sourceItemId);
   if (!inputSpec) {
     // sourceItemId is not a direct input — not yet supported for deep chains.
@@ -98,8 +108,9 @@ export function calculateFromSource(
     return null;
   }
 
-  const buildingCountExact = supplyRatePerMin / inputSpec.ratePerMin;
-  const achievableRate = buildingCountExact * outputSpec.ratePerMin;
+  const inputRatePerBuilding = (inputSpec.quantity / outputSpec.quantity) * outputRecipe.outputRatePerMin;
+  const buildingCountExact = supplyRatePerMin / inputRatePerBuilding;
+  const achievableRate = buildingCountExact * outputRecipe.outputRatePerMin;
 
   return calculateFromTarget(outputItemId, achievableRate, options);
 }
@@ -115,8 +126,8 @@ function resolveRecipe(
 ): Recipe | undefined {
   const preferredId = activeRecipes[itemId];
   if (preferredId) {
-    const found = recipes.find(r => r.id === preferredId && r.itemId === itemId);
+    const found = recipes.find(r => r.id === preferredId && r.outputItemId === itemId);
     if (found) return found;
   }
-  return recipes.find(r => r.itemId === itemId);
+  return recipes.find(r => r.outputItemId === itemId);
 }
