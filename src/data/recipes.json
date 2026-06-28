@@ -1,0 +1,40 @@
+[
+  {
+    "id": "smelt-iron-v1",
+    "itemId": "iron-plate",
+    "buildingTier": "V1",
+    "inputs":  [{ "itemId": "iron-ore",   "ratePerMin": 30 }],
+    "outputs": [{ "itemId": "iron-plate", "ratePerMin": 20 }]
+  },
+  {
+    "id": "smelt-iron-v2",
+    "itemId": "iron-plate",
+    "buildingTier": "V2",
+    "inputs":  [{ "itemId": "iron-ore",   "ratePerMin": 45 }],
+    "outputs": [{ "itemId": "iron-plate", "ratePerMin": 30 }]
+  },
+  {
+    "id": "make-iron-rod",
+    "itemId": "iron-rod",
+    "buildingTier": "V1",
+    "inputs":  [{ "itemId": "iron-plate", "ratePerMin": 15 }],
+    "outputs": [{ "itemId": "iron-rod",   "ratePerMin": 15 }]
+  },
+  {
+    "id": "make-screw",
+    "itemId": "screw",
+    "buildingTier": "V1",
+    "inputs":  [{ "itemId": "iron-rod",  "ratePerMin": 10 }],
+    "outputs": [{ "itemId": "screw",     "ratePerMin": 40 }]
+  },
+  {
+    "id": "make-reinforced-plate",
+    "itemId": "reinforced-plate",
+    "buildingTier": "V1",
+    "inputs":  [
+      { "itemId": "iron-plate", "ratePerMin": 30 },
+      { "itemId": "screw",      "ratePerMin": 60 }
+    ],
+    "outputs": [{ "itemId": "reinforced-plate", "ratePerMin": 5 }]
+  }
+]
