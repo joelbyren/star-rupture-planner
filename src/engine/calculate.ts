@@ -1,5 +1,6 @@
 // Pure calculation engine — no React, Zustand, or UI imports allowed here.
 import type { Recipe, NodeResult } from './types.ts';
+import { machineForResource } from './rawResources.ts';
 
 export interface CalculateOptions {
   /** All available recipes (loaded from src/data/recipes.json) */
@@ -52,7 +53,7 @@ export function calculateFromTarget(
     return {
       recipeId: `raw::${targetItemId}`,
       itemId: targetItemId,
-      machine: '',
+      machine: machineForResource(targetItemId),
       buildingTier: null,
       ratePerMin: targetRatePerMin,
       buildingCount: 0,

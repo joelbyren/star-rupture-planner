@@ -1,7 +1,8 @@
 import { create } from 'zustand';
 import type { Node, Edge } from '@xyflow/react';
-import type { NodeResult } from '../engine/types.ts';
+import type { NodeResult, RawResourceConfig } from '../engine/types.ts';
 import { calculateFromTarget } from '../engine/calculate.ts';
+import { DEFAULT_RAW_CONFIG } from '../engine/rawResources.ts';
 import recipesJson from '../data/recipes.json';
 import type { Recipe } from '../engine/types.ts';
 
@@ -40,9 +41,13 @@ export interface PlanState {
   nodes: FactoryNodeType[];
   edges: Edge[];
 
+  /** Per-node extractor config for raw resource nodes, keyed by node pathId */
+  rawResourceConfigs: Record<string, RawResourceConfig>;
+
   // Actions
   setTarget: (itemId: string, ratePerMin: number) => void;
   setActiveRecipe: (itemId: string, recipeId: string) => void;
+  setRawResourceConfig: (pathId: string, config: Partial<RawResourceConfig>) => void;
   setNodes: (nodes: FactoryNodeType[]) => void;
   setEdges: (edges: Edge[]) => void;
   loadPlan: (snapshot: PlanSnapshot) => void;
@@ -56,6 +61,7 @@ export interface PlanSnapshot {
   planId: string;
   planName: string;
   activeRecipes: Record<string, string>;
+  rawResourceConfigs: Record<string, RawResourceConfig>;
   targetItemId: string;
   targetRatePerMin: number;
   nodes: FactoryNodeType[];
@@ -149,6 +155,7 @@ export const usePlanStore = create<PlanState>((set, get) => ({
   planId: crypto.randomUUID(),
   planName: 'New Plan',
   activeRecipes: {},
+  rawResourceConfigs: {},
   targetItemId: 'comp_rotor',
   targetRatePerMin: 10,
   result: null,
@@ -170,6 +177,11 @@ export const usePlanStore = create<PlanState>((set, get) => ({
     const newNodes = resultToNodes(result, nodes);
     const edges = resultToEdges(result, newNodes);
     set({ activeRecipes, result, nodes: newNodes, edges });
+  },
+
+  setRawResourceConfig(pathId, patch) {
+    const current = get().rawResourceConfigs[pathId] ?? DEFAULT_RAW_CONFIG;
+    set({ rawResourceConfigs: { ...get().rawResourceConfigs, [pathId]: { ...current, ...patch } } });
   },
 
   setNodes(nodes) { set({ nodes }); },

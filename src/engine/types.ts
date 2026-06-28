@@ -7,6 +7,14 @@ export interface Item {
 
 export type BuildingTier = 'V1' | 'V2';
 
+export type ResourcePurity = 'impure' | 'normal' | 'pure';
+export type ExtractorVersion = 'V1' | 'V2';
+
+export interface RawResourceConfig {
+  purity: ResourcePurity;
+  extractorVersion: ExtractorVersion;
+}
+
 /** Per-craft ingredient quantity. Engine derives input rate = quantity * outputRatePerMin / outputQuantity. */
 export interface RecipeIngredient {
   itemId: string;
