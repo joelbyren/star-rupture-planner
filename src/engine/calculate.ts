@@ -56,8 +56,8 @@ export function calculateFromTarget(
       machine: machineForResource(targetItemId),
       buildingTier: null,
       ratePerMin: targetRatePerMin,
-      buildingCount: 0,
-      buildingCountExact: 0,
+      buildingCount: 1,
+      buildingCountExact: 1,
       inputs: [],
       isRaw: true,
     };
