@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(npx vitest run 2>&1)",
+      "PowerShell(npx oxlint src 2>&1)",
+      "PowerShell(npx vite build 2>&1)",
+      "Bash(npx vitest *)"
+    ]
+  }
+}

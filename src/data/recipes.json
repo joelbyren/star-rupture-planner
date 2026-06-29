@@ -247,23 +247,6 @@
     "sourceUrl": "https://starruptureplanner.com/items/fluid_crude_oil"
   },
   {
-    "id": "recipe_gas_helium3",
-    "outputItemId": "gas_helium3",
-    "machine": "Chemicals at",
-    "buildingTier": null,
-    "outputRatePerMin": 20,
-    "outputs": [
-      {
-        "itemId": "gas_helium3",
-        "quantity": 1
-      }
-    ],
-    "inputs": [],
-    "confidence": "High Confidence",
-    "lastVerified": "2026-01-09",
-    "sourceUrl": "https://starruptureplanner.com/items/gas_helium3"
-  },
-  {
     "id": "recipe_fluid_sulfuric_acid",
     "outputItemId": "fluid_sulfuric_acid",
     "machine": "Refinery",

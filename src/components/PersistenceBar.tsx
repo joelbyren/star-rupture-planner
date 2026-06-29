@@ -1,9 +1,21 @@
-import { usePlanStore } from '../store/planStore.ts';
+import { useMemo, useState } from 'react';
+import { usePlanStore, findMissingInputs } from '../store/planStore.ts';
 import { db } from '../db/db.ts';
 import type { PlanSnapshot } from '../store/planStore.ts';
+import itemsJson from '../data/items.json';
+import type { Item } from '../engine/types.ts';
+
+const ITEM_NAMES = new Map((itemsJson as Item[]).map(i => [i.id, i.name]));
+const itemName = (id: string) => ITEM_NAMES.get(id) ?? id;
 
 export function PersistenceBar() {
   const store = usePlanStore();
+
+  const missing = useMemo(
+    () => findMissingInputs(store.nodes, store.edges),
+    [store.nodes, store.edges],
+  );
+  const [showMissing, setShowMissing] = useState(false);
 
   async function handleSave() {
     const snapshot: PlanSnapshot = {
@@ -67,6 +79,51 @@ export function PersistenceBar() {
         value={store.planName}
         onChange={e => usePlanStore.setState({ planName: e.target.value })}
       />
+
+      <div className="flex gap-1 ml-4">
+        <button
+          onClick={() => store.openAddDialog()}
+          className="bg-violet-600 hover:bg-violet-500 text-white text-xs px-3 py-1 rounded transition-colors"
+        >
+          + Add node
+        </button>
+        <button
+          onClick={() => store.autoLayout()}
+          className="bg-slate-700 hover:bg-slate-600 border border-slate-500 text-white text-xs px-3 py-1 rounded transition-colors"
+        >
+          Auto layout
+        </button>
+
+        <div
+          className="relative flex items-center"
+          onMouseEnter={() => setShowMissing(true)}
+          onMouseLeave={() => setShowMissing(false)}
+        >
+          <span
+            className={`text-xs font-medium cursor-default ${
+              missing.length === 0 ? 'text-emerald-400' : 'text-amber-400'
+            }`}
+          >
+            {missing.length === 0
+              ? '✓ Valid'
+              : `${missing.length} empty input${missing.length === 1 ? '' : 's'}`}
+          </span>
+          {showMissing && missing.length > 0 && (
+            <div className="absolute left-0 top-full mt-1 z-20 bg-slate-900 border border-slate-600 rounded px-2.5 py-2 shadow-xl whitespace-nowrap">
+              <div className="text-slate-400 text-[10px] uppercase tracking-wide mb-1">Missing inputs</div>
+              <ul className="space-y-0.5">
+                {missing.map((m, i) => (
+                  <li key={`${m.nodeId}-${m.itemId}-${i}`} className="text-xs text-slate-200">
+                    <span className="text-amber-300">{itemName(m.itemId)}</span>
+                    <span className="text-slate-500"> → {itemName(m.consumerItemId)}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      </div>
+
       <div className="flex gap-1 ml-auto">
         {[
           { label: 'Save', action: handleSave },

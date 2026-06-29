@@ -3,6 +3,7 @@ import type { RawResourceConfig } from './types.ts';
 /** Extractor machine name per raw resource. */
 const MACHINE_NAMES: Record<string, string> = {
   gas_helium3: 'Helium Extractor',
+  ore_sulfur: 'Sulphur Extractor',
   fluid_crude_oil: 'Oil Pump',
 };
 const DEFAULT_MACHINE = 'Ore Extractor';

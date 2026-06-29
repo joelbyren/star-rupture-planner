@@ -300,12 +300,6 @@
     "stackSize": 1
   },
   {
-    "id": "data_points",
-    "name": "Data Points",
-    "type": "Component",
-    "stackSize": 10000
-  },
-  {
     "id": "sheet_heat_resistant",
     "name": "Heat-Resistant Sheet",
     "type": "Component",
