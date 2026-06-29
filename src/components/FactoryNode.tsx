@@ -1,126 +1,88 @@
+import { useLayoutEffect, useRef, useState } from 'react';
 import { Handle, Position } from '@xyflow/react';
 import type { NodeProps } from '@xyflow/react';
-import type { FactoryNodeType } from '../store/planStore.ts';
-import { usePlanStore } from '../store/planStore.ts';
-import recipesJson from '../data/recipes.json';
+import type { FactoryNodeType, FactoryNodeData } from '../store/planStore.ts';
+import { portNodeId } from '../store/planStore.ts';
 import itemsJson from '../data/items.json';
-import type { Recipe, Item, ResourcePurity, ExtractorVersion, RawResourceConfig } from '../engine/types.ts';
-import { calcSupplyRate, DEFAULT_RAW_CONFIG } from '../engine/rawResources.ts';
+import type { Item } from '../engine/types.ts';
+import { abbr, colorForType } from '../lib/itemVisual.ts';
 
-const ALL_RECIPES = recipesJson as Recipe[];
 const ALL_ITEMS = itemsJson as Item[];
+const itemById = (id: string | null) => (id ? ALL_ITEMS.find(i => i.id === id) : undefined);
 
-const PURITY_LABELS: { value: ResourcePurity; label: string }[] = [
-  { value: 'impure', label: 'Impure' },
-  { value: 'normal', label: 'Normal' },
-  { value: 'pure',   label: 'Pure' },
-];
-
-function configToKey(c: Pick<RawResourceConfig, 'purity' | 'extractorVersion'>) {
-  return `${c.purity}-${c.extractorVersion}`;
+function PortBadge({ itemId }: { itemId: string | null }) {
+  const item = itemById(itemId);
+  return (
+    <span
+      className={`inline-flex items-center justify-center w-5 h-[14px] rounded-sm border text-[8px] font-bold shrink-0 ${
+        itemId ? colorForType(item?.type) : 'bg-slate-600/40 text-slate-300 border-slate-500/50'
+      }`}
+      title={item?.name ?? (itemId ?? 'Unset')}
+    >
+      {itemId ? (item ? abbr(item) : '??') : '?'}
+    </span>
+  );
 }
-function keyToConfig(key: string): RawResourceConfig {
-  const [purity, extractorVersion] = key.split('-') as [ResourcePurity, ExtractorVersion];
-  return { purity, extractorVersion };
-}
 
-export function FactoryNode({ id, data }: NodeProps<FactoryNodeType>) {
-  const setActiveRecipe = usePlanStore(s => s.setActiveRecipe);
-  const activeRecipes = usePlanStore(s => s.activeRecipes);
-  const rawResourceConfigs = usePlanStore(s => s.rawResourceConfigs);
-  const setRawResourceConfig = usePlanStore(s => s.setRawResourceConfig);
+export function FactoryNode({ data }: NodeProps<FactoryNodeType>) {
+  const { inputs, outputs } = data as FactoryNodeData;
 
-  const item = ALL_ITEMS.find(i => i.id === data.itemId);
-  const result = data.result;
-  const variantRecipes = ALL_RECIPES.filter(r => r.outputItemId === data.itemId);
-  const hasVariants = variantRecipes.length > 1;
-
-  const activeRecipeId = activeRecipes[data.itemId] ?? variantRecipes[0]?.id;
-
-  const rawConfig = result?.isRaw ? (rawResourceConfigs[id] ?? DEFAULT_RAW_CONFIG) : null;
-  const supplyRate = rawConfig ? calcSupplyRate(data.itemId, rawConfig) : null;
-  const needed = result?.ratePerMin ?? 0;
-  const surplus = supplyRate !== null ? supplyRate - needed : null;
+  const inRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const outRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const [inTops, setInTops] = useState<number[]>([]);
+  const [outTops, setOutTops] = useState<number[]>([]);
+  useLayoutEffect(() => {
+    setInTops(inRefs.current.map(el => (el ? el.offsetTop + el.offsetHeight / 2 : 0)));
+    setOutTops(outRefs.current.map(el => (el ? el.offsetTop + el.offsetHeight / 2 : 0)));
+  }, [inputs.length, outputs.length]);
 
   return (
-    <div className="bg-slate-800 border border-slate-600 rounded-lg p-3 min-w-[190px] shadow-lg">
-      {!result?.isRaw && (
-        <Handle type="target" position={Position.Left} className="!bg-violet-500" />
-      )}
+    <div className="relative bg-slate-800 border-2 border-violet-700/70 rounded-md w-[170px] shadow-lg">
+      {inputs.map((p, i) => (
+        <Handle
+          key={p.id}
+          id={portNodeId('input', p.id)}
+          type="target"
+          position={Position.Left}
+          style={{ top: inTops[i] ?? 0 }}
+          className="!bg-violet-500 !w-2.5 !h-2.5"
+        />
+      ))}
+      {outputs.map((p, i) => (
+        <Handle
+          key={p.id}
+          id={portNodeId('output', p.id)}
+          type="source"
+          position={Position.Right}
+          style={{ top: outTops[i] ?? 0 }}
+          className="!bg-violet-500 !w-2.5 !h-2.5"
+        />
+      ))}
 
-      <div className="text-xs text-slate-400 mb-1 uppercase tracking-wider">
-        {result?.machine || '—'}
-        {result?.buildingTier && (
-          <span className="ml-1 text-violet-400">{result.buildingTier}</span>
-        )}
-        {rawConfig?.extractorVersion === 'V2' && (
-          <span className="ml-1 text-violet-400">V2</span>
-        )}
-      </div>
-
-      <div className="font-semibold text-white text-sm mb-1 truncate">
-        {item?.name ?? data.itemId}
-      </div>
-
-      <div className="text-violet-400 text-xs mb-2">
-        {result ? `${result.ratePerMin.toFixed(2)}/min` : `${data.ratePerMin}/min`}
-      </div>
-
-      {result && !result.isRaw && (
-        <div className="text-slate-300 text-xs mb-2">
-          Buildings: <span className="text-amber-400 font-medium">{result.buildingCount}</span>
-          {result.buildingCountExact !== result.buildingCount && (
-            <span className="text-slate-500 ml-1">({result.buildingCountExact.toFixed(2)} exact)</span>
-          )}
+      <div className="px-2 py-1.5">
+        <div className="text-[9px] text-violet-300 uppercase tracking-wide leading-tight">Factory</div>
+        <div className="font-semibold text-white text-xs truncate leading-tight" title={data.name}>
+          {data.name}
         </div>
-      )}
-      {result?.isRaw && rawConfig && (
-        <div className="mt-1 space-y-1">
-          <select
-            value={configToKey(rawConfig)}
-            onChange={e => setRawResourceConfig(id, keyToConfig(e.target.value))}
-            className="w-full bg-slate-700 border border-slate-500 rounded text-xs text-white px-1 py-0.5 cursor-pointer"
-          >
-            <optgroup label="V1">
-              {PURITY_LABELS.map(o => (
-                <option key={`${o.value}-V1`} value={`${o.value}-V1`}>{o.label}</option>
-              ))}
-            </optgroup>
-            {item?.type === 'Resource' && (
-              <optgroup label="V2">
-                {PURITY_LABELS.map(o => (
-                  <option key={`${o.value}-V2`} value={`${o.value}-V2`}>{o.label}</option>
-                ))}
-              </optgroup>
-            )}
-          </select>
+        <div className="text-[8px] text-slate-500 italic leading-tight mb-1">double-click to open</div>
 
-          <div className={`text-xs font-medium pt-0.5 ${surplus !== null && surplus >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-            {supplyRate?.toFixed(1)}/min supply
-            {surplus !== null && (
-              <span className="text-slate-400 font-normal ml-1">
-                ({surplus >= 0 ? '+' : ''}{surplus.toFixed(1)} vs needed)
-              </span>
-            )}
+        <div className="flex justify-between gap-2">
+          <div className="space-y-px min-w-0">
+            {inputs.map((p, i) => (
+              <div key={p.id} ref={el => { inRefs.current[i] = el; }} className="flex items-center gap-1 leading-none">
+                <PortBadge itemId={p.itemId} />
+              </div>
+            ))}
+          </div>
+          <div className="space-y-px min-w-0">
+            {outputs.map((p, i) => (
+              <div key={p.id} ref={el => { outRefs.current[i] = el; }} className="flex items-center gap-1 leading-none justify-end">
+                <PortBadge itemId={p.itemId} />
+              </div>
+            ))}
           </div>
         </div>
-      )}
-
-      {hasVariants && (
-        <select
-          className="w-full bg-slate-700 border border-slate-500 rounded text-xs text-white px-1 py-0.5 mt-1 cursor-pointer"
-          value={activeRecipeId}
-          onChange={e => setActiveRecipe(data.itemId, e.target.value)}
-        >
-          {variantRecipes.map(r => (
-            <option key={r.id} value={r.id}>
-              {r.machine} — {r.outputRatePerMin}/min
-            </option>
-          ))}
-        </select>
-      )}
-
-      <Handle type="source" position={Position.Right} className="!bg-violet-500" />
+      </div>
     </div>
   );
 }

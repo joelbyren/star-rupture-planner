@@ -1,7 +1,8 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { usePlanStore, type ItemNodeType } from './planStore.ts';
 
-const reset = () => usePlanStore.setState({ nodes: [], edges: [] });
+const reset = () =>
+  usePlanStore.setState({ rootGraph: { nodes: [], edges: [] }, viewPath: [], nodes: [], edges: [] });
 const idFor = (itemId: string) =>
   (usePlanStore.getState().nodes.find(n => n.type === 'itemNode' && n.data.itemId === itemId)!).id;
 const balanceFor = (itemId: string) =>

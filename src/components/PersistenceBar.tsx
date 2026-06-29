@@ -17,17 +17,17 @@ export function PersistenceBar() {
   );
   const [showMissing, setShowMissing] = useState(false);
 
-  async function handleSave() {
-    const snapshot: PlanSnapshot = {
+  function buildSnapshot(): PlanSnapshot {
+    return {
       planId: store.planId,
       planName: store.planName,
-      activeRecipes: store.activeRecipes,
-      targetItemId: store.targetItemId,
-      targetRatePerMin: store.targetRatePerMin,
-      nodes: store.nodes,
-      edges: store.edges,
+      nodes: store.rootGraph.nodes,
+      edges: store.rootGraph.edges,
     };
-    await db.plans.put(snapshot);
+  }
+
+  async function handleSave() {
+    await db.plans.put(buildSnapshot());
     alert('Plan saved.');
   }
 
@@ -39,15 +39,7 @@ export function PersistenceBar() {
   }
 
   function handleExport() {
-    const snapshot: PlanSnapshot = {
-      planId: store.planId,
-      planName: store.planName,
-      activeRecipes: store.activeRecipes,
-      targetItemId: store.targetItemId,
-      targetRatePerMin: store.targetRatePerMin,
-      nodes: store.nodes,
-      edges: store.edges,
-    };
+    const snapshot = buildSnapshot();
     const blob = new Blob([JSON.stringify(snapshot, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');

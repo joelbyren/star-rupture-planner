@@ -2,7 +2,6 @@ import { useLayoutEffect, useRef, useState } from 'react';
 import { Handle, Position } from '@xyflow/react';
 import type { NodeProps } from '@xyflow/react';
 import type { ItemNodeType } from '../store/planStore.ts';
-import { usePlanStore } from '../store/planStore.ts';
 import recipesJson from '../data/recipes.json';
 import itemsJson from '../data/items.json';
 import type { Recipe, Item } from '../engine/types.ts';
@@ -16,9 +15,7 @@ function itemById(id: string): Item | undefined {
   return ALL_ITEMS.find(i => i.id === id);
 }
 
-export function ItemNode({ id, data }: NodeProps<ItemNodeType>) {
-  const openConfig = usePlanStore(s => s.openConfig);
-
+export function ItemNode({ data }: NodeProps<ItemNodeType>) {
   const item = itemById(data.itemId);
   const recipe = data.recipeId ? ALL_RECIPES.find(r => r.id === data.recipeId) : undefined;
   const balance = data.balance;
@@ -39,10 +36,7 @@ export function ItemNode({ id, data }: NodeProps<ItemNodeType>) {
   const [showTip, setShowTip] = useState(false);
 
   return (
-    <div
-      className="relative bg-slate-800 border border-slate-600 rounded-md w-[150px] shadow-lg"
-      onDoubleClick={e => { e.stopPropagation(); openConfig(id); }}
-    >
+    <div className="relative bg-slate-800 border border-slate-600 rounded-md w-[150px] shadow-lg">
       {/* Input handles — one per recipe ingredient (none for raw resources) */}
       {inputs.map((inp, i) => (
         <Handle

@@ -21,12 +21,6 @@ export interface RecipeIngredient {
   quantity: number;
 }
 
-/** RateSpec is kept for SubFactory ports, which deal in rates not per-craft quantities. */
-export interface RateSpec {
-  itemId: string;
-  ratePerMin: number;
-}
-
 // TODO: recipe variants (V1/V2) not present in this source — site models one recipe per item
 export interface Recipe {
   id: string;
@@ -44,45 +38,14 @@ export interface Recipe {
 }
 
 // ------------------------------------------------------------------
-// SubFactory types
-// A SubFactory is its own graph document. In a parent graph it renders
-// as a single node whose handles are the declared inputs/outputs.
+// Factory (sub-factory) types
+// A Factory renders as a single node in its parent graph whose handles
+// are its declared input/output ports. Its inner graph is stored on the
+// node's data (see store). A port's item may be UNSET (null) — shown "?".
 // ------------------------------------------------------------------
 
-export interface SubFactoryPort {
-  itemId: string;
-  ratePerMin: number;
-}
-
-export interface SubFactory {
+export interface FactoryPort {
   id: string;
-  name: string;
-  /** Items consumed from the parent graph */
-  inputs: SubFactoryPort[];
-  /** Items produced into the parent graph */
-  outputs: SubFactoryPort[];
-  /** The inner graph (stored as its own plan document id) */
-  innerPlanId: string | null;
-}
-
-// ------------------------------------------------------------------
-// Calculation results
-// NOTE: calc engine needs updating — Recipe.inputs now use quantity
-// not ratePerMin. Input rate = ingredient.quantity * recipe.outputRatePerMin
-// / outputIngredient.quantity.
-// ------------------------------------------------------------------
-
-export interface NodeResult {
-  recipeId: string;
-  itemId: string;
-  machine: string;
-  buildingTier: BuildingTier | null;
-  ratePerMin: number;
-  /** How many buildings are required (ceiling of fractional count) */
-  buildingCount: number;
-  /** Exact (possibly fractional) building count before ceiling */
-  buildingCountExact: number;
-  inputs: NodeResult[];
-  /** True for raw resources that have no production recipe (ores, etc.) */
-  isRaw?: boolean;
+  /** null = UNSET (accepts/produces anything; rendered as "?"). */
+  itemId: string | null;
 }

@@ -37,6 +37,7 @@ export function AddNodeDialog() {
   const filterInputItemId = usePlanStore(s => s.addDialogFilterInputItemId);
   const closeAddDialog = usePlanStore(s => s.closeAddDialog);
   const addNode = usePlanStore(s => s.addNode);
+  const addFactoryNode = usePlanStore(s => s.addFactoryNode);
 
   // When dragged off an output handle, only offer items that can consume that
   // output (i.e. items with a recipe listing it as an input).
@@ -84,9 +85,29 @@ export function AddNodeDialog() {
     closeAddDialog();
   }
 
+  function addFactory() {
+    addFactoryNode(pos ?? undefined);
+    reset();
+  }
+
   return (
     <Modal open={open} title="Add node" onClose={close}>
       <div className="space-y-3">
+        <button
+          onClick={addFactory}
+          className="w-full flex items-center gap-2 px-2 py-1.5 rounded bg-violet-600/20 border border-violet-600/60 text-violet-200 hover:bg-violet-600/30 text-sm"
+        >
+          <span className="inline-flex items-center justify-center w-5 h-5 rounded bg-violet-600 text-white text-xs font-bold">F</span>
+          <span className="font-medium">Factory</span>
+          <span className="text-xs text-violet-300/70 ml-auto">sub-diagram</span>
+        </button>
+
+        <div className="flex items-center gap-2">
+          <div className="flex-1 h-px bg-slate-700" />
+          <span className="text-[10px] uppercase tracking-wide text-slate-500">or item</span>
+          <div className="flex-1 h-px bg-slate-700" />
+        </div>
+
         <div>
           <label className="block text-xs text-slate-400 mb-1">Item</label>
           <Combobox

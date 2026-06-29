@@ -1,35 +1,26 @@
 import { create } from 'zustand';
 import type { Node, Edge, Connection } from '@xyflow/react';
-import type { NodeResult, RawResourceConfig } from '../engine/types.ts';
-import { calculateFromTarget } from '../engine/calculate.ts';
+import type { RawResourceConfig, FactoryPort, Recipe } from '../engine/types.ts';
 import { DEFAULT_RAW_CONFIG } from '../engine/rawResources.ts';
-import { balanceGraph, type BalanceResult } from '../engine/balanceGraph.ts';
+import {
+  balanceTree,
+  type BalanceResult,
+  type FactoryBalanceResult,
+  type AnyBalanceResult,
+  type BalanceNodeInput,
+  type BalanceEdge,
+  type FactoryDef,
+  type FactoryPortDef,
+} from '../engine/balanceGraph.ts';
 import recipesJson from '../data/recipes.json';
-import type { Recipe } from '../engine/types.ts';
 
 const ALL_RECIPES = recipesJson as Recipe[];
 
 // ------------------------------------------------------------------
-// Domain model — kept separate from React Flow canvas state
+// Node data shapes
 // ------------------------------------------------------------------
 
-export interface FactoryNodeData {
-  itemId: string;
-  ratePerMin: number;
-  /** recipeId override; undefined = use first matching recipe */
-  activeRecipeId?: string;
-  /** Computed result (re-derived whenever inputs change) */
-  result: NodeResult | null;
-  [key: string]: unknown;
-}
-
-/** React Flow node type for factory nodes (legacy push-model — kept for old saved plans) */
-export type FactoryNodeType = Node<FactoryNodeData, 'factoryNode'>;
-
-// ------------------------------------------------------------------
-// Universal manual-graph node (the primary node going forward)
-// ------------------------------------------------------------------
-
+/** A production node: a recipe build, or a raw extractor (recipeId null). */
 export interface ItemNodeData {
   itemId: string;
   /** Chosen recipe/version; null = raw resource. Fixed at creation. */
@@ -41,62 +32,97 @@ export interface ItemNodeData {
   balance?: BalanceResult;
   [key: string]: unknown;
 }
-
 export type ItemNodeType = Node<ItemNodeData, 'itemNode'>;
 
-/** Any node currently on the canvas (new itemNode or legacy factoryNode). */
-export type AnyNode = ItemNodeType | FactoryNodeType;
-
-export interface PlanState {
-  // Domain
-  planId: string;
-  planName: string;
-  /** Maps itemId → recipeId (the user's active recipe choice per item) */
-  activeRecipes: Record<string, string>;
-  /** The root target: what the user wants to produce */
-  targetItemId: string;
-  targetRatePerMin: number;
-  /** Computed result tree, derived from target + activeRecipes */
-  result: NodeResult | null;
-
-  // React Flow canvas state
+/** The currently-viewed graph (or a factory's inner graph). Real nodes only. */
+export interface InnerGraph {
   nodes: AnyNode[];
   edges: Edge[];
+}
 
-  /** Per-node extractor config for raw resource nodes, keyed by node pathId (legacy) */
-  rawResourceConfigs: Record<string, RawResourceConfig>;
+/** A Factory (sub-factory): a container node with input/output ports and an inner graph. */
+export interface FactoryNodeData {
+  name: string;
+  inputs: FactoryPort[];
+  outputs: FactoryPort[];
+  inner: InnerGraph;
+  /** Latest demand-driven balance (per-port rates + scaled inner result). */
+  balance?: FactoryBalanceResult;
+  [key: string]: unknown;
+}
+export type FactoryNodeType = Node<FactoryNodeData, 'factoryNode'>;
 
-  // --- Dialog UI state (manual builder) ---
+/** Nodes that live in (and persist with) a graph. */
+export type AnyNode = ItemNodeType | FactoryNodeType;
+
+/** Synthesized, non-persisted port node rendered inside a factory's inner view. */
+export interface PortNodeData {
+  portId: string;
+  side: 'input' | 'output';
+  itemId: string | null;
+  [key: string]: unknown;
+}
+export type PortNodeType = Node<PortNodeData, 'inputPort' | 'outputPort'>;
+
+/** What <ReactFlow> renders: stored nodes, plus synthesized port nodes inside a factory. */
+export type ViewNode = AnyNode | PortNodeType;
+
+// ------------------------------------------------------------------
+// State
+// ------------------------------------------------------------------
+
+/** Origin handle of an in-progress drag-to-create. */
+export interface PendingConnect {
+  fromNodeId: string;
+  fromHandleId: string | null;
+  fromHandleType: 'source' | 'target';
+}
+
+export interface PlanState {
+  planId: string;
+  planName: string;
+
+  /** Authoritative root graph (the tree of all nodes/edges, factories nest via data.inner). */
+  rootGraph: InnerGraph;
+  /** Factory node ids from root to the graph currently on screen ([] = root). */
+  viewPath: string[];
+
+  /** Projection of the graph at viewPath (+ synthesized ports). Bound to <ReactFlow>. */
+  nodes: ViewNode[];
+  edges: Edge[];
+
+  // Dialog / UI state
   addDialogOpen: boolean;
   addDialogPos: { x: number; y: number } | null;
-  /** Pre-selected item for the add dialog (e.g. when dragged off an input handle). */
   addDialogPrefillItemId: string | null;
-  /** Restrict the add dialog to items whose recipe can consume this item as an input
-   *  (set when dragged off an output handle). */
   addDialogFilterInputItemId: string | null;
-  /** A drag-to-create in progress: connect the new node to this origin handle. */
   pendingConnect: PendingConnect | null;
   editingNodeId: string | null;
-  /** Bumped by autoLayout so the canvas can re-fit the view after repositioning. */
+  portDialogPortId: string | null;
+  /** Bumped on layout/navigation so the canvas can re-fit the view. */
   layoutTick: number;
 
-  // Legacy push-model actions (dormant — no UI drives them currently)
-  setTarget: (itemId: string, ratePerMin: number) => void;
-  setActiveRecipe: (itemId: string, recipeId: string) => void;
-  setRawResourceConfig: (pathId: string, config: Partial<RawResourceConfig>) => void;
-
   // Canvas plumbing
-  setNodes: (nodes: AnyNode[]) => void;
+  setNodes: (nodes: ViewNode[]) => void;
   setEdges: (edges: Edge[]) => void;
   loadPlan: (snapshot: PlanSnapshot) => void;
 
-  // Manual builder actions
+  // Builder actions (operate on the currently-viewed graph)
   addNode: (itemId: string, recipeId: string | null, position?: { x: number; y: number }) => void;
+  addFactoryNode: (position?: { x: number; y: number }) => void;
   removeNode: (id: string) => void;
   setNodeRawConfig: (id: string, patch: Partial<RawResourceConfig>) => void;
   connectNodes: (connection: Connection) => void;
-  /** Re-arrange the current graph into a clean layered layout. */
   autoLayout: () => void;
+
+  // Factory navigation + ports
+  enterFactory: (id: string) => void;
+  exitTo: (index: number) => void;
+  addInputPort: (itemId?: string | null) => string;
+  addOutputPort: (itemId?: string | null) => string;
+  setPortItem: (portId: string, itemId: string | null) => void;
+  removePort: (portId: string) => void;
+  renameFactory: (name: string) => void;
 
   // Dialog actions
   openAddDialog: (opts?: {
@@ -108,178 +134,274 @@ export interface PlanState {
   closeAddDialog: () => void;
   openConfig: (id: string) => void;
   closeConfig: () => void;
+  openPortDialog: (portId: string) => void;
+  closePortDialog: () => void;
 }
 
-/** Origin handle of an in-progress drag-to-create. */
-export interface PendingConnect {
-  fromNodeId: string;
-  fromHandleId: string | null;
-  fromHandleType: 'source' | 'target';
-}
-
-// ------------------------------------------------------------------
-// Snapshot type for import/export
-// ------------------------------------------------------------------
-
+/** Trimmed snapshot for import/export & IndexedDB. Inner graphs ride along inside node data. */
 export interface PlanSnapshot {
   planId: string;
   planName: string;
-  activeRecipes: Record<string, string>;
-  rawResourceConfigs?: Record<string, RawResourceConfig>;
-  targetItemId: string;
-  targetRatePerMin: number;
   nodes: AnyNode[];
   edges: Edge[];
 }
 
 // ------------------------------------------------------------------
-// Helpers
+// Type guards
 // ------------------------------------------------------------------
 
-function recompute(
-  targetItemId: string,
-  targetRatePerMin: number,
-  activeRecipes: Record<string, string>,
-): NodeResult | null {
-  if (!targetItemId || targetRatePerMin <= 0) return null;
-  return calculateFromTarget(targetItemId, targetRatePerMin, {
-    recipes: ALL_RECIPES,
-    activeRecipes,
-  });
-}
-
-const NODE_W = 240;
-const NODE_H = 130;
-
-function treeMaxDepth(node: NodeResult): number {
-  if (node.inputs.length === 0) return 0;
-  return 1 + Math.max(...node.inputs.map(treeMaxDepth));
-}
-
-function resultToNodes(result: NodeResult | null, existing: AnyNode[]): FactoryNodeType[] {
-  if (!result) return [];
-
-  const posMap = new Map(existing.map(n => [n.id, n.position]));
-  const nodes: FactoryNodeType[] = [];
-  let leafIndex = 0;
-  const maxDepth = treeMaxDepth(result);
-
-  // Path-based IDs (e.g. "glass/silica/sand") are unique per tree position
-  // and stable across recomputations so saved positions survive recipe changes.
-  // X is flipped so raw materials sit on the left and the end product on the right.
-  function walk(node: NodeResult, depth: number, pathId: string) {
-    const startLeaf = leafIndex;
-    for (const child of node.inputs) walk(child, depth + 1, `${pathId}/${child.itemId}`);
-    const endLeaf = node.inputs.length === 0 ? ++leafIndex : leafIndex;
-
-    const savedPos = posMap.get(pathId);
-    const yCentered = ((startLeaf + endLeaf - 1) / 2) * NODE_H;
-    nodes.push({
-      id: pathId,
-      type: 'factoryNode',
-      position: savedPos ?? { x: (maxDepth - depth) * NODE_W, y: yCentered },
-      data: {
-        itemId: node.itemId,
-        ratePerMin: node.ratePerMin,
-        result: node,
-      },
-    });
-  }
-
-  walk(result, 0, result.itemId);
-  return nodes;
-}
-
-function resultToEdges(result: NodeResult | null, nodes: FactoryNodeType[]): Edge[] {
-  if (!result || nodes.length < 2) return [];
-
-  const edges: Edge[] = [];
-
-  function walk(node: NodeResult, depth: number, pathId: string, parentId: string | null) {
-    if (parentId) {
-      edges.push({
-        id: `e-${parentId}-${pathId}`,
-        source: pathId,
-        target: parentId,
-        animated: true,
-      });
-    }
-    for (const child of node.inputs) walk(child, depth + 1, `${pathId}/${child.itemId}`, pathId);
-  }
-
-  walk(result, 0, result.itemId, null);
-  return edges;
-}
-
-// ------------------------------------------------------------------
-// Manual-builder helpers
-// ------------------------------------------------------------------
-
-function isItemNode(n: AnyNode): n is ItemNodeType {
+export function isItemNode(n: { type?: string }): n is ItemNodeType {
   return n.type === 'itemNode';
 }
+export function isFactoryNode(n: { type?: string }): n is FactoryNodeType {
+  return n.type === 'factoryNode';
+}
+function isPortNode(n: { type?: string }): boolean {
+  return n.type === 'inputPort' || n.type === 'outputPort';
+}
 
-/** Run the balance engine over the itemNodes and write the result back into each node's data. */
-function withBalance(nodes: AnyNode[], edges: Edge[]): AnyNode[] {
-  const itemNodes = nodes.filter(isItemNode);
-  if (itemNodes.length === 0) return nodes;
+// ------------------------------------------------------------------
+// Port geometry / ids
+// ------------------------------------------------------------------
 
-  const balance = balanceGraph(
-    itemNodes.map(n => ({ id: n.id, itemId: n.data.itemId, recipeId: n.data.recipeId })),
-    edges.map(e => ({ source: e.source, target: e.target, targetHandle: e.targetHandle })),
-    ALL_RECIPES,
-  );
+const PORT_X_LEFT = -360;
+const PORT_X_RIGHT = 360;
+const PORT_ROW_H = 90;
 
-  return nodes.map(n =>
-    isItemNode(n) ? { ...n, data: { ...n.data, balance: balance[n.id] } } : n,
-  );
+/** Stable synthesized port-node id (and outer handle id) for a port. */
+export function portNodeId(side: 'input' | 'output', portId: string): string {
+  return `port-${side === 'input' ? 'in' : 'out'}-${portId}`;
+}
+
+function synthesizePorts(data: FactoryNodeData): PortNodeType[] {
+  const mk = (port: FactoryPort, side: 'input' | 'output', i: number, count: number): PortNodeType => ({
+    id: portNodeId(side, port.id),
+    type: side === 'input' ? 'inputPort' : 'outputPort',
+    position: {
+      x: side === 'input' ? PORT_X_LEFT : PORT_X_RIGHT,
+      y: (i - (count - 1) / 2) * PORT_ROW_H,
+    },
+    deletable: false,
+    data: { portId: port.id, side, itemId: port.itemId },
+  });
+  return [
+    ...data.inputs.map((p, i) => mk(p, 'input', i, data.inputs.length)),
+    ...data.outputs.map((p, i) => mk(p, 'output', i, data.outputs.length)),
+  ];
+}
+
+function stripPortNodes(nodes: ViewNode[]): AnyNode[] {
+  return nodes.filter(n => !isPortNode(n)) as AnyNode[];
+}
+
+// ------------------------------------------------------------------
+// Path read / write-back over the nested graph tree
+// ------------------------------------------------------------------
+
+function graphAt(root: InnerGraph, path: string[]): InnerGraph {
+  let g = root;
+  for (const id of path) {
+    const fac = g.nodes.find(n => n.id === id && isFactoryNode(n)) as FactoryNodeType | undefined;
+    if (!fac) return g; // broken path — best effort
+    g = fac.data.inner;
+  }
+  return g;
+}
+
+function setGraphAt(root: InnerGraph, path: string[], next: InnerGraph): InnerGraph {
+  if (path.length === 0) return next;
+  const [head, ...rest] = path;
+  return {
+    ...root,
+    nodes: root.nodes.map(n =>
+      n.id === head && isFactoryNode(n)
+        ? { ...n, data: { ...n.data, inner: setGraphAt(n.data.inner, rest, next) } }
+        : n,
+    ),
+  };
+}
+
+/** The factory node whose inner graph is currently being viewed (null at root). */
+function currentFactory(root: InnerGraph, path: string[]): FactoryNodeType | null {
+  if (path.length === 0) return null;
+  const parent = graphAt(root, path.slice(0, -1));
+  const fac = parent.nodes.find(n => n.id === path[path.length - 1] && isFactoryNode(n));
+  return (fac as FactoryNodeType) ?? null;
+}
+
+/** Build what <ReactFlow> renders for a given path: stored nodes + synthesized ports. */
+function project(root: InnerGraph, path: string[]): { nodes: ViewNode[]; edges: Edge[] } {
+  const g = graphAt(root, path);
+  if (path.length === 0) return { nodes: g.nodes, edges: g.edges };
+  const fac = currentFactory(root, path);
+  const ports = fac ? synthesizePorts(fac.data) : [];
+  return { nodes: [...ports, ...g.nodes], edges: g.edges };
+}
+
+// ------------------------------------------------------------------
+// Balance helpers — the whole tree is balanced top-down from the root so that
+// each factory's inner graph is demand-driven by its parent (the externally
+// demanded output rate), then written back into every nested node.
+// ------------------------------------------------------------------
+
+function toBalanceEdge(e: Edge): BalanceEdge {
+  return { source: e.source, target: e.target, sourceHandle: e.sourceHandle, targetHandle: e.targetHandle };
+}
+
+/** Build the engine FactoryDef for a factory node (recursively for nested factories). */
+function buildFactoryDef(fac: FactoryNodeType): FactoryDef {
+  const inner = fac.data.inner;
+  // Input ports are modeled as raw "input-port" nodes: their pulled supply = the requirement.
+  const inputPortNodes: BalanceNodeInput[] = fac.data.inputs.map(p => ({
+    id: portNodeId('input', p.id),
+    itemId: p.itemId ?? '',
+    recipeId: null,
+  }));
+  const innerNodes: BalanceNodeInput[] = [...inner.nodes.map(toBalanceNode), ...inputPortNodes];
+  const innerEdges = inner.edges.map(toBalanceEdge);
+
+  const outputs: FactoryPortDef[] = fac.data.outputs.map(p => {
+    const handleId = portNodeId('output', p.id);
+    // The inner node feeding this output port is anchored at the port's external demand.
+    const producer = inner.edges.find(e => e.target === handleId)?.source;
+    return { portId: p.id, itemId: p.itemId, handleId, innerNodeId: producer };
+  });
+  const inputs: FactoryPortDef[] = fac.data.inputs.map(p => ({
+    portId: p.id,
+    itemId: p.itemId,
+    handleId: portNodeId('input', p.id),
+    innerNodeId: portNodeId('input', p.id),
+  }));
+  return { inputs, outputs, inner: { nodes: innerNodes, edges: innerEdges } };
+}
+
+function toBalanceNode(n: AnyNode): BalanceNodeInput {
+  if (isFactoryNode(n)) {
+    return { id: n.id, itemId: '', recipeId: null, kind: 'factory', factory: buildFactoryDef(n) };
+  }
+  return { id: n.id, itemId: n.data.itemId, recipeId: n.data.recipeId };
+}
+
+/** Write balance results into every node, recursing into factory inner graphs. */
+function writeBalance(g: InnerGraph, balance: Record<string, AnyBalanceResult>): InnerGraph {
+  return {
+    edges: g.edges,
+    nodes: g.nodes.map(n => {
+      const r = balance[n.id];
+      if (isItemNode(n)) return { ...n, data: { ...n.data, balance: r as BalanceResult | undefined } };
+      if (isFactoryNode(n)) {
+        const fr = r as FactoryBalanceResult | undefined;
+        return {
+          ...n,
+          data: { ...n.data, balance: fr, inner: writeBalance(n.data.inner, fr?.inner ?? {}) },
+        };
+      }
+      return n;
+    }),
+  };
+}
+
+/** Balance the entire root tree (demand-driven through every factory) and write results back. */
+function rebalanceRoot(g: InnerGraph): InnerGraph {
+  const balance = balanceTree(g.nodes.map(toBalanceNode), g.edges.map(toBalanceEdge), ALL_RECIPES);
+  return writeBalance(g, balance);
+}
+
+// ------------------------------------------------------------------
+// Edge building / validation (handles item, factory and port endpoints)
+// ------------------------------------------------------------------
+
+/** The item a source handle emits. */
+function sourceItemId(node: ViewNode, sourceHandle: string | null | undefined): string | null {
+  if (node.type === 'itemNode') return (node as ItemNodeType).data.itemId;
+  if (node.type === 'inputPort') return (node as PortNodeType).data.itemId; // inner input port is a SOURCE
+  if (node.type === 'factoryNode') {
+    const fac = node as FactoryNodeType;
+    return fac.data.outputs.find(p => portNodeId('output', p.id) === sourceHandle)?.itemId ?? null;
+  }
+  return null;
+}
+
+/** The item a target handle accepts. */
+function targetItemId(node: ViewNode, targetHandle: string | null | undefined): string | null {
+  if (node.type === 'itemNode') return targetHandle ?? null; // handle id == ingredient itemId
+  if (node.type === 'outputPort') return (node as PortNodeType).data.itemId; // inner output port is a SINK
+  if (node.type === 'factoryNode') {
+    const fac = node as FactoryNodeType;
+    return fac.data.inputs.find(p => portNodeId('input', p.id) === targetHandle)?.itemId ?? null;
+  }
+  return null;
 }
 
 /**
- * Build a validated producer→consumer edge: the source node's output item must
- * match the consumer's input handle. Returns null if invalid.
+ * Validated producer→consumer edge. Rejected only when both endpoints resolve to
+ * different concrete items (a null/UNSET side accepts anything).
  */
 function buildEdge(
-  nodes: AnyNode[],
+  nodes: ViewNode[],
   source: string,
   target: string,
+  sourceHandle: string | null | undefined,
   targetHandle: string | null | undefined,
 ): Edge | null {
-  const src = nodes.find(n => n.id === source);
-  if (!src || !isItemNode(src)) return null;
-  if (targetHandle && src.data.itemId !== targetHandle) return null;
+  const s = nodes.find(n => n.id === source);
+  const t = nodes.find(n => n.id === target);
+  if (!s || !t) return null;
+  const si = sourceItemId(s, sourceHandle);
+  const ti = targetItemId(t, targetHandle);
+  if (si != null && ti != null && si !== ti) return null;
   return {
-    id: `e-${source}-${target}-${targetHandle ?? src.data.itemId}`,
+    id: `e-${source}-${target}-${sourceHandle ?? ''}-${targetHandle ?? si ?? ''}`,
     source,
     target,
+    sourceHandle: sourceHandle ?? undefined,
     targetHandle: targetHandle ?? undefined,
     animated: true,
   };
 }
 
-/** Highest zIndex currently on the canvas (so new nodes can stack on top). */
+/** True if an edge still connects two existing, item-compatible handles. */
+function edgeValid(nodes: ViewNode[], e: Edge): boolean {
+  const s = nodes.find(n => n.id === e.source);
+  const t = nodes.find(n => n.id === e.target);
+  if (!s || !t) return false;
+  const si = sourceItemId(s, e.sourceHandle);
+  const ti = targetItemId(t, e.targetHandle);
+  return !(si != null && ti != null && si !== ti);
+}
+
+/** Build the auto-connect edge for a drag-to-create against the origin handle. */
+function buildPendingEdge(nodes: ViewNode[], newNodeId: string, pc: PendingConnect): Edge | null {
+  if (pc.fromHandleType === 'target') {
+    // Dragged off an input handle → the new node produces that ingredient for the origin.
+    return buildEdge(nodes, newNodeId, pc.fromNodeId, undefined, pc.fromHandleId);
+  }
+  // Dragged off an output handle → the origin feeds an input of the new node.
+  const origin = nodes.find(n => n.id === pc.fromNodeId);
+  const originItem = origin ? sourceItemId(origin, pc.fromHandleId) : null;
+  return buildEdge(nodes, pc.fromNodeId, newNodeId, pc.fromHandleId ?? undefined, originItem ?? undefined);
+}
+
+/** Highest zIndex among real nodes (so new nodes stack on top). */
 function topZ(nodes: AnyNode[]): number {
   return nodes.reduce((max, n) => Math.max(max, n.zIndex ?? 0), 0);
 }
 
-/** A recipe ingredient on a node that has no producer edge feeding it. */
+// ------------------------------------------------------------------
+// Missing-input detection (per current view)
+// ------------------------------------------------------------------
+
 export interface MissingInput {
   nodeId: string;
-  /** Item produced by the node that's missing the input. */
   consumerItemId: string;
-  /** The ingredient itemId that isn't being supplied. */
   itemId: string;
 }
 
-/**
- * Find every recipe input handle with no incoming edge. An empty list means the
- * graph is fully fed (every recipe node has all its ingredients connected).
- */
-export function findMissingInputs(nodes: AnyNode[], edges: Edge[]): MissingInput[] {
+export function findMissingInputs(nodes: ViewNode[], edges: Edge[]): MissingInput[] {
   const recipeById = new Map(ALL_RECIPES.map(r => [r.id, r]));
   const missing: MissingInput[] = [];
   for (const n of nodes) {
-    if (!isItemNode(n) || n.data.recipeId === null) continue; // raw nodes have no inputs
+    if (!isItemNode(n) || n.data.recipeId === null) continue;
     const recipe = recipeById.get(n.data.recipeId);
     if (!recipe) continue;
     for (const inp of recipe.inputs) {
@@ -290,18 +412,13 @@ export function findMissingInputs(nodes: AnyNode[], edges: Edge[]): MissingInput
   return missing;
 }
 
-// Layered auto-layout spacing.
+// ------------------------------------------------------------------
+// Layered auto-layout (producer→consumer; raw on the left, products on the right)
+// ------------------------------------------------------------------
+
 const LAYOUT_COL_W = 240;
 const LAYOUT_ROW_H = 120;
 
-/**
- * Arrange nodes into a clean layered (Sugiyama-style) layout.
- * Edges point producer→consumer, so a node's "rank" is its longest-path
- * distance from a final product (a node with no consumers). Higher rank sits
- * further left, so raw materials land on the left and end products on the right
- * — matching the push-model layout convention. Within each layer, nodes are
- * ordered by the barycenter of their neighbours to reduce edge crossings.
- */
 function layoutNodes(nodes: AnyNode[], edges: Edge[]): AnyNode[] {
   if (nodes.length === 0) return nodes;
 
@@ -315,13 +432,12 @@ function layoutNodes(nodes: AnyNode[], edges: Edge[]): AnyNode[] {
     producers.get(e.target)!.push(e.source);
   }
 
-  // rank = longest path to a sink (node with no consumers); memoized DFS.
   const rank = new Map<string, number>();
   const visiting = new Set<string>();
   function computeRank(id: string): number {
     const cached = rank.get(id);
     if (cached !== undefined) return cached;
-    if (visiting.has(id)) return 0; // cycle guard
+    if (visiting.has(id)) return 0;
     visiting.add(id);
     let r = 0;
     for (const c of consumers.get(id)!) r = Math.max(r, computeRank(c) + 1);
@@ -335,8 +451,6 @@ function layoutNodes(nodes: AnyNode[], edges: Edge[]): AnyNode[] {
   const layers: string[][] = Array.from({ length: maxRank + 1 }, () => []);
   for (const n of nodes) layers[rank.get(n.id)!].push(n.id);
 
-  // Barycenter ordering: relax each layer toward the mean position of its
-  // neighbours over a few sweeps to untangle crossings.
   const order = new Map<string, number>();
   layers.forEach(layer => layer.forEach((id, i) => order.set(id, i)));
   for (let iter = 0; iter < 8; iter++) {
@@ -366,156 +480,290 @@ function layoutNodes(nodes: AnyNode[], edges: Edge[]): AnyNode[] {
 // Store
 // ------------------------------------------------------------------
 
-export const usePlanStore = create<PlanState>((set, get) => ({
-  planId: crypto.randomUUID(),
-  planName: 'New Plan',
-  activeRecipes: {},
-  rawResourceConfigs: {},
-  targetItemId: 'comp_rotor',
-  targetRatePerMin: 10,
-  result: null,
-  nodes: [],
-  edges: [],
+const EMPTY: InnerGraph = { nodes: [], edges: [] };
 
-  addDialogOpen: false,
-  addDialogPos: null,
-  addDialogPrefillItemId: null,
-  addDialogFilterInputItemId: null,
-  pendingConnect: null,
-  editingNodeId: null,
-  layoutTick: 0,
+export const usePlanStore = create<PlanState>((set, get) => {
+  /** Apply a mutation to the currently-viewed graph, rebalance, write back, re-project. */
+  function commitViewedGraph(mutate: (g: InnerGraph) => InnerGraph) {
+    const { rootGraph, viewPath } = get();
+    const mutated = mutate(graphAt(rootGraph, viewPath));
+    const nextRoot = rebalanceRoot(setGraphAt(rootGraph, viewPath, mutated));
+    const view = project(nextRoot, viewPath);
+    set({ rootGraph: nextRoot, nodes: view.nodes, edges: view.edges });
+  }
 
-  setTarget(itemId, ratePerMin) {
-    const { activeRecipes, nodes } = get();
-    const result = recompute(itemId, ratePerMin, activeRecipes);
-    const newNodes = resultToNodes(result, nodes);
-    const edges = resultToEdges(result, newNodes);
-    set({ targetItemId: itemId, targetRatePerMin: ratePerMin, result, nodes: newNodes, edges });
-  },
-
-  setActiveRecipe(itemId, recipeId) {
-    const { targetItemId, targetRatePerMin, nodes } = get();
-    const activeRecipes = { ...get().activeRecipes, [itemId]: recipeId };
-    const result = recompute(targetItemId, targetRatePerMin, activeRecipes);
-    const newNodes = resultToNodes(result, nodes);
-    const edges = resultToEdges(result, newNodes);
-    set({ activeRecipes, result, nodes: newNodes, edges });
-  },
-
-  setRawResourceConfig(pathId, patch) {
-    const current = get().rawResourceConfigs[pathId] ?? DEFAULT_RAW_CONFIG;
-    set({ rawResourceConfigs: { ...get().rawResourceConfigs, [pathId]: { ...current, ...patch } } });
-  },
-
-  setNodes(nodes) { set({ nodes: withBalance(nodes, get().edges) }); },
-  setEdges(edges) { set({ edges, nodes: withBalance(get().nodes, edges) }); },
-
-  loadPlan(snapshot) {
-    // Manual graph: load the saved nodes/edges directly and rebalance.
-    // (result is recomputed only so any legacy display fields stay populated.)
-    const result = recompute(snapshot.targetItemId, snapshot.targetRatePerMin, snapshot.activeRecipes);
-    set({ ...snapshot, result, nodes: withBalance(snapshot.nodes, snapshot.edges), edges: snapshot.edges });
-  },
-
-  // --- Manual builder ---
-
-  addNode(itemId, recipeId, position) {
-    const { nodes, edges, pendingConnect } = get();
-    const isRaw = recipeId === null;
-    const count = nodes.length;
-    const node: ItemNodeType = {
-      id: crypto.randomUUID(),
-      type: 'itemNode',
-      // Cascade button-added nodes so they don't stack exactly on top of each other.
-      position: position ?? { x: 40 + count * 28, y: 40 + count * 28 },
-      zIndex: topZ(nodes) + 1,
-      data: {
-        itemId,
-        recipeId,
-        isRaw,
-        rawConfig: isRaw ? DEFAULT_RAW_CONFIG : undefined,
-      },
-    };
-    const allNodes = [...nodes, node];
-
-    // Auto-connect if this add came from a drag-to-create off an existing handle.
-    let nextEdges = edges;
-    if (pendingConnect) {
-      let edge: Edge | null = null;
-      if (pendingConnect.fromHandleType === 'target') {
-        // Dragged off an input handle → the new node is the producer for that ingredient.
-        edge = buildEdge(allNodes, node.id, pendingConnect.fromNodeId, pendingConnect.fromHandleId);
-      } else {
-        // Dragged off an output handle → the origin feeds an input of the new node.
-        const origin = nodes.find(n => n.id === pendingConnect.fromNodeId);
-        const originItemId = origin && isItemNode(origin) ? origin.data.itemId : null;
-        if (originItemId) edge = buildEdge(allNodes, pendingConnect.fromNodeId, node.id, originItemId);
-      }
-      if (edge) nextEdges = [...edges.filter(e => e.id !== edge!.id), edge];
-    }
-
-    set({
-      nodes: withBalance(allNodes, nextEdges),
-      edges: nextEdges,
-      addDialogOpen: false,
-      addDialogPos: null,
-      addDialogPrefillItemId: null,
-      addDialogFilterInputItemId: null,
-      pendingConnect: null,
-    });
-  },
-
-  removeNode(id) {
-    const edges = get().edges.filter(e => e.source !== id && e.target !== id);
-    const nodes = get().nodes.filter(n => n.id !== id);
-    set({ nodes: withBalance(nodes, edges), edges, editingNodeId: null });
-  },
-
-  setNodeRawConfig(id, patch) {
-    const nodes = get().nodes.map(n =>
-      isItemNode(n) && n.id === id
-        ? { ...n, data: { ...n.data, rawConfig: { ...(n.data.rawConfig ?? DEFAULT_RAW_CONFIG), ...patch } } }
-        : n,
+  /** Mutate the data of the factory whose inner graph is being viewed; rebalance inner; re-project. */
+  function commitCurrentFactory(mutate: (d: FactoryNodeData) => FactoryNodeData) {
+    const { rootGraph, viewPath, layoutTick } = get();
+    if (viewPath.length === 0) return;
+    const facId = viewPath[viewPath.length - 1];
+    const parentPath = viewPath.slice(0, -1);
+    const parent = graphAt(rootGraph, parentPath);
+    const nodes = parent.nodes.map(n =>
+      n.id === facId && isFactoryNode(n) ? { ...n, data: mutate(n.data) } : n,
     );
-    set({ nodes });
-  },
+    const nextRoot = rebalanceRoot(setGraphAt(rootGraph, parentPath, { ...parent, nodes }));
+    const view = project(nextRoot, viewPath);
+    set({ rootGraph: nextRoot, nodes: view.nodes, edges: view.edges, layoutTick: layoutTick + 1 });
+  }
 
-  connectNodes(connection) {
-    const { source, target, targetHandle } = connection;
-    if (!source || !target) return;
-    const newEdge = buildEdge(get().nodes, source, target, targetHandle);
-    if (!newEdge) return; // mismatched / invalid connection rejected
-    // One producer per input handle: drop any existing edge feeding this handle.
-    const edges = get().edges.filter(e => !(e.target === target && e.targetHandle === targetHandle));
-    const next = [...edges, newEdge];
-    set({ edges: next, nodes: withBalance(get().nodes, next) });
-  },
-
-  autoLayout() {
-    const { nodes, edges, layoutTick } = get();
-    set({ nodes: layoutNodes(nodes, edges), layoutTick: layoutTick + 1 });
-  },
-
-  // --- Dialog state ---
-
-  openAddDialog(opts) {
+  function navigate(nextPath: string[]) {
+    const { rootGraph, layoutTick } = get();
+    const view = project(rootGraph, nextPath);
     set({
-      addDialogOpen: true,
-      addDialogPos: opts?.pos ?? null,
-      addDialogPrefillItemId: opts?.prefillItemId ?? null,
-      addDialogFilterInputItemId: opts?.filterInputItemId ?? null,
-      pendingConnect: opts?.pending ?? null,
+      viewPath: nextPath,
+      nodes: view.nodes,
+      edges: view.edges,
+      layoutTick: layoutTick + 1,
+      editingNodeId: null,
+      portDialogPortId: null,
     });
-  },
-  closeAddDialog() {
-    set({
-      addDialogOpen: false,
-      addDialogPos: null,
-      addDialogPrefillItemId: null,
-      addDialogFilterInputItemId: null,
-      pendingConnect: null,
-    });
-  },
-  openConfig(id) { set({ editingNodeId: id }); },
-  closeConfig() { set({ editingNodeId: null }); },
-}));
+  }
+
+  return {
+    planId: crypto.randomUUID(),
+    planName: 'New Plan',
+    rootGraph: EMPTY,
+    viewPath: [],
+    nodes: [],
+    edges: [],
+
+    addDialogOpen: false,
+    addDialogPos: null,
+    addDialogPrefillItemId: null,
+    addDialogFilterInputItemId: null,
+    pendingConnect: null,
+    editingNodeId: null,
+    portDialogPortId: null,
+    layoutTick: 0,
+
+    setNodes(incoming) {
+      // onNodesChange fires dimension/position/selection updates — no topology change,
+      // so just persist real-node positions and keep port nodes as-is (with their
+      // measured dimensions). Re-synthesizing port nodes would lose measurements and
+      // cause an infinite render loop.
+      const { rootGraph, viewPath } = get();
+      const real = stripPortNodes(incoming) as AnyNode[];
+      const g = graphAt(rootGraph, viewPath);
+      const nextRoot = setGraphAt(rootGraph, viewPath, { ...g, nodes: real });
+      set({ rootGraph: nextRoot, nodes: incoming });
+    },
+    setEdges(edges) {
+      commitViewedGraph(g => ({ ...g, edges }));
+    },
+
+    loadPlan(snapshot) {
+      const root = rebalanceRoot({ nodes: snapshot.nodes, edges: snapshot.edges });
+      set({
+        planId: snapshot.planId,
+        planName: snapshot.planName,
+        rootGraph: root,
+        viewPath: [],
+        nodes: root.nodes,
+        edges: root.edges,
+        layoutTick: get().layoutTick + 1,
+      });
+    },
+
+    addNode(itemId, recipeId, position) {
+      const { pendingConnect, rootGraph, viewPath } = get();
+      const view = project(rootGraph, viewPath);
+      const viewed = graphAt(rootGraph, viewPath);
+      const isRaw = recipeId === null;
+      const count = viewed.nodes.length;
+      const node: ItemNodeType = {
+        id: crypto.randomUUID(),
+        type: 'itemNode',
+        position: position ?? { x: 40 + count * 28, y: 40 + count * 28 },
+        zIndex: topZ(viewed.nodes) + 1,
+        data: { itemId, recipeId, isRaw, rawConfig: isRaw ? DEFAULT_RAW_CONFIG : undefined },
+      };
+      const pendingEdge = pendingConnect
+        ? buildPendingEdge([...view.nodes, node], node.id, pendingConnect)
+        : null;
+      commitViewedGraph(g => ({
+        nodes: [...g.nodes, node],
+        edges: pendingEdge ? [...g.edges.filter(e => e.id !== pendingEdge.id), pendingEdge] : g.edges,
+      }));
+      set({
+        addDialogOpen: false,
+        addDialogPos: null,
+        addDialogPrefillItemId: null,
+        addDialogFilterInputItemId: null,
+        pendingConnect: null,
+      });
+    },
+
+    addFactoryNode(position) {
+      const { pendingConnect, rootGraph, viewPath } = get();
+      const view = project(rootGraph, viewPath);
+      const viewed = graphAt(rootGraph, viewPath);
+
+      const inputs: FactoryPort[] = [];
+      const outputs: FactoryPort[] = [];
+      let seed: { side: 'input' | 'output'; portId: string } | null = null;
+      if (pendingConnect) {
+        if (pendingConnect.fromHandleType === 'source') {
+          // Origin produces something → factory consumes it: seed one INPUT port.
+          const origin = view.nodes.find(n => n.id === pendingConnect.fromNodeId);
+          const itemId = origin ? sourceItemId(origin, pendingConnect.fromHandleId) : null;
+          const port = { id: crypto.randomUUID(), itemId };
+          inputs.push(port);
+          seed = { side: 'input', portId: port.id };
+        } else {
+          // Dragged off an input handle (ingredient itemId) → factory produces it: seed one OUTPUT port.
+          const port = { id: crypto.randomUUID(), itemId: pendingConnect.fromHandleId ?? null };
+          outputs.push(port);
+          seed = { side: 'output', portId: port.id };
+        }
+      }
+
+      const count = viewed.nodes.length;
+      const node: FactoryNodeType = {
+        id: crypto.randomUUID(),
+        type: 'factoryNode',
+        position: position ?? { x: 40 + count * 28, y: 40 + count * 28 },
+        zIndex: topZ(viewed.nodes) + 1,
+        data: { name: 'Factory', inputs, outputs, inner: { nodes: [], edges: [] } },
+      };
+
+      let pendingEdge: Edge | null = null;
+      if (pendingConnect && seed) {
+        const all = [...view.nodes, node];
+        pendingEdge = seed.side === 'input'
+          // origin → factory input port
+          ? buildEdge(all, pendingConnect.fromNodeId, node.id, pendingConnect.fromHandleId ?? undefined, portNodeId('input', seed.portId))
+          // factory output port → origin input
+          : buildEdge(all, node.id, pendingConnect.fromNodeId, portNodeId('output', seed.portId), pendingConnect.fromHandleId);
+      }
+
+      commitViewedGraph(g => ({
+        nodes: [...g.nodes, node],
+        edges: pendingEdge ? [...g.edges.filter(e => e.id !== pendingEdge.id), pendingEdge] : g.edges,
+      }));
+      set({
+        addDialogOpen: false,
+        addDialogPos: null,
+        addDialogPrefillItemId: null,
+        addDialogFilterInputItemId: null,
+        pendingConnect: null,
+      });
+    },
+
+    removeNode(id) {
+      commitViewedGraph(g => ({
+        nodes: g.nodes.filter(n => n.id !== id),
+        edges: g.edges.filter(e => e.source !== id && e.target !== id),
+      }));
+      set({ editingNodeId: null });
+    },
+
+    setNodeRawConfig(id, patch) {
+      commitViewedGraph(g => ({
+        ...g,
+        nodes: g.nodes.map(n =>
+          isItemNode(n) && n.id === id
+            ? { ...n, data: { ...n.data, rawConfig: { ...(n.data.rawConfig ?? DEFAULT_RAW_CONFIG), ...patch } } }
+            : n,
+        ),
+      }));
+    },
+
+    connectNodes(connection) {
+      const { source, target, sourceHandle, targetHandle } = connection;
+      if (!source || !target) return;
+      const view = project(get().rootGraph, get().viewPath);
+      const newEdge = buildEdge(view.nodes, source, target, sourceHandle, targetHandle);
+      if (!newEdge) return;
+      commitViewedGraph(g => ({
+        ...g,
+        // One producer per input handle: drop any existing edge feeding the same handle.
+        edges: [...g.edges.filter(e => !(e.target === target && (e.targetHandle ?? null) === (targetHandle ?? null))), newEdge],
+      }));
+    },
+
+    autoLayout() {
+      const { rootGraph, viewPath, layoutTick } = get();
+      const g = graphAt(rootGraph, viewPath);
+      const laid = layoutNodes(g.nodes, g.edges);
+      const nextRoot = rebalanceRoot(setGraphAt(rootGraph, viewPath, { nodes: laid, edges: g.edges }));
+      const view = project(nextRoot, viewPath);
+      set({ rootGraph: nextRoot, nodes: view.nodes, edges: view.edges, layoutTick: layoutTick + 1 });
+    },
+
+    enterFactory(id) {
+      const { rootGraph, viewPath } = get();
+      const g = graphAt(rootGraph, viewPath);
+      if (!g.nodes.some(n => n.id === id && isFactoryNode(n))) return;
+      navigate([...viewPath, id]);
+    },
+    exitTo(index) {
+      const { viewPath } = get();
+      navigate(viewPath.slice(0, Math.max(0, Math.min(index, viewPath.length))));
+    },
+
+    addInputPort(itemId) {
+      const portId = crypto.randomUUID();
+      commitCurrentFactory(d => ({ ...d, inputs: [...d.inputs, { id: portId, itemId: itemId ?? null }] }));
+      return portId;
+    },
+    addOutputPort(itemId) {
+      const portId = crypto.randomUUID();
+      commitCurrentFactory(d => ({ ...d, outputs: [...d.outputs, { id: portId, itemId: itemId ?? null }] }));
+      return portId;
+    },
+    setPortItem(portId, itemId) {
+      commitCurrentFactory(d => {
+        const apply = (ports: FactoryPort[]) => ports.map(p => (p.id === portId ? { ...p, itemId } : p));
+        const nextData = { ...d, inputs: apply(d.inputs), outputs: apply(d.outputs) };
+        const resolveNodes: ViewNode[] = [...synthesizePorts(nextData), ...d.inner.nodes];
+        const edges = d.inner.edges.filter(e => edgeValid(resolveNodes, e));
+        return { ...nextData, inner: { ...d.inner, edges } };
+      });
+    },
+    removePort(portId) {
+      commitCurrentFactory(d => {
+        const inId = portNodeId('input', portId);
+        const outId = portNodeId('output', portId);
+        return {
+          ...d,
+          inputs: d.inputs.filter(p => p.id !== portId),
+          outputs: d.outputs.filter(p => p.id !== portId),
+          inner: {
+            ...d.inner,
+            edges: d.inner.edges.filter(
+              e => e.source !== inId && e.target !== inId && e.source !== outId && e.target !== outId,
+            ),
+          },
+        };
+      });
+      set({ portDialogPortId: null });
+    },
+    renameFactory(name) {
+      commitCurrentFactory(d => ({ ...d, name }));
+    },
+
+    openAddDialog(opts) {
+      set({
+        addDialogOpen: true,
+        addDialogPos: opts?.pos ?? null,
+        addDialogPrefillItemId: opts?.prefillItemId ?? null,
+        addDialogFilterInputItemId: opts?.filterInputItemId ?? null,
+        pendingConnect: opts?.pending ?? null,
+      });
+    },
+    closeAddDialog() {
+      set({
+        addDialogOpen: false,
+        addDialogPos: null,
+        addDialogPrefillItemId: null,
+        addDialogFilterInputItemId: null,
+        pendingConnect: null,
+      });
+    },
+    openConfig(id) { set({ editingNodeId: id }); },
+    closeConfig() { set({ editingNodeId: null }); },
+    openPortDialog(portId) { set({ portDialogPortId: portId }); },
+    closePortDialog() { set({ portDialogPortId: null }); },
+  };
+});
