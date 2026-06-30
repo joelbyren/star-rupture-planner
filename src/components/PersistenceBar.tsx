@@ -4,6 +4,7 @@ import { db } from '../db/db.ts';
 import type { PlanSnapshot } from '../store/planStore.ts';
 import itemsJson from '../data/items.json';
 import type { Item } from '../engine/types.ts';
+import { version } from '../../package.json';
 
 const ITEM_NAMES = new Map((itemsJson as Item[]).map(i => [i.id, i.name]));
 const itemName = (id: string) => ITEM_NAMES.get(id) ?? id;
@@ -88,7 +89,6 @@ export function PersistenceBar() {
 
   return (
     <div className="bg-slate-900 border-b border-slate-700 px-4 py-2 flex gap-2 items-center">
-      <span className="text-slate-400 text-xs mr-2">Plan:</span>
       <input
         className="bg-slate-800 border border-slate-600 rounded px-2 py-0.5 text-white text-sm w-40"
         value={store.planName}
@@ -110,7 +110,7 @@ export function PersistenceBar() {
         </button>
 
         <div
-          className="relative flex items-center"
+          className="relative flex items-center ml-3"
           onMouseEnter={() => setShowMissing(true)}
           onMouseLeave={() => setShowMissing(false)}
         >
@@ -139,7 +139,8 @@ export function PersistenceBar() {
         </div>
       </div>
 
-      <div className="flex gap-1 ml-auto">
+      <div className="flex gap-1 ml-auto items-center">
+        <span className="text-slate-500 text-xs mr-2 tabular-nums">v{version}</span>
         {[
           { label: 'Save', action: handleSave },
           { label: 'Load', action: handleLoad },
