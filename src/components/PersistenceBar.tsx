@@ -49,6 +49,26 @@ export function PersistenceBar() {
     URL.revokeObjectURL(url);
   }
 
+  function parseSnapshot(text: string): PlanSnapshot {
+    let raw: unknown;
+    try {
+      raw = JSON.parse(text);
+    } catch {
+      throw new Error('This file is not valid JSON.');
+    }
+    if (typeof raw !== 'object' || raw === null) {
+      throw new Error('This file does not contain a plan.');
+    }
+    const s = raw as Record<string, unknown>;
+    if (typeof s.planId !== 'string' || typeof s.planName !== 'string') {
+      throw new Error('Missing plan name or id — this does not look like an exported plan.');
+    }
+    if (!Array.isArray(s.nodes) || !Array.isArray(s.edges)) {
+      throw new Error('Plan is missing its nodes or edges.');
+    }
+    return raw as PlanSnapshot;
+  }
+
   function handleImport() {
     const input = document.createElement('input');
     input.type = 'file';
@@ -56,9 +76,12 @@ export function PersistenceBar() {
     input.onchange = async () => {
       const file = input.files?.[0];
       if (!file) return;
-      const text = await file.text();
-      const snapshot = JSON.parse(text) as PlanSnapshot;
-      store.loadPlan(snapshot);
+      try {
+        const snapshot = parseSnapshot(await file.text());
+        store.loadPlan(snapshot);
+      } catch (err) {
+        alert(`Could not import "${file.name}".\n\n${err instanceof Error ? err.message : 'Unknown error.'}`);
+      }
     };
     input.click();
   }
