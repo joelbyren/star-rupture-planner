@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { usePlanStore, isFactoryNode, portNodeId, type FactoryNodeType } from './planStore.ts';
+import { usePlanStore, isFactoryNode, portNodeId, handleItemId, type FactoryNodeType } from './planStore.ts';
 
 const reset = () =>
   usePlanStore.setState({ rootGraph: { nodes: [], edges: [] }, viewPath: [], nodes: [], edges: [] });
@@ -75,6 +75,49 @@ describe('factory nodes — navigation & ports', () => {
     expect(inner.edges[0].source).toBe(portNodeId('input', portId));
   });
 
+  it('an unset input port inherits the item it is connected to feed', () => {
+    get().addFactoryNode({ x: 0, y: 0 });
+    const id = firstFactoryId();
+    get().enterFactory(id);
+    const portId = get().addInputPort(); // unset
+    expect(factoryAt([id]).data.inputs[0].itemId).toBeNull();
+
+    get().addNode('comp_rotor', 'recipe_comp_rotor', { x: 100, y: 0 });
+    const rotorId = factoryAt([id]).data.inner.nodes.find(n => n.type === 'itemNode')!.id;
+
+    // Drag the unset port to the rotor's wire_wolfram ingredient handle.
+    get().connectNodes({
+      source: portNodeId('input', portId),
+      target: rotorId,
+      sourceHandle: null,
+      targetHandle: 'wire_wolfram',
+    });
+
+    expect(factoryAt([id]).data.inputs[0].itemId).toBe('wire_wolfram');
+    expect(factoryAt([id]).data.inner.edges).toHaveLength(1);
+  });
+
+  it('an unset output port inherits the item it is connected to receive', () => {
+    get().addFactoryNode({ x: 0, y: 0 });
+    const id = firstFactoryId();
+    get().enterFactory(id);
+    const portId = get().addOutputPort(); // unset
+
+    get().addNode('comp_rotor', 'recipe_comp_rotor', { x: 0, y: 0 });
+    const rotorId = factoryAt([id]).data.inner.nodes.find(n => n.type === 'itemNode')!.id;
+
+    // The rotor producer feeds the unset output port.
+    get().connectNodes({
+      source: rotorId,
+      target: portNodeId('output', portId),
+      sourceHandle: null,
+      targetHandle: null,
+    });
+
+    expect(factoryAt([id]).data.outputs[0].itemId).toBe('comp_rotor');
+    expect(factoryAt([id]).data.inner.edges).toHaveLength(1);
+  });
+
   it('removePort drops the port and its inner edges', () => {
     get().addFactoryNode({ x: 0, y: 0 });
     const id = firstFactoryId();
@@ -103,6 +146,66 @@ describe('factory nodes — navigation & ports', () => {
     // Changing the port item to something the rotor doesn't accept on that handle invalidates the edge.
     get().setPortItem(portId, 'rod_titanium');
     expect(factoryAt([id]).data.inner.edges).toHaveLength(0);
+  });
+
+  it('resolves a factory port handle to its item (drag-to-create seeding from the outer view)', () => {
+    get().addFactoryNode({ x: 0, y: 0 });
+    const id = firstFactoryId();
+    get().enterFactory(id);
+    const inPortId = get().addInputPort('wire_wolfram');
+    const outPortId = get().addOutputPort('comp_rotor');
+    get().exitTo(0); // back to the root view, where the factory node lives
+
+    const facNode = get().nodes.find(isFactoryNode)!;
+    // Input handle is a target (factory consumes wire_wolfram from outside).
+    expect(handleItemId(facNode, portNodeId('input', inPortId), 'target')).toBe('wire_wolfram');
+    // Output handle is a source (factory emits comp_rotor to outside).
+    expect(handleItemId(facNode, portNodeId('output', outPortId), 'source')).toBe('comp_rotor');
+  });
+
+  it('renameFactory updates the current factory name without moving the view', () => {
+    get().addFactoryNode({ x: 0, y: 0 });
+    const id = firstFactoryId();
+    get().enterFactory(id);
+    const tickBefore = get().layoutTick;
+
+    get().renameFactory('Smelting');
+    expect(factoryAt([id]).data.name).toBe('Smelting');
+    expect(get().layoutTick).toBe(tickBefore); // rename must not trigger a re-fit
+  });
+
+  it('removeCurrentFactory deletes the open factory and exits to its parent', () => {
+    get().addFactoryNode({ x: 0, y: 0 });
+    const id = firstFactoryId();
+    get().enterFactory(id);
+    expect(get().viewPath).toEqual([id]);
+
+    get().removeCurrentFactory();
+    expect(get().viewPath).toEqual([]);
+    expect(get().rootGraph.nodes.filter(isFactoryNode)).toHaveLength(0);
+  });
+
+  it('removeCurrentFactory drops the deleted factory\'s edges in the parent graph', () => {
+    // root: an extractor feeding a factory's input port.
+    get().addNode('wire_wolfram', null); // raw
+    const extractorId = get().rootGraph.nodes.find(n => n.type === 'itemNode')!.id;
+    get().addFactoryNode({ x: 200, y: 0 });
+    const facId = get().rootGraph.nodes.find(isFactoryNode)!.id;
+    get().enterFactory(facId);
+    const portId = get().addInputPort('wire_wolfram');
+    get().exitTo(0);
+    get().connectNodes({
+      source: extractorId,
+      target: facId,
+      sourceHandle: null,
+      targetHandle: portNodeId('input', portId),
+    });
+    expect(get().rootGraph.edges).toHaveLength(1);
+
+    get().enterFactory(facId);
+    get().removeCurrentFactory();
+    expect(get().rootGraph.nodes.filter(isFactoryNode)).toHaveLength(0);
+    expect(get().rootGraph.edges).toHaveLength(0); // dangling edge removed
   });
 
   it('supports nested factories (depth >= 2) and writes back to the right place', () => {

@@ -123,6 +123,8 @@ export interface PlanState {
   setPortItem: (portId: string, itemId: string | null) => void;
   removePort: (portId: string) => void;
   renameFactory: (name: string) => void;
+  /** Delete the factory whose inner graph is currently open, then exit to its parent. */
+  removeCurrentFactory: () => void;
 
   // Dialog actions
   openAddDialog: (opts?: {
@@ -334,6 +336,19 @@ function targetItemId(node: ViewNode, targetHandle: string | null | undefined): 
 }
 
 /**
+ * The concrete item flowing through a node's handle, resolved for either drag
+ * direction. Works for item nodes (ingredient/output handles) and factory nodes
+ * (input/output port handles). Used to seed the add-node dialog on drag-to-create.
+ */
+export function handleItemId(
+  node: ViewNode,
+  handleId: string | null | undefined,
+  handleType: 'source' | 'target',
+): string | null {
+  return handleType === 'source' ? sourceItemId(node, handleId) : targetItemId(node, handleId);
+}
+
+/**
  * Validated producer→consumer edge. Rejected only when both endpoints resolve to
  * different concrete items (a null/UNSET side accepts anything).
  */
@@ -385,6 +400,38 @@ function buildPendingEdge(nodes: ViewNode[], newNodeId: string, pc: PendingConne
 /** Highest zIndex among real nodes (so new nodes stack on top). */
 function topZ(nodes: AnyNode[]): number {
   return nodes.reduce((max, n) => Math.max(max, n.zIndex ?? 0), 0);
+}
+
+/** Set a port's item by id across a factory's input/output ports. */
+function applyPortItem(d: FactoryNodeData, portId: string, itemId: string | null): FactoryNodeData {
+  const apply = (ports: FactoryPort[]) => ports.map(p => (p.id === portId ? { ...p, itemId } : p));
+  return { ...d, inputs: apply(d.inputs), outputs: apply(d.outputs) };
+}
+
+/**
+ * When a new edge touches an as-yet-unset factory port, the port inherits the
+ * concrete item from the other endpoint: an input port (a SOURCE) takes the item
+ * its consumer accepts; an output port (a SINK) takes the item its producer emits.
+ * Returns the port to update, or null when nothing should be inherited.
+ */
+function portInheritFromEdge(
+  nodes: ViewNode[],
+  source: string,
+  target: string,
+  sourceHandle: string | null | undefined,
+  targetHandle: string | null | undefined,
+): { portId: string; itemId: string } | null {
+  const s = nodes.find(n => n.id === source);
+  const t = nodes.find(n => n.id === target);
+  if (s && s.type === 'inputPort' && (s as PortNodeType).data.itemId == null) {
+    const item = t ? targetItemId(t, targetHandle) : null;
+    if (item != null) return { portId: (s as PortNodeType).data.portId, itemId: item };
+  }
+  if (t && t.type === 'outputPort' && (t as PortNodeType).data.itemId == null) {
+    const item = s ? sourceItemId(s, sourceHandle) : null;
+    if (item != null) return { portId: (t as PortNodeType).data.portId, itemId: item };
+  }
+  return null;
 }
 
 // ------------------------------------------------------------------
@@ -492,8 +539,12 @@ export const usePlanStore = create<PlanState>((set, get) => {
     set({ rootGraph: nextRoot, nodes: view.nodes, edges: view.edges });
   }
 
-  /** Mutate the data of the factory whose inner graph is being viewed; rebalance inner; re-project. */
-  function commitCurrentFactory(mutate: (d: FactoryNodeData) => FactoryNodeData) {
+  /**
+   * Mutate the data of the factory whose inner graph is being viewed; rebalance
+   * inner; re-project. `refit` bumps layoutTick so the canvas re-fits — pass false
+   * for changes that don't alter geometry (e.g. a rename).
+   */
+  function commitCurrentFactory(mutate: (d: FactoryNodeData) => FactoryNodeData, refit = true) {
     const { rootGraph, viewPath, layoutTick } = get();
     if (viewPath.length === 0) return;
     const facId = viewPath[viewPath.length - 1];
@@ -504,7 +555,7 @@ export const usePlanStore = create<PlanState>((set, get) => {
     );
     const nextRoot = rebalanceRoot(setGraphAt(rootGraph, parentPath, { ...parent, nodes }));
     const view = project(nextRoot, viewPath);
-    set({ rootGraph: nextRoot, nodes: view.nodes, edges: view.edges, layoutTick: layoutTick + 1 });
+    set({ rootGraph: nextRoot, nodes: view.nodes, edges: view.edges, layoutTick: refit ? layoutTick + 1 : layoutTick });
   }
 
   function navigate(nextPath: string[]) {
@@ -672,14 +723,40 @@ export const usePlanStore = create<PlanState>((set, get) => {
     connectNodes(connection) {
       const { source, target, sourceHandle, targetHandle } = connection;
       if (!source || !target) return;
-      const view = project(get().rootGraph, get().viewPath);
+      const { rootGraph, viewPath } = get();
+      const view = project(rootGraph, viewPath);
       const newEdge = buildEdge(view.nodes, source, target, sourceHandle, targetHandle);
       if (!newEdge) return;
-      commitViewedGraph(g => ({
-        ...g,
-        // One producer per input handle: drop any existing edge feeding the same handle.
-        edges: [...g.edges.filter(e => !(e.target === target && (e.targetHandle ?? null) === (targetHandle ?? null))), newEdge],
-      }));
+
+      // 1) Add the edge to the currently-viewed graph (one producer per input handle).
+      const viewed = graphAt(rootGraph, viewPath);
+      const nextViewed: InnerGraph = {
+        ...viewed,
+        edges: [
+          ...viewed.edges.filter(e => !(e.target === target && (e.targetHandle ?? null) === (targetHandle ?? null))),
+          newEdge,
+        ],
+      };
+      let nextRoot = setGraphAt(rootGraph, viewPath, nextViewed);
+
+      // 2) If the edge lands on an unset factory port, the port inherits the other end's item.
+      //    Ports live on the factory node (in the parent graph), not in the inner graph.
+      const inherit = portInheritFromEdge(view.nodes, source, target, sourceHandle, targetHandle);
+      if (inherit && viewPath.length > 0) {
+        const facId = viewPath[viewPath.length - 1];
+        const parentPath = viewPath.slice(0, -1);
+        const parent = graphAt(nextRoot, parentPath);
+        const nodes = parent.nodes.map(n =>
+          n.id === facId && isFactoryNode(n)
+            ? { ...n, data: applyPortItem(n.data, inherit.portId, inherit.itemId) }
+            : n,
+        );
+        nextRoot = setGraphAt(nextRoot, parentPath, { ...parent, nodes });
+      }
+
+      nextRoot = rebalanceRoot(nextRoot);
+      const v = project(nextRoot, viewPath);
+      set({ rootGraph: nextRoot, nodes: v.nodes, edges: v.edges });
     },
 
     autoLayout() {
@@ -714,8 +791,7 @@ export const usePlanStore = create<PlanState>((set, get) => {
     },
     setPortItem(portId, itemId) {
       commitCurrentFactory(d => {
-        const apply = (ports: FactoryPort[]) => ports.map(p => (p.id === portId ? { ...p, itemId } : p));
-        const nextData = { ...d, inputs: apply(d.inputs), outputs: apply(d.outputs) };
+        const nextData = applyPortItem(d, portId, itemId);
         const resolveNodes: ViewNode[] = [...synthesizePorts(nextData), ...d.inner.nodes];
         const edges = d.inner.edges.filter(e => edgeValid(resolveNodes, e));
         return { ...nextData, inner: { ...d.inner, edges } };
@@ -740,7 +816,29 @@ export const usePlanStore = create<PlanState>((set, get) => {
       set({ portDialogPortId: null });
     },
     renameFactory(name) {
-      commitCurrentFactory(d => ({ ...d, name }));
+      commitCurrentFactory(d => ({ ...d, name }), false);
+    },
+    removeCurrentFactory() {
+      const { rootGraph, viewPath, layoutTick } = get();
+      if (viewPath.length === 0) return;
+      const facId = viewPath[viewPath.length - 1];
+      const parentPath = viewPath.slice(0, -1);
+      const parent = graphAt(rootGraph, parentPath);
+      const nextParent: InnerGraph = {
+        nodes: parent.nodes.filter(n => n.id !== facId),
+        edges: parent.edges.filter(e => e.source !== facId && e.target !== facId),
+      };
+      const nextRoot = rebalanceRoot(setGraphAt(rootGraph, parentPath, nextParent));
+      const view = project(nextRoot, parentPath);
+      set({
+        rootGraph: nextRoot,
+        viewPath: parentPath,
+        nodes: view.nodes,
+        edges: view.edges,
+        layoutTick: layoutTick + 1,
+        editingNodeId: null,
+        portDialogPortId: null,
+      });
     },
 
     openAddDialog(opts) {

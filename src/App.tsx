@@ -5,7 +5,6 @@ import {
   Background,
   Controls,
   MiniMap,
-  Panel,
   useReactFlow,
   type NodeChange,
   type EdgeChange,
@@ -25,7 +24,7 @@ import { Breadcrumb } from './components/Breadcrumb.tsx';
 import { AddNodeDialog } from './components/AddNodeDialog.tsx';
 import { NodeConfigDialog } from './components/NodeConfigDialog.tsx';
 import { PortConfigDialog } from './components/PortConfigDialog.tsx';
-import { usePlanStore } from './store/planStore.ts';
+import { usePlanStore, handleItemId } from './store/planStore.ts';
 import type { ViewNode } from './store/planStore.ts';
 
 const NODE_TYPES: NodeTypes = {
@@ -37,11 +36,15 @@ const NODE_TYPES: NodeTypes = {
 
 function Flow() {
   const {
-    nodes, edges, viewPath, setNodes, setEdges, connectNodes,
-    openAddDialog, enterFactory, openConfig, addInputPort, addOutputPort, layoutTick,
+    nodes, edges, setNodes, setEdges, connectNodes,
+    openAddDialog, enterFactory, openConfig, layoutTick,
   } = usePlanStore();
   const { screenToFlowPosition, fitView } = useReactFlow();
   const connectFrom = useRef<OnConnectStartParams | null>(null);
+  // Whether onConnect fired during the current drag. React Flow can complete a
+  // connection by snapping to a nearby handle even when the pointer is released
+  // over the pane — in that case we must NOT also open the add-node dialog.
+  const didConnect = useRef(false);
 
   // Re-fit the view after an auto-layout or when navigating in/out of a factory.
   useEffect(() => {
@@ -56,10 +59,14 @@ function Flow() {
     (changes: EdgeChange[]) => setEdges(applyEdgeChanges(changes, edges)),
     [edges, setEdges],
   );
-  const onConnect = useCallback((c: Connection) => connectNodes(c), [connectNodes]);
+  const onConnect = useCallback((c: Connection) => {
+    didConnect.current = true;
+    connectNodes(c);
+  }, [connectNodes]);
 
   const onConnectStart = useCallback((_: unknown, params: OnConnectStartParams) => {
     connectFrom.current = params;
+    didConnect.current = false;
   }, []);
 
   // Drag off a handle and release on empty canvas → open the add dialog there,
@@ -67,22 +74,29 @@ function Flow() {
   const onConnectEnd = useCallback(
     (event: MouseEvent | TouchEvent) => {
       const from = connectFrom.current;
+      const connected = didConnect.current;
       connectFrom.current = null;
+      didConnect.current = false;
       if (!from || !from.nodeId) return;
+      if (connected) return; // a real connection was made (incl. proximity snap) → no add dialog
       const target = event.target as HTMLElement;
       if (!target.classList.contains('react-flow__pane')) return; // dropped on a node → normal connect
       const point = 'changedTouches' in event ? event.changedTouches[0] : event;
       const pos = screenToFlowPosition({ x: point.clientX, y: point.clientY });
       const origin = nodes.find(n => n.id === from.nodeId);
-      const originItemId = origin?.data.itemId as string | undefined;
+      const handleType = (from.handleType ?? 'source') as 'source' | 'target';
+      // Resolve the item via the handle (works for item nodes AND factory port handles).
+      const originItemId = origin ? handleItemId(origin, from.handleId, handleType) ?? undefined : undefined;
       openAddDialog({
         pos,
-        prefillItemId: from.handleType === 'target' ? (from.handleId ?? originItemId) : undefined,
-        filterInputItemId: from.handleType === 'source' ? originItemId : undefined,
+        // Dragged off an input/target → seed a producer of that item.
+        prefillItemId: handleType === 'target' ? originItemId : undefined,
+        // Dragged off an output/source → filter to recipes that consume that item.
+        filterInputItemId: handleType === 'source' ? originItemId : undefined,
         pending: {
           fromNodeId: from.nodeId,
           fromHandleId: from.handleId,
-          fromHandleType: (from.handleType ?? 'source') as 'source' | 'target',
+          fromHandleType: handleType,
         },
       });
     },
@@ -107,8 +121,6 @@ function Flow() {
     [enterFactory, openConfig],
   );
 
-  const insideFactory = viewPath.length > 0;
-
   return (
     <div className="w-full h-full" onDoubleClick={onWrapperDoubleClick}>
       <ReactFlow
@@ -128,26 +140,6 @@ function Flow() {
         <Background color="#334155" gap={24} />
         <Controls />
         <MiniMap nodeColor="#6d28d9" maskColor="rgba(15,17,23,0.8)" />
-        {insideFactory && (
-          <>
-            <Panel position="top-left" className="!top-12">
-              <button
-                onClick={() => addInputPort()}
-                className="bg-violet-600 hover:bg-violet-500 text-white text-xs px-2 py-1 rounded shadow"
-              >
-                + input
-              </button>
-            </Panel>
-            <Panel position="top-right">
-              <button
-                onClick={() => addOutputPort()}
-                className="bg-violet-600 hover:bg-violet-500 text-white text-xs px-2 py-1 rounded shadow"
-              >
-                + output
-              </button>
-            </Panel>
-          </>
-        )}
       </ReactFlow>
       <Breadcrumb />
     </div>
