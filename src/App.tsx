@@ -24,8 +24,9 @@ import { Breadcrumb } from './components/Breadcrumb.tsx';
 import { AddNodeDialog } from './components/AddNodeDialog.tsx';
 import { NodeConfigDialog } from './components/NodeConfigDialog.tsx';
 import { PortConfigDialog } from './components/PortConfigDialog.tsx';
-import { usePlanStore, handleItemId } from './store/planStore.ts';
+import { usePlanStore, handleItemId, isPortNode } from './store/planStore.ts';
 import type { ViewNode } from './store/planStore.ts';
+import { usePinnedPorts } from './lib/usePinnedPorts.ts';
 
 const NODE_TYPES: NodeTypes = {
   itemNode: ItemNode,
@@ -45,10 +46,15 @@ function Flow() {
   // connection by snapping to a nearby handle even when the pointer is released
   // over the pane — in that case we must NOT also open the add-node dialog.
   const didConnect = useRef(false);
+  const wrapperRef = useRef<HTMLDivElement>(null);
+
+  usePinnedPorts(wrapperRef);
 
   // Re-fit the view after an auto-layout or when navigating in/out of a factory.
+  // Exclude port nodes: they're screen-pinned, not part of the layout to fit.
   useEffect(() => {
-    fitView({ duration: 400, padding: 0.15 });
+    const real = usePlanStore.getState().nodes.filter(n => !isPortNode(n));
+    fitView({ duration: 400, padding: 0.15, nodes: real.length ? real : undefined });
   }, [layoutTick, fitView]);
 
   const onNodesChange = useCallback(
@@ -122,7 +128,7 @@ function Flow() {
   );
 
   return (
-    <div className="w-full h-full" onDoubleClick={onWrapperDoubleClick}>
+    <div className="w-full h-full" ref={wrapperRef} onDoubleClick={onWrapperDoubleClick}>
       <ReactFlow
         nodes={nodes}
         edges={edges}

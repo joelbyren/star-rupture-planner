@@ -107,6 +107,8 @@ export interface PlanState {
   // Canvas plumbing
   setNodes: (nodes: ViewNode[]) => void;
   setEdges: (edges: Edge[]) => void;
+  /** Reposition synthesized port nodes only — no rootGraph write, no layoutTick bump. */
+  setPortPositions: (positions: Record<string, { x: number; y: number }>) => void;
   loadPlan: (snapshot: PlanSnapshot) => void;
 
   // Builder actions (operate on the currently-viewed graph)
@@ -161,7 +163,7 @@ export function isItemNode(n: { type?: string }): n is ItemNodeType {
 export function isFactoryNode(n: { type?: string }): n is FactoryNodeType {
   return n.type === 'factoryNode';
 }
-function isPortNode(n: { type?: string }): boolean {
+export function isPortNode(n: { type?: string }): boolean {
   return n.type === 'inputPort' || n.type === 'outputPort';
 }
 
@@ -172,10 +174,40 @@ function isPortNode(n: { type?: string }): boolean {
 const PORT_X_LEFT = -360;
 const PORT_X_RIGHT = 360;
 const PORT_ROW_H = 90;
+/** Matches the rendered width (w-[120px]) in PortNode.tsx. */
+export const PORT_W = 120;
 
 /** Stable synthesized port-node id (and outer handle id) for a port. */
 export function portNodeId(side: 'input' | 'output', portId: string): string {
   return `port-${side === 'input' ? 'in' : 'out'}-${portId}`;
+}
+
+/**
+ * Pure geometry for screen-pinning port nodes: given the port ids on each side
+ * (in display order) and the two screen anchors already converted to flow
+ * space, returns each port's flow position, stacked around its anchor with
+ * flow-unit offsets so spacing scales consistently with node/zoom.
+ */
+export function computePinnedPortPositions(
+  inputIds: string[],
+  outputIds: string[],
+  leftAnchorFlow: { x: number; y: number },
+  rightAnchorFlow: { x: number; y: number },
+): Record<string, { x: number; y: number }> {
+  const positions: Record<string, { x: number; y: number }> = {};
+  inputIds.forEach((id, i) => {
+    positions[id] = {
+      x: leftAnchorFlow.x,
+      y: leftAnchorFlow.y + (i - (inputIds.length - 1) / 2) * PORT_ROW_H,
+    };
+  });
+  outputIds.forEach((id, i) => {
+    positions[id] = {
+      x: rightAnchorFlow.x - PORT_W,
+      y: rightAnchorFlow.y + (i - (outputIds.length - 1) / 2) * PORT_ROW_H,
+    };
+  });
+  return positions;
 }
 
 function synthesizePorts(data: FactoryNodeData): PortNodeType[] {
@@ -187,6 +219,7 @@ function synthesizePorts(data: FactoryNodeData): PortNodeType[] {
       y: (i - (count - 1) / 2) * PORT_ROW_H,
     },
     deletable: false,
+    draggable: false,
     data: { portId: port.id, side, itemId: port.itemId },
   });
   return [
@@ -610,6 +643,22 @@ export const usePlanStore = create<PlanState>((set, get) => {
     },
     setEdges(edges) {
       commitViewedGraph(g => ({ ...g, edges }));
+    },
+
+    setPortPositions(positions) {
+      // No-op (and no new `nodes` reference) when every targeted port is already
+      // at its target position — lets callers re-derive positions on every render
+      // without triggering an effect/render loop.
+      set(state => {
+        let changed = false;
+        const nextNodes = state.nodes.map(n => {
+          const p = positions[n.id];
+          if (!p || (n.position.x === p.x && n.position.y === p.y)) return n;
+          changed = true;
+          return { ...n, position: p };
+        });
+        return changed ? { nodes: nextNodes } : {};
+      });
     },
 
     loadPlan(snapshot) {

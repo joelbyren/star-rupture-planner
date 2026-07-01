@@ -3,8 +3,10 @@ import {
   usePlanStore,
   isFactoryNode,
   isItemNode,
+  isPortNode,
   portNodeId,
   handleItemId,
+  computePinnedPortPositions,
   type FactoryNodeType,
 } from './planStore.ts';
 
@@ -283,5 +285,68 @@ describe('factory nodes — navigation & ports', () => {
     const innerWire = factoryAt([facId]).data.inner.nodes.find(n => n.id === wireId);
     if (!isItemNode(innerWire!)) throw new Error('expected item node');
     expect(innerWire.data.balance?.isLimitBinding).toBe(true);
+  });
+
+  it('synthesized port nodes are non-draggable', () => {
+    get().addFactoryNode({ x: 0, y: 0 });
+    const id = firstFactoryId();
+    get().enterFactory(id);
+    get().addInputPort('wire_wolfram');
+
+    const port = get().nodes.find(n => n.type === 'inputPort')!;
+    expect(port.draggable).toBe(false);
+  });
+
+  it('setPortPositions moves only port nodes and never touches rootGraph', () => {
+    get().addFactoryNode({ x: 0, y: 0 });
+    const id = firstFactoryId();
+    get().enterFactory(id);
+    const portId = get().addInputPort('wire_wolfram');
+    get().addNode('comp_rotor', 'recipe_comp_rotor', { x: 100, y: 0 });
+
+    const rootBefore = get().rootGraph;
+    const nodeId = portNodeId('input', portId);
+    get().setPortPositions({ [nodeId]: { x: 42, y: 7 } });
+
+    expect(get().rootGraph).toBe(rootBefore); // no rootGraph write
+    const port = get().nodes.find(n => n.id === nodeId)!;
+    expect(port.position).toEqual({ x: 42, y: 7 });
+    const realNode = get().nodes.find(n => n.type === 'itemNode')!;
+    expect(realNode.position).toEqual({ x: 100, y: 0 }); // untouched
+  });
+});
+
+describe('computePinnedPortPositions', () => {
+  const left = { x: -500, y: 0 };
+  const right = { x: 500, y: 0 };
+
+  it('centers a single port on each side around its anchor', () => {
+    const pos = computePinnedPortPositions(['in1'], ['out1'], left, right);
+    expect(pos['in1']).toEqual({ x: -500, y: 0 });
+    expect(pos['out1'].y).toBeCloseTo(0);
+  });
+
+  it('right-aligns outputs by subtracting the port width from the anchor', () => {
+    const pos = computePinnedPortPositions([], ['out1'], left, right);
+    expect(pos['out1'].x).toBe(500 - 120);
+  });
+
+  it('stacks multiple ports symmetrically around the anchor y', () => {
+    const pos = computePinnedPortPositions(['a', 'b', 'c'], [], left, right);
+    expect(pos['b'].y).toBeCloseTo(0); // middle of 3 sits on the anchor
+    expect(pos['a'].y).toBeLessThan(pos['b'].y);
+    expect(pos['c'].y).toBeGreaterThan(pos['b'].y);
+    expect(pos['a'].x).toBe(pos['c'].x); // same column, left-aligned
+  });
+
+  it('produces no entries for an empty side', () => {
+    const pos = computePinnedPortPositions([], [], left, right);
+    expect(Object.keys(pos)).toHaveLength(0);
+  });
+
+  it('never returns positions for real nodes filtered out via isPortNode', () => {
+    expect(isPortNode({ type: 'inputPort' })).toBe(true);
+    expect(isPortNode({ type: 'outputPort' })).toBe(true);
+    expect(isPortNode({ type: 'itemNode' })).toBe(false);
   });
 });
