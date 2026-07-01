@@ -10,9 +10,15 @@ export type BuildingTier = 'V1' | 'V2';
 export type ResourcePurity = 'impure' | 'normal' | 'pure';
 export type ExtractorVersion = 'V1' | 'V2';
 
+export type ExtractorMode = 'calculated' | 'custom';
+
 export interface RawResourceConfig {
   purity: ResourcePurity;
   extractorVersion: ExtractorVersion;
+  /** 'custom' = user-entered aggregate rate; absent/'calculated' = purity × version. */
+  mode?: ExtractorMode;
+  /** Total items/min for the whole extractor cluster; used when mode === 'custom'. */
+  customRatePerMin?: number;
 }
 
 /** Per-craft ingredient quantity. Engine derives input rate = quantity * outputRatePerMin / outputQuantity. */

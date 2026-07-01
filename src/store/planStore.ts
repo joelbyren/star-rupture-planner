@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import type { Node, Edge, Connection } from '@xyflow/react';
 import type { RawResourceConfig, FactoryPort, Recipe } from '../engine/types.ts';
-import { DEFAULT_RAW_CONFIG } from '../engine/rawResources.ts';
+import { DEFAULT_RAW_CONFIG, calcSupplyRate } from '../engine/rawResources.ts';
 import {
   balanceTree,
   type BalanceResult,
@@ -28,6 +28,8 @@ export interface ItemNodeData {
   isRaw: boolean;
   /** Extractor config for raw nodes (purity + version). */
   rawConfig?: RawResourceConfig;
+  /** Max items/min this node may output (production nodes only; raw nodes are always capped at their supply rate). */
+  hardLimitPerMin?: number;
   /** Latest balance result, recomputed on every structural change. */
   balance?: BalanceResult;
   [key: string]: unknown;
@@ -112,6 +114,7 @@ export interface PlanState {
   addFactoryNode: (position?: { x: number; y: number }) => void;
   removeNode: (id: string) => void;
   setNodeRawConfig: (id: string, patch: Partial<RawResourceConfig>) => void;
+  setNodeHardLimit: (id: string, limit: number | null) => void;
   connectNodes: (connection: Connection) => void;
   autoLayout: () => void;
 
@@ -277,11 +280,17 @@ function buildFactoryDef(fac: FactoryNodeType): FactoryDef {
   return { inputs, outputs, inner: { nodes: innerNodes, edges: innerEdges } };
 }
 
+/** The node's effective hard limit: a raw node's physical supply rate always caps the network. */
+function effectiveHardLimit(d: ItemNodeData): number | undefined {
+  if (d.isRaw) return calcSupplyRate(d.itemId, d.rawConfig ?? DEFAULT_RAW_CONFIG);
+  return typeof d.hardLimitPerMin === 'number' && d.hardLimitPerMin > 0 ? d.hardLimitPerMin : undefined;
+}
+
 function toBalanceNode(n: AnyNode): BalanceNodeInput {
   if (isFactoryNode(n)) {
     return { id: n.id, itemId: '', recipeId: null, kind: 'factory', factory: buildFactoryDef(n) };
   }
-  return { id: n.id, itemId: n.data.itemId, recipeId: n.data.recipeId };
+  return { id: n.id, itemId: n.data.itemId, recipeId: n.data.recipeId, hardLimit: effectiveHardLimit(n.data) };
 }
 
 /** Write balance results into every node, recursing into factory inner graphs. */
@@ -715,6 +724,17 @@ export const usePlanStore = create<PlanState>((set, get) => {
         nodes: g.nodes.map(n =>
           isItemNode(n) && n.id === id
             ? { ...n, data: { ...n.data, rawConfig: { ...(n.data.rawConfig ?? DEFAULT_RAW_CONFIG), ...patch } } }
+            : n,
+        ),
+      }));
+    },
+
+    setNodeHardLimit(id, limit) {
+      commitViewedGraph(g => ({
+        ...g,
+        nodes: g.nodes.map(n =>
+          isItemNode(n) && n.id === id
+            ? { ...n, data: { ...n.data, hardLimitPerMin: limit ?? undefined } }
             : n,
         ),
       }));

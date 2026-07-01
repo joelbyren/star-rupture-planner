@@ -1,5 +1,12 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { usePlanStore, isFactoryNode, portNodeId, handleItemId, type FactoryNodeType } from './planStore.ts';
+import {
+  usePlanStore,
+  isFactoryNode,
+  isItemNode,
+  portNodeId,
+  handleItemId,
+  type FactoryNodeType,
+} from './planStore.ts';
 
 const reset = () =>
   usePlanStore.setState({ rootGraph: { nodes: [], edges: [] }, viewPath: [], nodes: [], edges: [] });
@@ -239,5 +246,42 @@ describe('factory nodes — navigation & ports', () => {
     const edge = get().rootGraph.edges.find(e => e.source === fac.id && e.target === rotorId);
     expect(edge).toBeTruthy();
     expect(edge!.targetHandle).toBe('wire_wolfram');
+  });
+
+  it('a hard limit on an inner node scales the root through the store', () => {
+    // root: a factory producing wire_wolfram, feeding a rotor consumer.
+    get().addFactoryNode({ x: 0, y: 0 });
+    const facId = firstFactoryId();
+    get().enterFactory(facId);
+    const outPortId = get().addOutputPort('wire_wolfram');
+    get().addNode('wire_wolfram', 'recipe_wire_wolfram', { x: 0, y: 0 });
+    const wireId = factoryAt([facId]).data.inner.nodes.find(n => n.type === 'itemNode')!.id;
+    get().connectNodes({
+      source: wireId,
+      target: portNodeId('output', outPortId),
+      sourceHandle: null,
+      targetHandle: null,
+    });
+    get().exitTo(0);
+    get().addNode('comp_rotor', 'recipe_comp_rotor', { x: 200, y: 0 });
+    const rotorId = get().rootGraph.nodes.find(n => n.type === 'itemNode')!.id;
+    get().connectNodes({
+      source: facId,
+      target: rotorId,
+      sourceHandle: portNodeId('output', outPortId),
+      targetHandle: 'wire_wolfram',
+    });
+
+    // Rotor's unlimited demand on wire is 20/min; limiting the inner node to 10 halves the root.
+    get().enterFactory(facId);
+    get().setNodeHardLimit(wireId, 10);
+
+    const rotorNode = get().rootGraph.nodes.find(n => n.id === rotorId);
+    if (!isItemNode(rotorNode!)) throw new Error('expected item node');
+    expect(rotorNode.data.balance?.outputRatePerMin).toBeCloseTo(5);
+
+    const innerWire = factoryAt([facId]).data.inner.nodes.find(n => n.id === wireId);
+    if (!isItemNode(innerWire!)) throw new Error('expected item node');
+    expect(innerWire.data.balance?.isLimitBinding).toBe(true);
   });
 });

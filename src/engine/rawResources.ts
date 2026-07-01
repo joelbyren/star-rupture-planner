@@ -33,6 +33,7 @@ export function baseRateForItem(itemId: string): number {
 }
 
 export function calcSupplyRate(itemId: string, config: RawResourceConfig): number {
+  if (config.mode === 'custom') return config.customRatePerMin ?? 0;
   return baseRateForItem(itemId) * PURITY_MULT[config.purity] * VERSION_MULT[config.extractorVersion];
 }
 

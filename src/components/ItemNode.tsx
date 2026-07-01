@@ -34,9 +34,14 @@ export function ItemNode({ data }: NodeProps<ItemNodeType>) {
   }, [inputs.length, data.itemId]);
 
   const [showTip, setShowTip] = useState(false);
+  const limitBinding = !!balance?.isLimitBinding;
 
   return (
-    <div className="relative bg-slate-800 border border-slate-600 rounded-md w-[150px] shadow-lg">
+    <div
+      className={`relative bg-slate-800 border rounded-md w-[150px] shadow-lg ${
+        limitBinding ? 'border-amber-400 ring-1 ring-amber-400/50' : 'border-slate-600'
+      }`}
+    >
       {/* Input handles — one per recipe ingredient (none for raw resources) */}
       {inputs.map((inp, i) => (
         <Handle
@@ -52,7 +57,7 @@ export function ItemNode({ data }: NodeProps<ItemNodeType>) {
       <div className="px-2 py-1.5">
         <div className="text-[9px] text-slate-400 uppercase tracking-wide leading-tight truncate">
           {data.isRaw
-            ? `${machineForResource(data.itemId)}${rawConfig?.extractorVersion === 'V2' ? ' V2' : ''}`
+            ? `${machineForResource(data.itemId)}${rawConfig?.mode === 'custom' ? ' (custom)' : rawConfig?.extractorVersion === 'V2' ? ' V2' : ''}`
             : recipe?.machine || '—'}
           {recipe?.buildingTier && <span className="text-violet-400 ml-1">{recipe.buildingTier}</span>}
         </div>
@@ -65,10 +70,19 @@ export function ItemNode({ data }: NodeProps<ItemNodeType>) {
           <div className="text-[10px] leading-tight">
             <span className="text-violet-400">{balance ? `${balance.outputRatePerMin.toFixed(1)}/min` : '—'}</span>
             {balance && <span className="text-amber-400 ml-1.5">×{balance.buildingCountExact.toFixed(2)}</span>}
+            {balance?.hardLimitPerMin != null && (
+              <span className={`ml-1.5 ${balance.isLimitBinding ? 'text-amber-400 font-semibold' : 'text-slate-500'}`}>
+                ≤{balance.hardLimitPerMin.toFixed(0)}
+              </span>
+            )}
           </div>
         ) : (
           rawConfig && (
-            <div className={`text-[10px] leading-tight font-medium ${surplus !== null && surplus >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+            <div
+              className={`text-[10px] leading-tight font-medium ${
+                balance?.isLimitBinding ? 'text-amber-400' : surplus !== null && surplus >= 0 ? 'text-emerald-400' : 'text-red-400'
+              }`}
+            >
               {supplyRate?.toFixed(0)}/min ({surplus !== null && surplus >= 0 ? '+' : ''}{surplus?.toFixed(0)})
             </div>
           )

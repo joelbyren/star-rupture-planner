@@ -6,9 +6,12 @@
 //   Pass 1 — anchor each end product (a node nothing consumes) at 1 building.
 //   Pass 2 — propagate demand upstream along edges, summing across consumers,
 //            yielding a fractional building count for every node.
-//   Pass 3 — normalize to the bottleneck: divide every building count by the
-//            largest one (K), so the most-demanded node becomes exactly 1 and
-//            all others scale relative to it.
+//   Pass 3 — scale the whole relative solution by a single factor: if any node
+//            carries a hard limit (max items/min), scale so the most restrictive
+//            limit is hit exactly (may scale UP or DOWN); otherwise normalize to
+//            the bottleneck, dividing every building count by the largest one (K)
+//            so the most-demanded node becomes exactly 1 and all others scale
+//            relative to it.
 //
 // Factories (sub-factories) extend this: a factory is a container node with
 // input/output ports and an inner graph. Its OUTPUT-port demand is set by the
@@ -17,14 +20,15 @@
 // and its INPUT-port requirements flow back out to size the parent's upstream
 // producers. The whole factory result is then scaled by the parent's normalize
 // factor (linear), so it stays consistent with the rest of the parent graph.
+// Hard limits on inner factory nodes constrain that same global scale factor,
+// since factoryCache stores the pre-scaling (scale 1) inner solve.
 //
 //   inputRatePerBuilding = (input.quantity / output.quantity) × outputRatePerMin
 //   buildingCount        = requiredRate / outputRatePerMin
 //
 // SWAP SEAM: a stronger balancer can replace this module — the
 // (nodes, edges, recipes, options) → Record<id, AnyBalanceResult> contract is
-// all the store/UI depend on. The `anchors`/`normalize` options are also the
-// substrate for future explicit per-node limits.
+// all the store/UI depend on.
 
 import type { Recipe } from './types.ts';
 
@@ -58,6 +62,8 @@ export interface BalanceNodeInput {
   kind?: BalanceNodeKind;
   /** Present iff kind === 'factory'. */
   factory?: FactoryDef;
+  /** Max items/min this node's output may reach; the network scales to respect it. */
+  hardLimit?: number;
 }
 
 export interface BalanceEdge {
@@ -81,6 +87,10 @@ export interface BalanceResult {
   outputRatePerMin: number;
   inputs: BalanceInputDemand[];
   isRaw: boolean;
+  /** Echo of the node's effective hard limit, for display. Not itself scaled. */
+  hardLimitPerMin?: number;
+  /** True iff this limit is (one of) the binding constraint(s) on the global scale. */
+  isLimitBinding?: boolean;
 }
 
 export interface FactoryPortResult {
@@ -258,17 +268,43 @@ export function balanceGraph(
     else demand(n.id);
   }
 
-  // Normalize to the bottleneck (largest building count among recipe nodes).
+  // Pass 3: scale the relative solution by a single global factor.
   let scale = 1;
   if (normalize) {
-    let maxBuildings = 0;
+    // Hard limits: cap the global scale so no limited node exceeds its max.
+    const ratios: number[] = [];
+    const visitFactory = (def: FactoryDef, fr: FactoryBalanceResult) => {
+      for (const m of def.inner.nodes) {
+        const r = fr.inner[m.id];
+        if (!r) continue;
+        if ('isFactory' in r) { if (m.factory) visitFactory(m.factory, r); continue; }
+        if (m.hardLimit != null && m.hardLimit > 0 && r.outputRatePerMin > 0)
+          ratios.push(m.hardLimit / r.outputRatePerMin);
+      }
+    };
     for (const n of nodes) {
-      const recipe = recipeForNode(n);
-      if (!recipe) continue;
-      const bc = demand(n.id) / recipe.outputRatePerMin;
-      if (bc > maxBuildings) maxBuildings = bc;
+      if (kindOf(n) === 'factory') {
+        const fr = factoryCache.get(n.id);
+        if (fr && n.factory) visitFactory(n.factory, fr);
+        continue;
+      }
+      const rel = demand(n.id); // memoized above — free
+      if (n.hardLimit != null && n.hardLimit > 0 && rel > 0) ratios.push(n.hardLimit / rel);
     }
-    scale = maxBuildings > 0 ? 1 / maxBuildings : 1;
+
+    if (ratios.length > 0) {
+      scale = Math.min(...ratios); // may be > 1: scale UP to the max
+    } else {
+      // No limits: normalize to the bottleneck (largest building count among recipe nodes).
+      let maxBuildings = 0;
+      for (const n of nodes) {
+        const recipe = recipeForNode(n);
+        if (!recipe) continue;
+        const bc = demand(n.id) / recipe.outputRatePerMin;
+        if (bc > maxBuildings) maxBuildings = bc;
+      }
+      scale = maxBuildings > 0 ? 1 / maxBuildings : 1;
+    }
   }
 
   const out: Record<string, AnyBalanceResult> = {};
@@ -287,6 +323,7 @@ export function balanceGraph(
         outputRatePerMin: scaledDemand,
         inputs: [],
         isRaw: true,
+        hardLimitPerMin: n.hardLimit,
       };
       continue;
     }
@@ -302,10 +339,21 @@ export function balanceGraph(
         neededPerMin: (i.quantity / outQty) * scaledDemand,
       })),
       isRaw: false,
+      hardLimitPerMin: n.hardLimit,
     };
   }
 
+  if (normalize) markBinding(out);
+
   return out;
+}
+
+function markBinding(res: Record<string, AnyBalanceResult>): void {
+  for (const r of Object.values(res)) {
+    if ('isFactory' in r) { markBinding(r.inner); continue; }
+    if (r.hardLimitPerMin != null && r.outputRatePerMin > 0)
+      r.isLimitBinding = r.outputRatePerMin >= r.hardLimitPerMin * (1 - 1e-9);
+  }
 }
 
 /** Root entry point: normalized balance over the top-level graph. */

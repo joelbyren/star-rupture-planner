@@ -56,3 +56,73 @@ describe('planStore — manual builder', () => {
     expect(usePlanStore.getState().edges).toHaveLength(0);
   });
 });
+
+describe('planStore — hard limits', () => {
+  beforeEach(reset);
+
+  it('setNodeHardLimit caps the network', () => {
+    const s = usePlanStore.getState();
+    s.addNode('comp_rotor', 'recipe_comp_rotor');
+    s.addNode('wire_wolfram', 'recipe_wire_wolfram');
+    s.connectNodes({ source: idFor('wire_wolfram'), target: idFor('comp_rotor'), sourceHandle: null, targetHandle: 'wire_wolfram' });
+
+    s.setNodeHardLimit(idFor('wire_wolfram'), 10);
+    // wire's relative demand (unlimited) is 20/min at rotor=1 → limit 10 halves the network.
+    expect(balanceFor('comp_rotor').outputRatePerMin).toBeCloseTo(5);
+    expect(balanceFor('wire_wolfram').hardLimitPerMin).toBe(10);
+    expect(balanceFor('wire_wolfram').isLimitBinding).toBe(true);
+  });
+
+  it('setNodeHardLimit(null) clears the limit', () => {
+    const s = usePlanStore.getState();
+    s.addNode('comp_rotor', 'recipe_comp_rotor');
+    s.addNode('wire_wolfram', 'recipe_wire_wolfram');
+    s.connectNodes({ source: idFor('wire_wolfram'), target: idFor('comp_rotor'), sourceHandle: null, targetHandle: 'wire_wolfram' });
+    s.setNodeHardLimit(idFor('wire_wolfram'), 10);
+
+    s.setNodeHardLimit(idFor('wire_wolfram'), null);
+    expect(balanceFor('comp_rotor').buildingCountExact).toBeCloseTo(1);
+    expect(balanceFor('wire_wolfram').hardLimitPerMin).toBeUndefined();
+  });
+
+  it('a raw node always caps the network at calcSupplyRate, scaling UP when there is spare capacity', () => {
+    const s = usePlanStore.getState();
+    s.addNode('comp_rotor', 'recipe_comp_rotor');
+    s.addNode('wire_wolfram', 'recipe_wire_wolfram');
+    s.addNode('ingot_wolfram', null); // raw
+    s.connectNodes({ source: idFor('wire_wolfram'), target: idFor('comp_rotor'), sourceHandle: null, targetHandle: 'wire_wolfram' });
+    s.connectNodes({ source: idFor('ingot_wolfram'), target: idFor('wire_wolfram'), sourceHandle: null, targetHandle: 'ingot_wolfram' });
+
+    // normal purity × V1 = 120/min supply; relative demand at rotor=1 is 10 → scales UP to use it all.
+    expect(balanceFor('ingot_wolfram').outputRatePerMin).toBeCloseTo(120);
+    expect(balanceFor('ingot_wolfram').isLimitBinding).toBe(true);
+    expect(balanceFor('comp_rotor').buildingCountExact).toBeGreaterThan(1);
+  });
+
+  it('changing purity moves the raw cap and rescales the network', () => {
+    const s = usePlanStore.getState();
+    s.addNode('comp_rotor', 'recipe_comp_rotor');
+    s.addNode('wire_wolfram', 'recipe_wire_wolfram');
+    s.addNode('ingot_wolfram', null);
+    s.connectNodes({ source: idFor('wire_wolfram'), target: idFor('comp_rotor'), sourceHandle: null, targetHandle: 'wire_wolfram' });
+    s.connectNodes({ source: idFor('ingot_wolfram'), target: idFor('wire_wolfram'), sourceHandle: null, targetHandle: 'ingot_wolfram' });
+
+    s.setNodeRawConfig(idFor('ingot_wolfram'), { purity: 'pure' });
+    expect(balanceFor('ingot_wolfram').outputRatePerMin).toBeCloseTo(240);
+  });
+
+  it('custom mode drives the raw cap directly', () => {
+    const s = usePlanStore.getState();
+    s.addNode('comp_rotor', 'recipe_comp_rotor');
+    s.addNode('wire_wolfram', 'recipe_wire_wolfram');
+    s.addNode('ingot_wolfram', null);
+    s.connectNodes({ source: idFor('wire_wolfram'), target: idFor('comp_rotor'), sourceHandle: null, targetHandle: 'wire_wolfram' });
+    s.connectNodes({ source: idFor('ingot_wolfram'), target: idFor('wire_wolfram'), sourceHandle: null, targetHandle: 'ingot_wolfram' });
+
+    s.setNodeRawConfig(idFor('ingot_wolfram'), { mode: 'custom', customRatePerMin: 30 });
+    expect(balanceFor('ingot_wolfram').outputRatePerMin).toBeCloseTo(30);
+
+    s.setNodeRawConfig(idFor('ingot_wolfram'), { customRatePerMin: 60 });
+    expect(balanceFor('ingot_wolfram').outputRatePerMin).toBeCloseTo(60);
+  });
+});
