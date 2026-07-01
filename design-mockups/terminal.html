@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SRP/OS — LINE SUPERVISOR — ELECTRONICS WING</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=VT323&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ══════════════════════════════════════════════════════════════════
+   PHOSPHOR CONTROL TERMINAL — StarRupture Planner mockup
+   ══════════════════════════════════════════════════════════════════ */
+:root{
+  --bg:        #050705;
+  --bg-panel:  #0a0d08;
+  --bg-inset:  #070a06;
+  --amber:     #ffb000;
+  --amber-hi:  #ffd254;
+  --amber-mid: #c98a10;
+  --amber-dim: #7a5a0e;
+  --amber-ghost:#3c2d08;
+  --grid-line: rgba(255,176,0,.05);
+  /* item-type phosphors */
+  --ph-resource: #ffb000;  /* amber      — RESOURCE  */
+  --ph-component:#5fe07a;  /* green      — COMPONENT */
+  --ph-fluid:    #4fd4d4;  /* cyan       — FLUID     */
+  --ph-powder:   #d9c8a0;  /* pale paper — POWDER    */
+  --glow-sm: 0 0 4px rgba(255,176,0,.45);
+  --glow-md: 0 0 8px rgba(255,176,0,.35);
+  --f-display:'VT323', 'Courier New', monospace;
+  --f-data:'IBM Plex Mono', 'Consolas', 'Courier New', monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden}
+body{
+  background:var(--bg);
+  color:var(--amber);
+  font-family:var(--f-data);
+  font-size:13px;
+  display:flex;
+  flex-direction:column;
+  text-transform:uppercase;
+  cursor:default;
+  -webkit-font-smoothing:antialiased;
+}
+::selection{background:var(--amber);color:var(--bg)}
+
+/* ── CRT atmosphere ─────────────────────────────────────────── */
+.crt-scanlines{
+  position:fixed;inset:0;z-index:200;pointer-events:none;
+  background:repeating-linear-gradient(0deg,
+    rgba(0,0,0,.22) 0px, rgba(0,0,0,.22) 1px,
+    transparent 1px, transparent 3px);
+  mix-blend-mode:multiply;
+}
+.crt-vignette{
+  position:fixed;inset:0;z-index:201;pointer-events:none;
+  background:radial-gradient(ellipse 120% 100% at 50% 50%,
+    transparent 55%, rgba(0,0,0,.28) 84%, rgba(0,0,0,.62) 100%);
+}
+.crt-glow{
+  position:fixed;inset:0;z-index:199;pointer-events:none;
+  background:radial-gradient(ellipse 90% 70% at 50% 42%,
+    rgba(255,176,0,.045), transparent 70%);
+  animation:crt-breathe 7s ease-in-out infinite;
+}
+@keyframes crt-breathe{
+  0%,100%{opacity:1} 50%{opacity:.78}
+}
+.crt-flicker{
+  position:fixed;inset:0;z-index:202;pointer-events:none;
+  background:rgba(210,160,40,.018);
+  animation:flick 4s steps(1) infinite;
+}
+@keyframes flick{
+  0%,100%{opacity:1} 61%{opacity:0} 62%{opacity:1}
+  61.5%{opacity:.4} 87%{opacity:1} 88%{opacity:.2} 88.5%{opacity:1}
+}
+
+/* ── Top status line ────────────────────────────────────────── */
+header{
+  flex:0 0 auto;
+  display:flex;align-items:stretch;gap:0;
+  border-bottom:1px solid var(--amber-dim);
+  background:var(--bg-panel);
+  font-family:var(--f-display);
+  font-size:19px;line-height:1;
+  user-select:none;
+  position:relative;z-index:20;
+}
+header .cell{
+  padding:8px 14px 6px;
+  display:flex;align-items:center;gap:10px;
+  border-right:1px solid var(--amber-ghost);
+  white-space:nowrap;
+}
+.lockup{
+  background:var(--amber);color:var(--bg);
+  font-weight:400;letter-spacing:1px;
+  padding:8px 16px 6px;
+  text-shadow:none;
+  box-shadow:0 0 14px rgba(255,176,0,.35);
+}
+.lockup b{font-weight:400}
+.sys-id{color:var(--amber-mid)}
+.sys-id .lit{color:var(--amber);text-shadow:var(--glow-sm)}
+.breadcrumb{color:var(--amber-mid);flex:1 1 auto;overflow:hidden}
+.breadcrumb .crumb{color:var(--amber-dim)}
+.breadcrumb .crumb.last{color:var(--amber-hi);text-shadow:var(--glow-sm)}
+.breadcrumb .sep{color:var(--amber-ghost);margin:0 6px}
+.hdr-right{margin-left:auto;border-right:none;border-left:1px solid var(--amber-ghost)}
+.led{
+  display:inline-block;width:9px;height:9px;border-radius:50%;
+  background:var(--ph-component);
+  box-shadow:0 0 6px var(--ph-component), 0 0 2px var(--ph-component);
+  animation:led-pulse 2.2s ease-in-out infinite;
+}
+@keyframes led-pulse{0%,100%{opacity:1}50%{opacity:.45}}
+.clock{color:var(--amber);text-shadow:var(--glow-sm);min-width:86px;text-align:right}
+
+/* ── Layout ─────────────────────────────────────────────────── */
+main{flex:1 1 auto;display:flex;min-height:0;position:relative;z-index:10}
+
+/* ── Side panel: text readout ───────────────────────────────── */
+aside{
+  flex:0 0 264px;
+  background:var(--bg-panel);
+  border-right:1px solid var(--amber-dim);
+  padding:14px 16px 16px;
+  overflow-y:auto;
+  user-select:none;
+}
+aside::-webkit-scrollbar{width:8px}
+aside::-webkit-scrollbar-thumb{background:var(--amber-ghost)}
+.rule{
+  font-family:var(--f-data);font-size:11px;letter-spacing:0;
+  color:var(--amber-dim);white-space:nowrap;overflow:hidden;
+  margin:14px 0 8px;
+}
+.rule:first-child{margin-top:0}
+.rule .t{color:var(--amber);text-shadow:var(--glow-sm);padding:0 6px}
+.readout-target{
+  border:1px solid var(--amber-mid);
+  box-shadow:inset 0 0 12px rgba(255,176,0,.07), var(--glow-sm);
+  padding:10px 12px 8px;
+  margin-bottom:4px;
+  background:var(--bg-inset);
+}
+.readout-target .tl{font-size:10px;letter-spacing:2px;color:var(--amber-mid);margin-bottom:4px}
+.readout-target .ti{
+  font-family:var(--f-display);font-size:26px;line-height:1;
+  color:var(--amber-hi);text-shadow:0 0 10px rgba(255,210,84,.5);
+}
+.readout-target .tr{font-family:var(--f-display);font-size:19px;color:var(--amber);margin-top:2px}
+.kv{display:flex;align-items:baseline;gap:6px;padding:2px 0;font-size:12px}
+.kv .k{color:var(--amber-mid);white-space:nowrap}
+.kv .dots{flex:1;border-bottom:1px dotted var(--amber-ghost);transform:translateY(-3px)}
+.kv .v{color:var(--amber);text-shadow:var(--glow-sm);white-space:nowrap}
+.kv .v small{color:var(--amber-mid);font-size:10px}
+.sym-row{display:flex;align-items:center;gap:9px;padding:3px 0;font-size:12px;color:var(--amber-mid)}
+.sym-badge{
+  width:26px;height:17px;flex:0 0 auto;
+  display:flex;align-items:center;justify-content:center;
+  font-size:10px;font-weight:600;letter-spacing:1px;
+  border:1px solid currentColor;
+  background:rgba(0,0,0,.4);
+}
+.sym-badge.t-resource {color:var(--ph-resource); text-shadow:0 0 5px var(--ph-resource)}
+.sym-badge.t-component{color:var(--ph-component);text-shadow:0 0 5px var(--ph-component)}
+.sym-badge.t-fluid    {color:var(--ph-fluid);    text-shadow:0 0 5px var(--ph-fluid)}
+.sym-badge.t-powder   {color:var(--ph-powder);   text-shadow:0 0 5px var(--ph-powder)}
+.panel-foot{
+  margin-top:16px;padding-top:8px;border-top:1px solid var(--amber-ghost);
+  font-size:10px;color:var(--amber-dim);line-height:1.7;letter-spacing:1px;
+}
+
+/* ── Canvas / viewport ──────────────────────────────────────── */
+#viewport{
+  flex:1 1 auto;position:relative;overflow:hidden;
+  cursor:grab;
+  background:
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+  background-size:36px 36px;
+  background-color:var(--bg);
+}
+#viewport.panning{cursor:grabbing}
+#world{position:absolute;top:0;left:0;transform-origin:0 0;will-change:transform}
+#edgeLayer{position:absolute;top:0;left:0;overflow:visible;pointer-events:none}
+
+/* ── Edges: mimic-board signal traces ───────────────────────── */
+.edge{
+  fill:none;
+  stroke:var(--amber-mid);
+  stroke-width:1.5;
+  opacity:.55;
+  transition:opacity .18s, stroke .18s;
+}
+.edge.flow{
+  stroke:var(--amber);
+  stroke-width:1.5;
+  stroke-dasharray:5 7;
+  animation:march 1.1s linear infinite;
+  opacity:.8;
+}
+@keyframes march{to{stroke-dashoffset:-12}}
+svg.has-hot .edge{opacity:.13}
+svg.has-hot .edge.hot{opacity:1;stroke:var(--amber-hi);filter:drop-shadow(0 0 3px rgba(255,210,84,.8))}
+svg.has-hot .edge.flow.hot{stroke:var(--amber-hi)}
+.edge-node{fill:var(--amber-mid);opacity:.7;transition:opacity .18s, fill .18s}
+svg.has-hot .edge-node{opacity:.13}
+svg.has-hot .edge-node.hot{opacity:1;fill:var(--amber-hi)}
+
+/* ── Nodes: terminal panels ─────────────────────────────────── */
+.node{
+  position:absolute;width:180px;
+  background:var(--bg-inset);
+  border:2px solid var(--amber-dim);
+  outline:1px solid rgba(255,176,0,.14);
+  outline-offset:2px;
+  box-shadow:0 0 10px rgba(0,0,0,.8), inset 0 0 18px rgba(255,176,0,.03);
+  font-size:12px;
+  transition:border-color .15s, box-shadow .15s, outline-color .15s;
+}
+.node:hover{
+  border-color:var(--amber);
+  outline-color:rgba(255,176,0,.45);
+  box-shadow:0 0 18px rgba(255,176,0,.22), inset 0 0 18px rgba(255,176,0,.06);
+  z-index:5;
+}
+.n-head{
+  height:22px;
+  background:var(--amber-dim);
+  color:var(--bg);
+  font-family:var(--f-data);
+  font-size:10px;font-weight:600;letter-spacing:2px;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 8px;
+  text-shadow:none;
+}
+.node:hover .n-head{background:var(--amber);}
+.n-head .m-id{opacity:.55;font-weight:400;letter-spacing:0}
+.n-body{
+  height:60px;padding:6px 8px 0;
+  display:flex;flex-direction:column;justify-content:flex-start;
+}
+.n-item{
+  font-family:var(--f-display);font-size:19px;line-height:1;
+  color:var(--amber);text-shadow:var(--glow-sm);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.n-rate{
+  display:flex;align-items:baseline;gap:6px;margin-top:3px;
+}
+.n-rate .r{
+  font-family:var(--f-display);font-size:22px;line-height:1;
+  color:var(--amber-hi);text-shadow:0 0 8px rgba(255,210,84,.45);
+}
+.n-rate .u{font-size:9px;color:var(--amber-mid);letter-spacing:1px}
+.n-meta{font-size:10px;color:var(--amber-mid);margin-top:3px;letter-spacing:1px}
+.n-meta .plus{color:var(--ph-component);text-shadow:0 0 4px var(--ph-component)}
+.n-in{border-top:1px solid var(--amber-ghost)}
+.n-row{
+  height:20px;display:flex;align-items:center;gap:7px;
+  padding:0 8px;font-size:11px;color:var(--amber-mid);
+}
+.n-row + .n-row{border-top:1px dotted rgba(255,176,0,.1)}
+.n-badge{
+  width:22px;height:14px;flex:0 0 auto;
+  display:flex;align-items:center;justify-content:center;
+  font-size:9px;font-weight:600;letter-spacing:1px;
+  border:1px solid currentColor;background:rgba(0,0,0,.45);
+}
+.n-badge.t-resource {color:var(--ph-resource); text-shadow:0 0 4px var(--ph-resource)}
+.n-badge.t-component{color:var(--ph-component);text-shadow:0 0 4px var(--ph-component)}
+.n-badge.t-fluid    {color:var(--ph-fluid);    text-shadow:0 0 4px var(--ph-fluid)}
+.n-badge.t-powder   {color:var(--ph-powder);   text-shadow:0 0 4px var(--ph-powder)}
+.n-row .in-name{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.n-row .in-rate{color:var(--amber);font-size:11px}
+
+/* raw extraction panels */
+.node.raw{border-style:dashed}
+.node.raw .n-head{background:transparent;color:var(--amber-mid);border-bottom:1px solid var(--amber-ghost);letter-spacing:2px}
+.node.raw:hover .n-head{color:var(--amber)}
+
+/* target: alarm / priority panel */
+.node.target{
+  border-color:var(--amber);
+  outline:1px solid rgba(255,176,0,.5);
+  box-shadow:0 0 26px rgba(255,176,0,.3), inset 0 0 22px rgba(255,176,0,.07);
+  animation:alarm 2.6s ease-in-out infinite;
+}
+@keyframes alarm{
+  0%,100%{box-shadow:0 0 26px rgba(255,176,0,.3), inset 0 0 22px rgba(255,176,0,.07)}
+  50%   {box-shadow:0 0 14px rgba(255,176,0,.14), inset 0 0 22px rgba(255,176,0,.04)}
+}
+.node.target .n-head{background:var(--amber);color:var(--bg)}
+.node.target .n-item{color:var(--amber-hi);text-shadow:0 0 12px rgba(255,210,84,.6)}
+.cursor-blk{
+  display:inline-block;color:var(--amber-hi);
+  animation:blink 1.05s steps(1) infinite;
+  text-shadow:0 0 8px rgba(255,210,84,.7);
+}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+
+/* ── Zoom controls ──────────────────────────────────────────── */
+.zoom-ctl{
+  position:absolute;right:14px;bottom:14px;z-index:30;
+  display:flex;flex-direction:column;
+  border:1px solid var(--amber-dim);
+  background:var(--bg-panel);
+  box-shadow:0 0 12px rgba(0,0,0,.7);
+  user-select:none;
+}
+.zoom-ctl button{
+  appearance:none;border:none;background:transparent;
+  color:var(--amber);font-family:var(--f-display);font-size:20px;
+  width:38px;height:34px;cursor:pointer;line-height:1;
+  text-shadow:var(--glow-sm);
+  border-bottom:1px solid var(--amber-ghost);
+  transition:background .12s;
+}
+.zoom-ctl button:last-child{border-bottom:none}
+.zoom-ctl button:hover{background:var(--amber-ghost);color:var(--amber-hi)}
+.zoom-ctl button:active{background:var(--amber-dim);color:var(--bg)}
+.zoom-ctl .fit{font-size:13px;letter-spacing:1px}
+.zoom-pct{
+  position:absolute;right:60px;bottom:14px;z-index:30;
+  font-family:var(--f-display);font-size:17px;
+  color:var(--amber-mid);padding:6px 10px 4px;
+  border:1px solid var(--amber-ghost);background:var(--bg-panel);
+  min-width:58px;text-align:center;user-select:none;
+}
+
+/* status footer strip on canvas */
+.canvas-status{
+  position:absolute;left:14px;bottom:14px;z-index:30;
+  font-size:10px;letter-spacing:2px;color:var(--amber-dim);
+  user-select:none;pointer-events:none;
+}
+.canvas-status .lit{color:var(--amber-mid)}
+
+/* ── Boot sequence ──────────────────────────────────────────── */
+.boot-in{opacity:0;animation:boot-el .05s steps(1) forwards}
+@keyframes boot-el{to{opacity:1}}
+.node{opacity:0}
+.node.on{animation:power-on .5s steps(6) forwards}
+@keyframes power-on{
+  0%{opacity:0}
+  20%{opacity:.9}
+  30%{opacity:.15}
+  45%{opacity:1}
+  60%{opacity:.5}
+  100%{opacity:1}
+}
+#edgeLayer{opacity:0;transition:opacity .9s ease .1s}
+#edgeLayer.on{opacity:1}
+</style>
+</head>
+<body>
+
+<div class="crt-glow"></div>
+<div class="crt-scanlines"></div>
+<div class="crt-vignette"></div>
+<div class="crt-flicker"></div>
+
+<header>
+  <div class="lockup boot-in" style="animation-delay:.05s"><b>SRP&#9612;</b> STARRUPTURE PLANNER</div>
+  <div class="cell sys-id boot-in" style="animation-delay:.18s">SRP/OS <span class="lit">v0.3.1</span> — LINE SUPERVISOR</div>
+  <div class="cell sys-id boot-in" style="animation-delay:.30s">TTY-04</div>
+  <div class="cell breadcrumb boot-in" style="animation-delay:.42s" id="breadcrumb"></div>
+  <div class="cell hdr-right boot-in" style="animation-delay:.54s">
+    <span class="led"></span>
+    <span class="sys-id">LINK OK</span>
+    <span class="clock" id="clock">00:00:00</span>
+  </div>
+</header>
+
+<main>
+  <aside id="sidePanel">
+    <div class="rule boot-in" style="animation-delay:.5s" id="r1"></div>
+    <div class="readout-target boot-in" style="animation-delay:.6s">
+      <div class="tl">PRODUCTION TARGET</div>
+      <div class="ti" id="targetItem">—</div>
+      <div class="tr"><span id="targetRate">0</span>/MIN <span class="cursor-blk">&#9612;</span></div>
+    </div>
+    <div class="rule boot-in" style="animation-delay:.7s" id="r2"></div>
+    <div id="rawList" class="boot-in" style="animation-delay:.78s"></div>
+    <div class="rule boot-in" style="animation-delay:.86s" id="r3"></div>
+    <div class="boot-in" style="animation-delay:.92s">
+      <div class="kv"><span class="k">MACHINES</span><span class="dots"></span><span class="v" id="machinesExact">0</span></div>
+      <div class="kv"><span class="k">BUILDINGS</span><span class="dots"></span><span class="v" id="buildingsCeil">0</span></div>
+      <div class="kv"><span class="k">PROCESS NODES</span><span class="dots"></span><span class="v" id="nodeCount">0</span></div>
+      <div class="kv"><span class="k">SIGNAL LINES</span><span class="dots"></span><span class="v" id="edgeCount">0</span></div>
+    </div>
+    <div class="rule boot-in" style="animation-delay:1.0s" id="r4"></div>
+    <div class="boot-in" style="animation-delay:1.06s">
+      <div class="sym-row"><span class="sym-badge t-resource">RE</span> RESOURCE — RAW ORE FEED</div>
+      <div class="sym-row"><span class="sym-badge t-component">CO</span> COMPONENT — FABRICATED</div>
+      <div class="sym-row"><span class="sym-badge t-fluid">FL</span> FLUID — GAS / LIQUID</div>
+      <div class="sym-row"><span class="sym-badge t-powder">PW</span> POWDER — PROCESSED FINE</div>
+    </div>
+    <div class="panel-foot boot-in" style="animation-delay:1.14s">
+      READ-ONLY MIMIC BOARD<br>
+      DRAG: PAN &nbsp;&middot;&nbsp; WHEEL: ZOOM<br>
+      NO WRITE ACCESS ON TTY-04
+    </div>
+  </aside>
+
+  <div id="viewport">
+    <div id="world">
+      <svg id="edgeLayer" xmlns="http://www.w3.org/2000/svg"></svg>
+      <div id="nodeLayer"></div>
+    </div>
+    <div class="canvas-status boot-in" style="animation-delay:1.2s">
+      SCAN MODE: <span class="lit">CONTINUOUS</span> &nbsp;&middot;&nbsp; ALARMS: <span class="lit">0</span> &nbsp;&middot;&nbsp; FLOW: <span class="lit">NOMINAL</span>
+    </div>
+    <div class="zoom-pct boot-in" style="animation-delay:1.1s" id="zoomPct">100%</div>
+    <div class="zoom-ctl boot-in" style="animation-delay:1.05s">
+      <button id="zin" title="Zoom in" aria-label="Zoom in">+</button>
+      <button id="zout" title="Zoom out" aria-label="Zoom out">&minus;</button>
+      <button id="zfit" class="fit" title="Fit view" aria-label="Fit view">FIT</button>
+    </div>
+  </div>
+</main>
+
+<script src="./graph-data.js"></script>
+<script>
+(function(){
+  'use strict';
+  var G = window.FACTORY_GRAPH;
+
+  /* ── geometry constants — MUST match CSS above ──────────────
+     .node: width 180, border 2px each side
+     .n-head: 22px  |  .n-body: 60px  |  .n-in border-top: 1px
+     .n-row: 20px, +1px dotted top border on rows after the first */
+  var NODE_W = 180, BORDER = 2, HEAD_H = 22, BODY_H = 60, SEP = 1, ROW_H = 20, ROW_SEP = 1;
+
+  function nodeHeight(n){
+    var rows = n.inputs.length;
+    var h = BORDER*2 + HEAD_H + BODY_H;
+    if(rows > 0) h += SEP + rows*ROW_H + (rows-1)*ROW_SEP;
+    return h;
+  }
+  function inputPoint(n, idx){
+    return {
+      x: n.x,
+      y: n.y + BORDER + HEAD_H + BODY_H + SEP + idx*(ROW_H+ROW_SEP) + ROW_H/2
+    };
+  }
+  function outputPoint(n){
+    return { x: n.x + NODE_W, y: n.y + nodeHeight(n)/2 };
+  }
+
+  var byId = {};
+  G.nodes.forEach(function(n){ byId[n.id] = n; });
+
+  /* ── chrome / side panel ────────────────────────────────── */
+  function setRule(id, label){
+    var el = document.getElementById(id);
+    el.innerHTML = '┌' + '──' + '<span class="t">' + label + '</span>' +
+      Array(Math.max(2, 30 - label.length)).join('─');
+  }
+  setRule('r1','PLAN READOUT');
+  setRule('r2','RAW INTAKE');
+  setRule('r3','LINE TOTALS');
+  setRule('r4','SYMBOL TABLE');
+
+  var bc = document.getElementById('breadcrumb');
+  G.meta.breadcrumb.forEach(function(c, i, arr){
+    if(i>0){
+      var s = document.createElement('span');
+      s.className='sep'; s.textContent='▸';
+      bc.appendChild(s);
+    }
+    var sp = document.createElement('span');
+    sp.className = 'crumb' + (i===arr.length-1 ? ' last' : '');
+    sp.textContent = c;
+    bc.appendChild(sp);
+  });
+
+  document.getElementById('targetItem').textContent = G.meta.target.item;
+  document.getElementById('targetRate').textContent = G.meta.target.rate;
+  document.getElementById('machinesExact').textContent = G.meta.totals.machinesExact.toFixed(2);
+  document.getElementById('buildingsCeil').textContent = G.meta.totals.buildingsCeil;
+  document.getElementById('nodeCount').textContent = G.nodes.length;
+  document.getElementById('edgeCount').textContent = G.edges.length;
+
+  var rawList = document.getElementById('rawList');
+  G.meta.totals.raw.forEach(function(r){
+    var d = document.createElement('div');
+    d.className = 'kv';
+    d.innerHTML = '<span class="k">' + r.item + '</span><span class="dots"></span>' +
+      '<span class="v">' + r.rate + '<small>/MIN</small></span>';
+    rawList.appendChild(d);
+  });
+
+  /* clock */
+  var clockEl = document.getElementById('clock');
+  function tick(){
+    var d = new Date();
+    function p(v){ return (v<10?'0':'')+v; }
+    clockEl.textContent = p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds());
+  }
+  tick(); setInterval(tick, 1000);
+
+  /* ── build nodes ────────────────────────────────────────── */
+  var typeClass = { Resource:'t-resource', Component:'t-component', Fluid:'t-fluid', Powder:'t-powder' };
+  var nodeLayer = document.getElementById('nodeLayer');
+  var nodeEls = {};
+
+  G.nodes.forEach(function(n, i){
+    var el = document.createElement('div');
+    el.className = 'node' + (n.isRaw ? ' raw' : '') + (n.isTarget ? ' target' : '');
+    el.style.left = n.x + 'px';
+    el.style.top  = n.y + 'px';
+    el.dataset.id = n.id;
+
+    var headTag = n.isRaw ? 'SRC' : (n.isTarget ? 'TGT' : ('P'+ (i<10?'0':'') + i));
+    var html = '';
+    html += '<div class="n-head"><span>' + n.machine.toUpperCase() + '</span><span class="m-id">' + headTag + '</span></div>';
+    html += '<div class="n-body">';
+    html += '<div class="n-item" title="' + n.item + '">' + n.item.toUpperCase() + '</div>';
+    html += '<div class="n-rate"><span class="r">' + n.rate + '/MIN' +
+            (n.isTarget ? ' <span class="cursor-blk">▌</span>' : '') + '</span></div>';
+    if(n.isRaw){
+      var sur = n.surplus > 0 ? ' <span class="plus">(+' + n.surplus + ')</span>' : '';
+      html += '<div class="n-meta">SUPPLY ' + n.supply + '/MIN' + sur + '</div>';
+    } else {
+      html += '<div class="n-meta">×' + n.buildings.toFixed(2) + ' UNITS</div>';
+    }
+    html += '</div>';
+    if(n.inputs.length){
+      html += '<div class="n-in">';
+      n.inputs.forEach(function(inp){
+        html += '<div class="n-row">' +
+          '<span class="n-badge ' + (typeClass[inp.type]||'t-component') + '">' + inp.abbr + '</span>' +
+          '<span class="in-name">' + inp.item.toUpperCase() + '</span>' +
+          '<span class="in-rate">' + inp.rate + '</span>' +
+          '</div>';
+      });
+      html += '</div>';
+    }
+    el.innerHTML = html;
+    nodeLayer.appendChild(el);
+    nodeEls[n.id] = el;
+  });
+
+  /* ── build edges: Manhattan / mimic-board traces ────────── */
+  var SVGNS = 'http://www.w3.org/2000/svg';
+  var svg = document.getElementById('edgeLayer');
+  var edgeEls = []; // { base, flow, dotS, dotT, source, target }
+
+  /* stagger vertical channels per source so parallel traces don't overlap */
+  var srcSeen = {};
+
+  G.edges.forEach(function(e, i){
+    var s = byId[e.source], t = byId[e.target];
+    if(!s || !t) return;
+    var idx = t.inputs.findIndex(function(inp){ return inp.item === e.targetInput; });
+    if(idx < 0) idx = 0;
+    var p0 = outputPoint(s), p1 = inputPoint(t, idx);
+
+    srcSeen[e.source] = (srcSeen[e.source] || 0) + 1;
+    var lane = srcSeen[e.source]; /* 1,2,3... per source */
+    var gap = p1.x - p0.x;
+    var midX;
+    if(gap > 24){
+      midX = p0.x + Math.min(gap - 10, 22 + lane * 14 + (i % 3) * 4);
+    } else {
+      midX = p0.x + gap/2;
+    }
+
+    var d = 'M' + p0.x + ' ' + p0.y +
+            ' H' + midX +
+            ' V' + p1.y +
+            ' H' + p1.x;
+
+    var base = document.createElementNS(SVGNS,'path');
+    base.setAttribute('d', d);
+    base.setAttribute('class','edge');
+    svg.appendChild(base);
+
+    var flow = document.createElementNS(SVGNS,'path');
+    flow.setAttribute('d', d);
+    flow.setAttribute('class','edge flow');
+    svg.appendChild(flow);
+
+    var dotS = document.createElementNS(SVGNS,'rect');
+    dotS.setAttribute('x', p0.x - 2); dotS.setAttribute('y', p0.y - 3);
+    dotS.setAttribute('width', 4); dotS.setAttribute('height', 6);
+    dotS.setAttribute('class','edge-node');
+    svg.appendChild(dotS);
+
+    var dotT = document.createElementNS(SVGNS,'rect');
+    dotT.setAttribute('x', p1.x - 2); dotT.setAttribute('y', p1.y - 3);
+    dotT.setAttribute('width', 4); dotT.setAttribute('height', 6);
+    dotT.setAttribute('class','edge-node');
+    svg.appendChild(dotT);
+
+    edgeEls.push({ base: base, flow: flow, dotS: dotS, dotT: dotT, source: e.source, target: e.target });
+  });
+
+  /* ── hover: emphasize connected traces ──────────────────── */
+  Object.keys(nodeEls).forEach(function(id){
+    var el = nodeEls[id];
+    el.addEventListener('mouseenter', function(){
+      svg.classList.add('has-hot');
+      edgeEls.forEach(function(ed){
+        var hot = ed.source === id || ed.target === id;
+        ed.base.classList.toggle('hot', hot);
+        ed.flow.classList.toggle('hot', hot);
+        ed.dotS.classList.toggle('hot', hot);
+        ed.dotT.classList.toggle('hot', hot);
+      });
+    });
+    el.addEventListener('mouseleave', function(){
+      svg.classList.remove('has-hot');
+      edgeEls.forEach(function(ed){
+        ed.base.classList.remove('hot');
+        ed.flow.classList.remove('hot');
+        ed.dotS.classList.remove('hot');
+        ed.dotT.classList.remove('hot');
+      });
+    });
+  });
+
+  /* ── pan / zoom ─────────────────────────────────────────── */
+  var viewport = document.getElementById('viewport');
+  var world = document.getElementById('world');
+  var view = { x: 0, y: 0, z: 1 };
+  var ZMIN = 0.25, ZMAX = 2.5;
+
+  function applyView(){
+    world.style.transform = 'translate(' + view.x + 'px,' + view.y + 'px) scale(' + view.z + ')';
+    document.getElementById('zoomPct').textContent = Math.round(view.z * 100) + '%';
+  }
+
+  function bounds(){
+    var minX=Infinity, minY=Infinity, maxX=-Infinity, maxY=-Infinity;
+    G.nodes.forEach(function(n){
+      minX = Math.min(minX, n.x);
+      minY = Math.min(minY, n.y);
+      maxX = Math.max(maxX, n.x + NODE_W);
+      maxY = Math.max(maxY, n.y + nodeHeight(n));
+    });
+    return { minX:minX, minY:minY, maxX:maxX, maxY:maxY };
+  }
+
+  function fitView(){
+    var b = bounds();
+    var pad = 60;
+    var vw = viewport.clientWidth, vh = viewport.clientHeight;
+    var bw = b.maxX - b.minX, bh = b.maxY - b.minY;
+    var z = Math.min((vw - pad*2)/bw, (vh - pad*2)/bh);
+    z = Math.max(ZMIN, Math.min(ZMAX, z));
+    view.z = z;
+    view.x = (vw - bw*z)/2 - b.minX*z;
+    view.y = (vh - bh*z)/2 - b.minY*z;
+    applyView();
+  }
+
+  function zoomAt(cx, cy, factor){
+    var nz = Math.max(ZMIN, Math.min(ZMAX, view.z * factor));
+    if(nz === view.z) return;
+    view.x = cx - (cx - view.x) * (nz / view.z);
+    view.y = cy - (cy - view.y) * (nz / view.z);
+    view.z = nz;
+    applyView();
+  }
+
+  viewport.addEventListener('wheel', function(ev){
+    ev.preventDefault();
+    var rect = viewport.getBoundingClientRect();
+    var factor = Math.pow(1.0016, -ev.deltaY);
+    zoomAt(ev.clientX - rect.left, ev.clientY - rect.top, factor);
+  }, { passive:false });
+
+  var pan = null;
+  viewport.addEventListener('mousedown', function(ev){
+    if(ev.button !== 0) return;
+    if(ev.target.closest('.node') || ev.target.closest('.zoom-ctl')) return;
+    pan = { sx: ev.clientX, sy: ev.clientY, ox: view.x, oy: view.y };
+    viewport.classList.add('panning');
+    ev.preventDefault();
+  });
+  window.addEventListener('mousemove', function(ev){
+    if(!pan) return;
+    view.x = pan.ox + (ev.clientX - pan.sx);
+    view.y = pan.oy + (ev.clientY - pan.sy);
+    applyView();
+  });
+  window.addEventListener('mouseup', function(){
+    pan = null;
+    viewport.classList.remove('panning');
+  });
+
+  document.getElementById('zin').addEventListener('click', function(){
+    zoomAt(viewport.clientWidth/2, viewport.clientHeight/2, 1.25);
+  });
+  document.getElementById('zout').addEventListener('click', function(){
+    zoomAt(viewport.clientWidth/2, viewport.clientHeight/2, 1/1.25);
+  });
+  document.getElementById('zfit').addEventListener('click', fitView);
+  window.addEventListener('resize', fitView);
+
+  /* ── boot sequence: power nodes on in stagger ───────────── */
+  fitView();
+  var order = G.nodes.slice().sort(function(a,b){ return (a.x - b.x) || (a.y - b.y); });
+  order.forEach(function(n, i){
+    var el = nodeEls[n.id];
+    el.style.animationDelay = (0.55 + i * 0.07) + 's';
+    el.classList.add('on');
+  });
+  setTimeout(function(){ svg.classList.add('on'); }, 550 + order.length * 70 + 250);
+})();
+</script>
+</body>
+</html>

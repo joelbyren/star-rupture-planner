@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Star Rupture Manufactory — Works Planning Bureau</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800&family=Old+Standard+TT:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --umber-0:#160d05;
+    --umber-1:#241608;
+    --umber-2:#2f1d0c;
+    --umber-3:#3b2611;
+    --brass:#b08d57;
+    --brass-hi:#e8c98a;
+    --brass-lo:#6e5433;
+    --brass-deep:#4a3720;
+    --copper:#b87333;
+    --copper-hi:#e0a86f;
+    --copper-lo:#7a4a1f;
+    --oxblood:#7a2f1f;
+    --oxblood-deep:#521d12;
+    --verdigris:#4e9a8c;
+    --verdigris-deep:#2c5d54;
+    --bone:#d8c9a3;
+    --ink:#231206;
+    --parchment:#e9dcbc;
+    --parchment-dim:#cbb98f;
+    --engrave-shadow:rgba(255,240,200,.35);
+    --serif-display:'Cinzel', 'Trajan Pro', Georgia, 'Times New Roman', serif;
+    --serif-body:'Old Standard TT', 'Iowan Old Style', Georgia, 'Times New Roman', serif;
+    /* type badge palette */
+    --c-resource:#a05a2c;
+    --c-component:#c9a45c;
+    --c-fluid:#4e9a8c;
+    --c-powder:#d8c9a3;
+  }
+
+  *{ box-sizing:border-box; margin:0; padding:0; }
+
+  html,body{ height:100%; overflow:hidden; }
+
+  body{
+    font-family:var(--serif-body);
+    background:
+      radial-gradient(1400px 900px at 60% 30%, #2c1a0b 0%, #1d1106 55%, #120a04 100%);
+    color:var(--parchment);
+    -webkit-font-smoothing:antialiased;
+  }
+
+  /* ── film grain + vignette over everything ─────────────────────── */
+  body::before{
+    content:''; position:fixed; inset:0; z-index:200; pointer-events:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+    opacity:.07; mix-blend-mode:overlay;
+  }
+  body::after{
+    content:''; position:fixed; inset:0; z-index:201; pointer-events:none;
+    background:radial-gradient(ellipse 120% 100% at 50% 40%, transparent 55%, rgba(10,5,1,.55) 100%);
+  }
+
+  /* ══ MASTHEAD ══════════════════════════════════════════════════ */
+  header.masthead{
+    position:relative; z-index:20;
+    height:88px;
+    display:flex; align-items:center; gap:32px;
+    padding:0 28px;
+    background:
+      linear-gradient(180deg, #33200e 0%, #291708 60%, #1e1005 100%);
+    border-bottom:1px solid #0c0602;
+    box-shadow:0 1px 0 rgba(232,201,138,.14) inset, 0 -1px 0 rgba(0,0,0,.6) inset, 0 6px 18px rgba(0,0,0,.55);
+  }
+  .lockup{ display:flex; flex-direction:column; align-items:center; min-width:430px; }
+  .lockup .rule-row{
+    display:flex; align-items:center; gap:10px; width:100%;
+    color:var(--brass);
+  }
+  .lockup .rule-row .rule{ flex:1; height:1px; background:linear-gradient(90deg, transparent, var(--brass-lo) 30%, var(--brass) 50%, var(--brass-lo) 70%, transparent); }
+  .lockup .fleuron{ font-size:11px; color:var(--brass); line-height:1; transform:translateY(-1px); }
+  .lockup h1{
+    font-family:var(--serif-display);
+    font-weight:700; font-size:21px; letter-spacing:.14em;
+    color:var(--brass-hi);
+    text-shadow:0 1px 0 rgba(0,0,0,.9), 0 0 22px rgba(232,201,138,.16);
+    white-space:nowrap; padding:2px 0 1px;
+  }
+  .lockup h1 .amp{ color:var(--copper); }
+  .lockup .subline{
+    font-family:var(--serif-display); font-weight:600;
+    font-size:9.5px; letter-spacing:.42em; color:var(--brass);
+    text-transform:uppercase; margin-top:2px;
+  }
+
+  .breadcrumb{
+    display:flex; align-items:center; gap:12px;
+    font-family:var(--serif-body); font-style:italic;
+    font-size:15px; color:var(--parchment-dim);
+    letter-spacing:.02em;
+  }
+  .breadcrumb .crumb-sep{ font-style:normal; color:var(--brass-lo); font-size:12px; }
+  .breadcrumb .crumb:last-child{ color:var(--parchment); font-style:normal; font-family:var(--serif-display); font-weight:600; font-size:13px; letter-spacing:.12em; text-transform:uppercase; }
+
+  .masthead .plan-stamp{
+    margin-left:auto;
+    font-family:var(--serif-display); font-weight:600;
+    font-size:10px; letter-spacing:.28em; text-transform:uppercase;
+    color:var(--oxblood);
+    border:1.5px solid var(--oxblood);
+    border-radius:3px;
+    padding:7px 14px 6px;
+    transform:rotate(-1.6deg);
+    text-shadow:0 0 1px rgba(122,47,31,.5);
+    box-shadow:0 0 0 1px rgba(122,47,31,.18) inset;
+    opacity:.9;
+    filter:contrast(1.05);
+  }
+
+  /* ══ LAYOUT ════════════════════════════════════════════════════ */
+  .workspace{
+    position:absolute; top:88px; bottom:0; left:0; right:0;
+    display:flex;
+  }
+
+  /* ══ LEDGER SIDE PANEL ═════════════════════════════════════════ */
+  aside.ledger{
+    position:relative; z-index:10;
+    width:296px; flex:0 0 296px;
+    background:linear-gradient(160deg, #3a2413 0%, #2a1809 100%);
+    border-right:1px solid #0c0602;
+    box-shadow:1px 0 0 rgba(232,201,138,.1) inset, 8px 0 24px rgba(0,0,0,.45);
+    padding:18px 16px 18px 18px;
+    overflow-y:auto;
+  }
+  aside.ledger::-webkit-scrollbar{ width:8px; }
+  aside.ledger::-webkit-scrollbar-thumb{ background:var(--brass-deep); border-radius:4px; }
+  aside.ledger::-webkit-scrollbar-track{ background:transparent; }
+
+  .page{
+    background:
+      repeating-linear-gradient(180deg, transparent 0 27px, rgba(122,47,31,.14) 27px 28px),
+      linear-gradient(165deg, #efe3c4 0%, #e5d5ac 55%, #d9c697 100%);
+    color:var(--ink);
+    border-radius:2px;
+    padding:20px 18px 22px;
+    box-shadow:
+      0 0 0 1px #b9a877 inset,
+      0 2px 0 rgba(255,255,255,.35) inset,
+      0 10px 26px rgba(0,0,0,.5),
+      0 1px 3px rgba(0,0,0,.6);
+    position:relative;
+  }
+  .page::before{ /* deckled top edge shading */
+    content:''; position:absolute; inset:0; pointer-events:none; border-radius:2px;
+    background:radial-gradient(160% 45% at 50% -8%, rgba(90,60,20,.16), transparent 60%);
+  }
+
+  .page h2{
+    font-family:var(--serif-display); font-weight:700;
+    font-size:14px; letter-spacing:.22em; text-align:center;
+    color:#3d2410;
+    padding-bottom:8px; margin-bottom:4px;
+  }
+  .page .h-rule{
+    display:flex; align-items:center; gap:8px; margin:0 0 14px;
+    color:#8a6b3a;
+  }
+  .page .h-rule .rule{ flex:1; height:1px; background:#8a6b3a; opacity:.6; }
+  .page .h-rule span{ font-size:10px; line-height:1; }
+
+  .ledger-sec{ margin-bottom:18px; }
+  .ledger-sec h3{
+    font-family:var(--serif-display); font-weight:600;
+    font-size:10px; letter-spacing:.3em; text-transform:uppercase;
+    color:#6e4a1e; margin-bottom:8px;
+    border-bottom:1px solid rgba(110,74,30,.4);
+    padding-bottom:4px;
+  }
+
+  .target-line{
+    display:flex; align-items:baseline; justify-content:space-between;
+    font-size:17px; font-weight:700; color:#2e1a08;
+  }
+  .target-line .t-rate{ font-size:16px; font-variant-numeric:tabular-nums; color:var(--oxblood); }
+  .target-note{ font-style:italic; font-size:12.5px; color:#7a5c30; margin-top:2px; }
+
+  table.ledger-tbl{ width:100%; border-collapse:collapse; font-size:14px; }
+  table.ledger-tbl td{ padding:4px 0; border-bottom:1px dotted rgba(110,74,30,.35); }
+  table.ledger-tbl tr:last-child td{ border-bottom:none; }
+  table.ledger-tbl td.num{
+    text-align:right; font-variant-numeric:tabular-nums; font-weight:700; color:#3d2410;
+    white-space:nowrap;
+  }
+  table.ledger-tbl td.num small{ font-weight:400; font-size:11px; color:#7a5c30; }
+
+  .totals-row{
+    display:flex; justify-content:space-between; align-items:baseline;
+    font-size:14px; padding:3px 0;
+  }
+  .totals-row .val{ font-variant-numeric:tabular-nums; font-weight:700; color:#3d2410; }
+  .totals-sum{
+    margin-top:8px; padding-top:8px; border-top:2px solid rgba(110,74,30,.55);
+    display:flex; justify-content:space-between; align-items:baseline;
+    font-family:var(--serif-display); font-weight:700; font-size:12px; letter-spacing:.08em;
+    color:#2e1a08;
+  }
+  .totals-sum .val{ font-family:var(--serif-body); font-size:16px; font-variant-numeric:tabular-nums; }
+
+  /* legend key plate */
+  .keyplate{
+    background:linear-gradient(150deg, #c8a86a 0%, #a9884e 45%, #8d6c38 100%);
+    border-radius:3px;
+    padding:12px 12px 10px;
+    box-shadow:
+      0 0 0 1px #5c451f inset,
+      0 1px 0 rgba(255,235,190,.55) inset,
+      0 -1px 0 rgba(0,0,0,.35) inset,
+      0 3px 8px rgba(0,0,0,.35);
+    position:relative;
+  }
+  .keyplate::before, .keyplate::after{
+    content:''; position:absolute; width:5px; height:5px; border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, #f2dda6, #8d6c38 60%, #4a3618);
+    box-shadow:0 1px 1px rgba(0,0,0,.5);
+  }
+  .keyplate::before{ top:5px; left:5px; box-shadow:0 1px 1px rgba(0,0,0,.5), 265px 0 0 0 #b28e52; }
+  .keyplate::after{ bottom:5px; left:5px; box-shadow:0 -1px 1px rgba(255,235,190,.3), 265px 0 0 0 #b28e52; }
+  .keyplate h3{
+    font-family:var(--serif-display); font-weight:700; font-size:10px;
+    letter-spacing:.3em; text-align:center; color:#33230d;
+    text-shadow:0 1px 0 rgba(255,235,190,.4);
+    margin-bottom:9px; border-bottom:1px solid rgba(51,35,13,.4); padding-bottom:5px;
+  }
+  .key-row{
+    display:flex; align-items:center; gap:9px;
+    font-size:13px; color:#2e1e0a; padding:3px 2px;
+    text-shadow:0 1px 0 rgba(255,235,190,.3);
+  }
+  .key-row .lbl{ flex:1; }
+  .key-row .desc{ font-style:italic; font-size:11px; color:#54390f; }
+
+  .colophon{
+    margin-top:16px; text-align:center;
+    font-style:italic; font-size:11px; color:#8a6b3a;
+    line-height:1.5;
+  }
+  .colophon .fleuron{ font-style:normal; color:#a5804a; }
+
+  /* ══ TYPE BADGES (shared) ══════════════════════════════════════ */
+  .badge{
+    display:inline-flex; align-items:center; justify-content:center;
+    width:21px; height:21px; flex:0 0 21px;
+    border-radius:50%;
+    font-family:var(--serif-display); font-weight:700; font-size:8.5px; letter-spacing:.04em;
+    color:#1d1004;
+    box-shadow:
+      0 0 0 1px rgba(20,10,2,.55) inset,
+      0 1px 0 rgba(255,240,200,.5) inset,
+      0 1px 2px rgba(0,0,0,.45);
+    text-shadow:0 1px 0 rgba(255,240,200,.35);
+  }
+  .badge.t-Resource { background:radial-gradient(circle at 32% 28%, #d18a50, var(--c-resource) 55%, #6b3a18); }
+  .badge.t-Component{ background:radial-gradient(circle at 32% 28%, #eecd8b, var(--c-component) 55%, #8a6a30); }
+  .badge.t-Fluid    { background:radial-gradient(circle at 32% 28%, #8cc9bd, var(--c-fluid) 55%, #2c5d54); }
+  .badge.t-Powder   { background:radial-gradient(circle at 32% 28%, #f4ebd2, var(--c-powder) 55%, #9a8a60); }
+
+  /* ══ CANVAS ════════════════════════════════════════════════════ */
+  .canvas{
+    position:relative; flex:1; overflow:hidden;
+    cursor:grab;
+    background:
+      radial-gradient(1100px 700px at 45% 38%, rgba(176,141,87,.07), transparent 65%),
+      linear-gradient(180deg, #221407 0%, #1a0f05 100%);
+  }
+  .canvas.panning{ cursor:grabbing; }
+  .canvas.panning .node{ pointer-events:none; }
+
+  #world{
+    position:absolute; top:0; left:0; width:0; height:0;
+    transform-origin:0 0;
+  }
+
+  #edges{ position:absolute; top:0; left:0; overflow:visible; }
+
+  .edge{ transition:opacity .25s ease; }
+  .edge .pipe-outline{ stroke:#120a03; stroke-width:7; fill:none; }
+  .edge .pipe-core{ stroke:#9c6437; stroke-width:4.4; fill:none; transition:stroke .2s ease; }
+  .edge .pipe-shine{ stroke:#dda76c; stroke-width:1.3; fill:none; opacity:.55; transition:all .2s ease; }
+  .edge .flange{
+    fill:url(#flangeGrad); stroke:#170d04; stroke-width:1;
+  }
+  .edge.lit .pipe-core{ stroke:#d18a4d; }
+  .edge.lit .pipe-shine{ stroke:#ffe0ae; opacity:.95; stroke-width:1.6; }
+  .edge.dimmed{ opacity:.16; }
+
+  /* ══ NODES — riveted brass plates ══════════════════════════════ */
+  .node{
+    position:absolute; width:180px;
+    border-radius:5px;
+    background:
+      /* corner rivets */
+      radial-gradient(circle at 7px 7px,            #f0dba4 0 1.2px, #a9884e 2.2px, #55401d 3.2px, transparent 4px),
+      radial-gradient(circle at calc(100% - 7px) 7px, #f0dba4 0 1.2px, #a9884e 2.2px, #55401d 3.2px, transparent 4px),
+      radial-gradient(circle at 7px calc(100% - 7px), #e6cf96 0 1.2px, #9a7a42 2.2px, #4a3618 3.2px, transparent 4px),
+      radial-gradient(circle at calc(100% - 7px) calc(100% - 7px), #e6cf96 0 1.2px, #9a7a42 2.2px, #4a3618 3.2px, transparent 4px),
+      /* brushed metal plate */
+      linear-gradient(168deg, #c3a267 0%, #ab894f 30%, #97753d 55%, #a8874d 78%, #86662f 100%);
+    box-shadow:
+      0 0 0 1px #58421e inset,
+      0 1.5px 0 rgba(255,240,200,.5) inset,
+      0 -2px 3px rgba(30,15,3,.4) inset,
+      0 4px 6px rgba(0,0,0,.5),
+      0 14px 30px rgba(0,0,0,.45);
+    color:var(--ink);
+    transition:box-shadow .22s ease, filter .22s ease;
+    opacity:0;
+  }
+  .node.settled{ opacity:1; }
+  .node.revealing{ animation:plate-settle .6s cubic-bezier(.2,.9,.3,1.15) both; }
+  @keyframes plate-settle{
+    0%  { opacity:0; transform:translateY(-14px) scale(.94); }
+    70% { opacity:1; }
+    100%{ opacity:1; transform:translateY(0) scale(1); }
+  }
+  .node:hover{
+    filter:brightness(1.07);
+    box-shadow:
+      0 0 0 1px #7a5c2a inset,
+      0 1.5px 0 rgba(255,240,200,.65) inset,
+      0 -2px 3px rgba(30,15,3,.4) inset,
+      0 6px 10px rgba(0,0,0,.55),
+      0 22px 44px rgba(0,0,0,.55),
+      0 0 24px rgba(232,201,138,.22);
+    z-index:5;
+  }
+
+  /* machine nameplate strip */
+  .machine-plate{
+    height:22px;
+    display:flex; align-items:center; justify-content:center;
+    font-family:var(--serif-display); font-weight:600;
+    font-size:8.5px; letter-spacing:.3em; text-transform:uppercase;
+    color:#f0e2bd;
+    background:linear-gradient(180deg, #4c3517 0%, #3a2810 55%, #2c1d0a 100%);
+    border-radius:4px 4px 0 0;
+    box-shadow:
+      0 1px 0 rgba(232,201,138,.25) inset,
+      0 -1px 0 rgba(0,0,0,.5) inset;
+    text-shadow:0 -1px 0 rgba(0,0,0,.8);
+    margin:0 5px; margin-top:0;
+    border-bottom:1px solid rgba(240,220,164,.25);
+    position:relative; top:0;
+    padding:0 8px;
+    white-space:nowrap; overflow:hidden;
+  }
+
+  .plate-body{ padding:8px 11px 7px; }
+  .item-name{
+    font-family:var(--serif-body); font-weight:700;
+    font-size:15.5px; line-height:1.15; letter-spacing:.01em;
+    color:#241305;
+    text-shadow:0 1px 0 var(--engrave-shadow);
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+  .stats{
+    display:flex; align-items:center; justify-content:space-between;
+    margin-top:4px;
+  }
+  .rate{
+    font-size:14.5px; font-weight:700; font-variant-numeric:tabular-nums;
+    color:#3a2008; text-shadow:0 1px 0 var(--engrave-shadow);
+  }
+  .rate small{ font-size:11px; font-weight:400; color:#5c3d16; }
+
+  /* gauge chip for machine count */
+  .gauge-chip{
+    display:inline-flex; align-items:center; gap:5px;
+    background:linear-gradient(180deg, #2e1d0a, #1f1305);
+    border-radius:10px;
+    padding:2px 8px 2px 3px;
+    box-shadow:0 1px 0 rgba(255,240,200,.35), 0 1px 2px rgba(0,0,0,.5) inset;
+  }
+  .gauge-dial{
+    position:relative; width:14px; height:14px; border-radius:50%;
+    background:
+      radial-gradient(circle at 50% 50%, #efe3c4 0 62%, #b09664 70%, #55401d 100%);
+    box-shadow:0 0 0 1px #0f0802;
+  }
+  .gauge-dial i{
+    position:absolute; left:50%; bottom:50%;
+    width:1.4px; height:5.5px; margin-left:-.7px;
+    background:var(--oxblood);
+    transform-origin:50% 100%;
+    border-radius:1px;
+  }
+  .gauge-dial::after{
+    content:''; position:absolute; left:50%; top:50%;
+    width:2.6px; height:2.6px; margin:-1.3px 0 0 -1.3px;
+    border-radius:50%; background:#33230d;
+  }
+  .gauge-chip .cnt{
+    font-size:11.5px; font-weight:700; font-variant-numeric:tabular-nums;
+    color:#e8c98a; text-shadow:0 -1px 0 rgba(0,0,0,.7);
+  }
+
+  /* raw supply line */
+  .supply-line{
+    margin-top:4px;
+    font-size:11.5px; font-style:italic; color:#4a2f10;
+    text-shadow:0 1px 0 var(--engrave-shadow);
+    display:flex; justify-content:space-between; align-items:baseline;
+  }
+  .supply-line .sup{ font-variant-numeric:tabular-nums; font-style:normal; font-weight:700; }
+  .supply-line .sur{ font-style:normal; font-weight:700; color:var(--verdigris-deep); }
+  .supply-line .sur.zero{ color:#6b5327; }
+
+  /* input rows */
+  .inputs{
+    border-top:1px solid rgba(60,40,12,.55);
+    box-shadow:0 1px 0 rgba(255,240,200,.28) inset;
+    padding:4px 0 6px;
+    margin:0 5px 0;
+  }
+  .input-row{
+    height:26px;
+    display:flex; align-items:center; gap:7px;
+    padding:0 6px;
+  }
+  .input-row .in-name{
+    flex:1; font-size:12px; color:#33200a;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    text-shadow:0 1px 0 rgba(255,240,200,.25);
+  }
+  .input-row .in-rate{
+    font-size:11.5px; font-weight:700; font-variant-numeric:tabular-nums;
+    color:#4a2f10; white-space:nowrap;
+  }
+  .input-row .in-rate small{ font-weight:400; font-size:9.5px; color:#6b5327; }
+
+  /* ── raw variant: darker cast-iron-tinged plate ── */
+  .node.raw{
+    background:
+      radial-gradient(circle at 7px 7px,            #d8c28c 0 1.2px, #8a6f3e 2.2px, #3d2d13 3.2px, transparent 4px),
+      radial-gradient(circle at calc(100% - 7px) 7px, #d8c28c 0 1.2px, #8a6f3e 2.2px, #3d2d13 3.2px, transparent 4px),
+      radial-gradient(circle at 7px calc(100% - 7px), #c9b177 0 1.2px, #7a6034 2.2px, #33250f 3.2px, transparent 4px),
+      radial-gradient(circle at calc(100% - 7px) calc(100% - 7px), #c9b177 0 1.2px, #7a6034 2.2px, #33250f 3.2px, transparent 4px),
+      linear-gradient(168deg, #a2854f 0%, #8a6d3c 32%, #75592c 58%, #856839 80%, #664c22 100%);
+  }
+
+  /* ── TARGET: polished brass with ornate border + wax seal ── */
+  .node.target{
+    background:
+      radial-gradient(circle at 8px 8px,            #fff3c9 0 1.4px, #c9a45c 2.5px, #6b5122 3.6px, transparent 4.4px),
+      radial-gradient(circle at calc(100% - 8px) 8px, #fff3c9 0 1.4px, #c9a45c 2.5px, #6b5122 3.6px, transparent 4.4px),
+      radial-gradient(circle at 8px calc(100% - 8px), #f5e5ae 0 1.4px, #b8934c 2.5px, #5c451f 3.6px, transparent 4.4px),
+      radial-gradient(circle at calc(100% - 8px) calc(100% - 8px), #f5e5ae 0 1.4px, #b8934c 2.5px, #5c451f 3.6px, transparent 4.4px),
+      linear-gradient(160deg, #e3c489 0%, #cda861 28%, #b48e48 52%, #d1ad66 76%, #a0803c 100%);
+    box-shadow:
+      0 0 0 1px #6b5122 inset,
+      0 0 0 3px rgba(240,220,164,.35) inset,
+      0 0 0 4px rgba(60,40,12,.5) inset,
+      0 2px 0 rgba(255,245,210,.6) inset,
+      0 -2px 3px rgba(30,15,3,.35) inset,
+      0 6px 10px rgba(0,0,0,.55),
+      0 18px 40px rgba(0,0,0,.5),
+      0 0 34px rgba(232,201,138,.28);
+  }
+  .node.target .machine-plate{
+    background:linear-gradient(180deg, #5e421c 0%, #47320f 55%, #362508 100%);
+    color:#ffedbf;
+  }
+  .node.target .item-name{ font-size:17px; letter-spacing:.01em; }
+  .node.target:hover{
+    box-shadow:
+      0 0 0 1px #6b5122 inset,
+      0 0 0 3px rgba(240,220,164,.45) inset,
+      0 0 0 4px rgba(60,40,12,.5) inset,
+      0 2px 0 rgba(255,245,210,.7) inset,
+      0 -2px 3px rgba(30,15,3,.35) inset,
+      0 8px 14px rgba(0,0,0,.6),
+      0 26px 52px rgba(0,0,0,.55),
+      0 0 48px rgba(232,201,138,.4);
+  }
+  .wax-seal{
+    position:absolute; top:-12px; right:-12px;
+    width:34px; height:34px; border-radius:50%;
+    background:
+      radial-gradient(circle at 36% 30%, #a34a33 0%, #7a2f1f 45%, #521d12 80%, #3d150c 100%);
+    box-shadow:
+      0 0 0 2px rgba(61,21,12,.6),
+      0 2px 5px rgba(0,0,0,.6),
+      0 1px 0 rgba(255,200,160,.25) inset;
+    display:flex; align-items:center; justify-content:center;
+    font-family:var(--serif-display); font-weight:800; font-size:13px;
+    color:#e9b9a0; text-shadow:0 1px 1px rgba(0,0,0,.7);
+    transform:rotate(-9deg);
+    z-index:6;
+  }
+  .wax-seal::before{
+    content:''; position:absolute; inset:4px; border-radius:50%;
+    border:1px solid rgba(233,185,160,.4);
+  }
+
+  /* ══ ZOOM CONTROLS ═════════════════════════════════════════════ */
+  .zoom-controls{
+    position:absolute; right:18px; bottom:18px; z-index:15;
+    display:flex; flex-direction:column; gap:6px;
+  }
+  .zoom-btn{
+    width:40px; height:40px;
+    border:none; border-radius:4px;
+    cursor:pointer;
+    font-family:var(--serif-display); font-weight:700; font-size:17px;
+    color:#2e1c08;
+    background:linear-gradient(168deg, #c8a86a 0%, #a9884e 55%, #8d6c38 100%);
+    box-shadow:
+      0 0 0 1px #55401d inset,
+      0 1px 0 rgba(255,240,200,.55) inset,
+      0 -1.5px 2px rgba(30,15,3,.35) inset,
+      0 3px 6px rgba(0,0,0,.5);
+    text-shadow:0 1px 0 rgba(255,240,200,.4);
+    transition:filter .15s ease, transform .05s ease;
+    line-height:1;
+  }
+  .zoom-btn:hover{ filter:brightness(1.12); }
+  .zoom-btn:active{ transform:translateY(1px); filter:brightness(.95); }
+  .zoom-btn.fit{ font-size:9px; letter-spacing:.12em; }
+
+  .zoom-readout{
+    text-align:center; font-size:10.5px; font-variant-numeric:tabular-nums;
+    color:var(--brass); letter-spacing:.08em;
+    text-shadow:0 1px 2px rgba(0,0,0,.8);
+    padding-top:2px;
+  }
+
+  /* corner plate ornament on canvas */
+  .canvas-plate-note{
+    position:absolute; left:18px; bottom:16px; z-index:15;
+    font-style:italic; font-size:11.5px; color:rgba(176,141,87,.55);
+    letter-spacing:.04em; pointer-events:none;
+    text-shadow:0 1px 2px rgba(0,0,0,.6);
+  }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="lockup">
+    <div class="rule-row"><span class="rule"></span><span class="fleuron">❦</span><span class="rule"></span></div>
+    <h1>STAR RUPTURE MANUFACTORY</h1>
+    <div class="subline">Works Planning Bureau · Est. MMXXVI</div>
+    <div class="rule-row"><span class="rule"></span><span class="fleuron">❦</span><span class="rule"></span></div>
+  </div>
+  <nav class="breadcrumb" id="breadcrumb" aria-label="Plan location"></nav>
+  <div class="plan-stamp">Approved for Works</div>
+</header>
+
+<div class="workspace">
+
+  <aside class="ledger">
+    <div class="page">
+      <h2>SCHEDULE OF WORKS</h2>
+      <div class="h-rule"><span class="rule"></span><span>❦</span><span class="rule"></span></div>
+
+      <div class="ledger-sec">
+        <h3>Article of Manufacture</h3>
+        <div class="target-line" id="target-line"></div>
+        <div class="target-note">as commissioned per plan folio № 7</div>
+      </div>
+
+      <div class="ledger-sec">
+        <h3>Raw Material Requisition</h3>
+        <table class="ledger-tbl"><tbody id="raw-tbody"></tbody></table>
+      </div>
+
+      <div class="ledger-sec">
+        <h3>Reckoning of Engines</h3>
+        <div class="totals-row"><span>Engines, exact demand</span><span class="val" id="machines-exact"></span></div>
+        <div class="totals-row"><span>Buildings, to be erected</span><span class="val" id="buildings-ceil"></span></div>
+        <div class="totals-sum"><span>SUM OF WORKS</span><span class="val" id="sum-works"></span></div>
+      </div>
+
+      <div class="keyplate">
+        <h3>KEY TO MATERIALS</h3>
+        <div class="key-row"><span class="badge t-Resource">OR</span><span class="lbl">Resource</span><span class="desc">raw ores</span></div>
+        <div class="key-row"><span class="badge t-Component">CO</span><span class="lbl">Component</span><span class="desc">wrought goods</span></div>
+        <div class="key-row"><span class="badge t-Fluid">FL</span><span class="lbl">Fluid</span><span class="desc">gases &amp; liquors</span></div>
+        <div class="key-row"><span class="badge t-Powder">PW</span><span class="lbl">Powder</span><span class="desc">milled fines</span></div>
+      </div>
+
+      <div class="colophon">
+        <span class="fleuron">❦</span><br>
+        Drawn &amp; reckoned by the Bureau’s<br>calculating engine, in the year 2026.
+      </div>
+    </div>
+  </aside>
+
+  <div class="canvas" id="canvas">
+    <div id="world">
+      <svg id="edges" width="10" height="10" aria-hidden="true">
+        <defs>
+          <radialGradient id="flangeGrad" cx="35%" cy="30%" r="80%">
+            <stop offset="0%" stop-color="#eecd8b"/>
+            <stop offset="55%" stop-color="#b08d57"/>
+            <stop offset="100%" stop-color="#4a3720"/>
+          </radialGradient>
+          <pattern id="gridMinor" width="40" height="40" patternUnits="userSpaceOnUse">
+            <path d="M40 0H0V40" fill="none" stroke="rgba(176,141,87,0.055)" stroke-width="1"/>
+          </pattern>
+          <pattern id="gridMajor" width="200" height="200" patternUnits="userSpaceOnUse">
+            <path d="M200 0H0V200" fill="none" stroke="rgba(176,141,87,0.10)" stroke-width="1"/>
+          </pattern>
+        </defs>
+        <g id="grid-layer">
+          <rect id="grid-minor-rect" x="-3000" y="-3000" width="8000" height="8000" fill="url(#gridMinor)"/>
+          <rect id="grid-major-rect" x="-3000" y="-3000" width="8000" height="8000" fill="url(#gridMajor)"/>
+          <g id="watermark" opacity="0.05" stroke="#b08d57" fill="none" stroke-width="2">
+            <circle cx="770" cy="560" r="300"/>
+            <circle cx="770" cy="560" r="252"/>
+            <circle cx="770" cy="560" r="60"/>
+            <g id="wm-teeth"></g>
+          </g>
+        </g>
+        <g id="edge-layer"></g>
+      </svg>
+      <div id="nodes-layer"></div>
+    </div>
+
+    <div class="zoom-controls">
+      <button class="zoom-btn" id="btn-zoom-in" title="Magnify" aria-label="Zoom in">+</button>
+      <button class="zoom-btn" id="btn-zoom-out" title="Diminish" aria-label="Zoom out">−</button>
+      <button class="zoom-btn fit" id="btn-fit" title="Fit the whole plan" aria-label="Fit view">FIT</button>
+      <div class="zoom-readout" id="zoom-readout">100%</div>
+    </div>
+    <div class="canvas-plate-note">Plate I. — General arrangement of the Electronics Wing, pipework in copper.</div>
+  </div>
+
+</div>
+
+<script src="./graph-data.js"></script>
+<script>
+(function(){
+  'use strict';
+  var G = window.FACTORY_GRAPH;
+  var NODE_W = 180;
+
+  var canvas = document.getElementById('canvas');
+  var world = document.getElementById('world');
+  var svg = document.getElementById('edges');
+  var edgeLayer = document.getElementById('edge-layer');
+  var nodesLayer = document.getElementById('nodes-layer');
+  var readout = document.getElementById('zoom-readout');
+
+  /* ── chrome: breadcrumb & ledger ─────────────────────────────── */
+  var bc = document.getElementById('breadcrumb');
+  G.meta.breadcrumb.forEach(function(crumb, i){
+    if(i > 0){
+      var sep = document.createElement('span');
+      sep.className = 'crumb-sep';
+      sep.textContent = '❯';
+      bc.appendChild(sep);
+    }
+    var el = document.createElement('span');
+    el.className = 'crumb';
+    el.textContent = crumb;
+    bc.appendChild(el);
+  });
+
+  document.getElementById('target-line').innerHTML =
+    '<span>' + G.meta.target.item + '</span><span class="t-rate">' + G.meta.target.rate + ' / min</span>';
+
+  var rawBody = document.getElementById('raw-tbody');
+  G.meta.totals.raw.forEach(function(r){
+    var tr = document.createElement('tr');
+    tr.innerHTML = '<td>' + r.item + '</td><td class="num">' + r.rate + '<small> /min</small></td>';
+    rawBody.appendChild(tr);
+  });
+
+  document.getElementById('machines-exact').textContent = G.meta.totals.machinesExact.toFixed(2);
+  document.getElementById('buildings-ceil').textContent = G.meta.totals.buildingsCeil;
+  document.getElementById('sum-works').textContent =
+    G.meta.totals.machinesExact.toFixed(2) + ' ⁄ ' + G.meta.totals.buildingsCeil + ' bldgs';
+
+  /* ── watermark gear teeth ────────────────────────────────────── */
+  (function(){
+    var teeth = document.getElementById('wm-teeth');
+    var cx = 770, cy = 560, r1 = 300, r2 = 322;
+    var d = '';
+    for(var i = 0; i < 24; i++){
+      var a = (i / 24) * Math.PI * 2;
+      d += 'M' + (cx + Math.cos(a) * r1).toFixed(1) + ' ' + (cy + Math.sin(a) * r1).toFixed(1) +
+           'L' + (cx + Math.cos(a) * r2).toFixed(1) + ' ' + (cy + Math.sin(a) * r2).toFixed(1);
+    }
+    var p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    p.setAttribute('d', d);
+    teeth.appendChild(p);
+  })();
+
+  /* ── build nodes ─────────────────────────────────────────────── */
+  var nodeById = {};
+  var nodeEls = {};
+
+  function esc(s){
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  G.nodes.forEach(function(n){
+    nodeById[n.id] = n;
+    var el = document.createElement('div');
+    el.className = 'node' + (n.isRaw ? ' raw' : '') + (n.isTarget ? ' target' : '');
+    el.style.left = n.x + 'px';
+    el.style.top = n.y + 'px';
+    el.dataset.id = n.id;
+
+    var html = '';
+    if(n.isTarget){ html += '<div class="wax-seal">' + esc(n.abbr) + '</div>'; }
+    html += '<div class="machine-plate">' + esc(n.machine) + '</div>';
+    html += '<div class="plate-body">';
+    html += '<div class="item-name" title="' + esc(n.item) + '">' + esc(n.item) + '</div>';
+    html += '<div class="stats">';
+    html += '<span class="rate">' + n.rate + '<small> /min</small></span>';
+    if(typeof n.buildings === 'number'){
+      var needleDeg = Math.round(((n.buildings % 1) * 264) - 132);
+      html += '<span class="gauge-chip" title="' + n.buildings.toFixed(2) + ' machines">' +
+              '<span class="gauge-dial"><i style="transform:rotate(' + needleDeg + 'deg)"></i></span>' +
+              '<span class="cnt">×' + n.buildings.toFixed(2) + '</span></span>';
+    }
+    html += '</div>';
+    if(n.isRaw){
+      var surplus = n.surplus > 0 ? '(+' + n.surplus + ')' : '(±0)';
+      html += '<div class="supply-line"><span>supply <span class="sup">' + n.supply +
+              '/min</span></span><span class="sur' + (n.surplus > 0 ? '' : ' zero') + '">' + surplus + '</span></div>';
+    }
+    html += '</div>';
+    if(n.inputs.length){
+      html += '<div class="inputs">';
+      n.inputs.forEach(function(inp){
+        html += '<div class="input-row" data-input="' + esc(inp.item) + '">' +
+                '<span class="badge t-' + esc(inp.type) + '">' + esc(inp.abbr) + '</span>' +
+                '<span class="in-name">' + esc(inp.item) + '</span>' +
+                '<span class="in-rate">' + inp.rate + '<small>/min</small></span></div>';
+      });
+      html += '</div>';
+    }
+    el.innerHTML = html;
+    nodesLayer.appendChild(el);
+    nodeEls[n.id] = el;
+  });
+
+  /* ── build edges (measured against real DOM geometry) ────────── */
+  var SVGNS = 'http://www.w3.org/2000/svg';
+  var edgesBySource = {};
+  var edgesByTarget = {};
+
+  function anchorPoints(e){
+    var srcNode = nodeById[e.source], tgtNode = nodeById[e.target];
+    var srcEl = nodeEls[e.source], tgtEl = nodeEls[e.target];
+    var x1 = srcNode.x + NODE_W;
+    var y1 = srcNode.y + srcEl.offsetHeight / 2;
+    var x2 = tgtNode.x;
+    var y2 = tgtNode.y + tgtEl.offsetHeight / 2;
+    var rows = tgtEl.querySelectorAll('.input-row');
+    for(var i = 0; i < rows.length; i++){
+      if(rows[i].dataset.input === e.targetInput){
+        y2 = tgtNode.y + rows[i].offsetTop + rows[i].offsetHeight / 2;
+        /* account for .inputs margin offset chain */
+        var parent = rows[i].offsetParent;
+        if(parent && parent !== tgtEl){ y2 += parent.offsetTop; }
+        break;
+      }
+    }
+    return { x1:x1, y1:y1, x2:x2, y2:y2 };
+  }
+
+  var edgeGroups = [];
+  G.edges.forEach(function(e, idx){
+    var pts = anchorPoints(e);
+    var dx = Math.max(56, (pts.x2 - pts.x1) * 0.55);
+    var d = 'M' + pts.x1 + ' ' + pts.y1 +
+            ' C' + (pts.x1 + dx) + ' ' + pts.y1 + ', ' +
+                   (pts.x2 - dx) + ' ' + pts.y2 + ', ' +
+                   pts.x2 + ' ' + pts.y2;
+
+    var g = document.createElementNS(SVGNS, 'g');
+    g.setAttribute('class', 'edge');
+    g.dataset.source = e.source;
+    g.dataset.target = e.target;
+
+    ['pipe-outline','pipe-core','pipe-shine'].forEach(function(cls){
+      var p = document.createElementNS(SVGNS, 'path');
+      p.setAttribute('d', d);
+      p.setAttribute('class', cls);
+      g.appendChild(p);
+    });
+
+    [[pts.x1, pts.y1], [pts.x2, pts.y2]].forEach(function(pt){
+      var c = document.createElementNS(SVGNS, 'circle');
+      c.setAttribute('cx', pt[0]);
+      c.setAttribute('cy', pt[1]);
+      c.setAttribute('r', 4.5);
+      c.setAttribute('class', 'flange');
+      g.appendChild(c);
+    });
+
+    edgeLayer.appendChild(g);
+    edgeGroups.push({ g:g, idx:idx });
+    (edgesBySource[e.source] = edgesBySource[e.source] || []).push(g);
+    (edgesByTarget[e.target] = edgesByTarget[e.target] || []).push(g);
+  });
+
+  /* size the svg to the world bounds */
+  (function(){
+    var maxX = 0, maxY = 0;
+    G.nodes.forEach(function(n){
+      maxX = Math.max(maxX, n.x + NODE_W);
+      maxY = Math.max(maxY, n.y + nodeEls[n.id].offsetHeight);
+    });
+    svg.setAttribute('width', maxX + 400);
+    svg.setAttribute('height', maxY + 400);
+  })();
+
+  /* ── hover: emphasize connected pipework ─────────────────────── */
+  var allEdgeGs = edgeGroups.map(function(o){ return o.g; });
+  function setEdgeEmphasis(nodeId){
+    var lit = (edgesBySource[nodeId] || []).concat(edgesByTarget[nodeId] || []);
+    allEdgeGs.forEach(function(g){
+      g.classList.remove('lit', 'dimmed');
+      g.classList.add(lit.indexOf(g) !== -1 ? 'lit' : 'dimmed');
+    });
+  }
+  function clearEdgeEmphasis(){
+    allEdgeGs.forEach(function(g){ g.classList.remove('lit', 'dimmed'); });
+  }
+  Object.keys(nodeEls).forEach(function(id){
+    nodeEls[id].addEventListener('mouseenter', function(){ setEdgeEmphasis(id); });
+    nodeEls[id].addEventListener('mouseleave', clearEdgeEmphasis);
+  });
+
+  /* ── pan / zoom ──────────────────────────────────────────────── */
+  var view = { x:0, y:0, z:1 };
+  var Z_MIN = 0.25, Z_MAX = 2.5;
+
+  function applyView(){
+    world.style.transform = 'translate(' + view.x + 'px,' + view.y + 'px) scale(' + view.z + ')';
+    readout.textContent = Math.round(view.z * 100) + '%';
+  }
+
+  function worldBounds(){
+    var minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    G.nodes.forEach(function(n){
+      minX = Math.min(minX, n.x);
+      minY = Math.min(minY, n.y);
+      maxX = Math.max(maxX, n.x + NODE_W);
+      maxY = Math.max(maxY, n.y + nodeEls[n.id].offsetHeight);
+    });
+    return { minX:minX, minY:minY, maxX:maxX, maxY:maxY };
+  }
+
+  function fitView(){
+    var b = worldBounds();
+    var pad = 60;
+    var cw = canvas.clientWidth, ch = canvas.clientHeight;
+    var bw = b.maxX - b.minX, bh = b.maxY - b.minY;
+    var z = Math.min((cw - pad * 2) / bw, (ch - pad * 2) / bh);
+    z = Math.max(Z_MIN, Math.min(Z_MAX, z));
+    view.z = z;
+    view.x = (cw - bw * z) / 2 - b.minX * z;
+    view.y = (ch - bh * z) / 2 - b.minY * z;
+    applyView();
+  }
+
+  function zoomAt(mx, my, factor){
+    var nz = Math.max(Z_MIN, Math.min(Z_MAX, view.z * factor));
+    if(nz === view.z) return;
+    view.x = mx - (mx - view.x) * (nz / view.z);
+    view.y = my - (my - view.y) * (nz / view.z);
+    view.z = nz;
+    applyView();
+  }
+
+  canvas.addEventListener('wheel', function(ev){
+    ev.preventDefault();
+    var rect = canvas.getBoundingClientRect();
+    zoomAt(ev.clientX - rect.left, ev.clientY - rect.top, Math.exp(-ev.deltaY * 0.0012));
+  }, { passive:false });
+
+  var panning = false, panStart = null;
+  canvas.addEventListener('mousedown', function(ev){
+    if(ev.button !== 0) return;
+    if(ev.target.closest('.node') || ev.target.closest('.zoom-controls')) return;
+    panning = true;
+    panStart = { mx:ev.clientX, my:ev.clientY, vx:view.x, vy:view.y };
+    canvas.classList.add('panning');
+    ev.preventDefault();
+  });
+  window.addEventListener('mousemove', function(ev){
+    if(!panning) return;
+    view.x = panStart.vx + (ev.clientX - panStart.mx);
+    view.y = panStart.vy + (ev.clientY - panStart.my);
+    applyView();
+  });
+  window.addEventListener('mouseup', function(){
+    if(!panning) return;
+    panning = false;
+    canvas.classList.remove('panning');
+  });
+
+  document.getElementById('btn-zoom-in').addEventListener('click', function(){
+    zoomAt(canvas.clientWidth / 2, canvas.clientHeight / 2, 1.25);
+  });
+  document.getElementById('btn-zoom-out').addEventListener('click', function(){
+    zoomAt(canvas.clientWidth / 2, canvas.clientHeight / 2, 0.8);
+  });
+  document.getElementById('btn-fit').addEventListener('click', fitView);
+  window.addEventListener('resize', fitView);
+
+  fitView();
+
+  /* ── load animation: plates settle, pipes draw in ────────────── */
+  var ordered = G.nodes.slice().sort(function(a, b){ return (a.x - b.x) || (a.y - b.y); });
+  ordered.forEach(function(n, i){
+    var el = nodeEls[n.id];
+    el.style.animationDelay = (i * 55) + 'ms';
+    el.classList.add('revealing');
+    el.addEventListener('animationend', function(){
+      el.classList.remove('revealing');
+      el.style.animationDelay = '';
+      el.classList.add('settled');
+    }, { once:true });
+  });
+
+  edgeGroups.forEach(function(o, i){
+    var paths = o.g.querySelectorAll('path');
+    var flanges = o.g.querySelectorAll('circle');
+    var len = paths[0].getTotalLength();
+    paths.forEach(function(p){
+      p.style.strokeDasharray = len;
+      p.style.strokeDashoffset = len;
+    });
+    flanges.forEach(function(c){ c.style.opacity = '0'; });
+    var delay = 320 + i * 32;
+    setTimeout(function(){
+      paths.forEach(function(p){
+        p.style.transition = 'stroke-dashoffset .7s cubic-bezier(.4,0,.3,1)';
+        p.style.strokeDashoffset = '0';
+      });
+      flanges.forEach(function(c){
+        c.style.transition = 'opacity .4s ease ' + '0.35s';
+        c.style.opacity = '1';
+      });
+      setTimeout(function(){
+        paths.forEach(function(p){
+          p.style.transition = '';
+          p.style.strokeDasharray = '';
+          p.style.strokeDashoffset = '';
+        });
+      }, 1200);
+    }, delay);
+  });
+})();
+</script>
+</body>
+</html>
