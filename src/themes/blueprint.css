@@ -23,6 +23,12 @@
   --bp-grid-fine: rgba(160, 205, 240, 0.1);
   --bp-grid-major: rgba(175, 215, 245, 0.2);
   --sr-rate: var(--sr-c-fluid);
+
+  /* Hairline divider — dashed rule used to separate stacked drafting-room
+     rows (mockup used it between recipe input lines); reused wherever a
+     theme-appropriate horizontal break is needed, e.g. the node head. */
+  --bp-hairline: rgba(190, 220, 244, 0.18);
+  --bp-hr-dashed: 1px dashed var(--bp-hairline);
 }
 
 [data-theme='blueprint'] body {
@@ -112,6 +118,7 @@
    headline: condensed display face, uppercase, letter-spaced (per mockup). */
 [data-theme='blueprint'] .sr-node-head {
   background: transparent;
+  border-bottom: var(--bp-hr-dashed);
 }
 [data-theme='blueprint'] .sr-node-machine {
   color: var(--sr-ink-dim);

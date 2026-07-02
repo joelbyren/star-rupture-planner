@@ -8,11 +8,11 @@ export function TopBar() {
   const planName = usePlanStore(s => s.planName);
 
   return (
-    <div className="flex items-center gap-3 px-3 py-1.5 border-b border-line-soft bg-panel">
+    <div className="sr-topbar relative flex items-center gap-3 px-3 py-1.5 border-b border-line-soft bg-panel">
       <MenuGlyph />
 
       <div className="flex flex-col leading-none">
-        <span className="font-disp font-semibold text-sm tracking-wide text-ink">StarRupture Planner</span>
+        <span className="sr-topbar-title font-disp font-semibold text-sm tracking-wide text-ink">StarRupture Planner</span>
         <span className="text-[9px] tracking-[0.25em] uppercase text-ink-dim mt-0.5">orbital base</span>
       </div>
 

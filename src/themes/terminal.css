@@ -22,6 +22,13 @@
   --sr-rate: var(--sr-target);
 
   --term-grid-line: rgba(255, 176, 0, 0.05);
+
+  /* Grayscale AA (no LCD subpixel hinting) is what gives the mockup's text
+     its soft phosphor-bleed look; the browser default subpixel/ClearType
+     rendering is crisper and reads as flat, generic UI text by comparison.
+     Inherited, so this covers every themed element, not just the header. */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 [data-theme='terminal'] .term-scanlines {
@@ -98,6 +105,41 @@
   88.5% {
     opacity: 1;
   }
+}
+
+/* The top bar and node cards are opaque and sit above the fixed CRT backdrop
+   (which paints behind the app's non-positioned chrome, see .sr-backdrop in
+   tokens.css), so they never pick up the global .term-scanlines layer —
+   re-apply the same repeating-gradient locally on each so the whole screen
+   (chrome included) reads as one CRT surface. VT323 only ships a 400 weight
+   (no bold font file), and its pixel strokes are thin enough that the
+   multiply-darkened scanline rows can eat into legibility; a phosphor
+   text-shadow glow compensates without resorting to the browser's
+   synthetic/faux-bold, which distorts this font. */
+[data-theme='terminal'] .sr-topbar::after,
+[data-theme='terminal'] .sr-node::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.22) 0px,
+    rgba(0, 0, 0, 0.22) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  mix-blend-mode: multiply;
+}
+/* Tailwind's text-sm (14px) renders VT323 at a size the mockup never uses —
+   every VT323 instance there (header, .n-item, the menu glyph) sits at
+   18-19px/line-height:1, where the pixel strokes are chunky enough for the
+   glow to read as a soft phosphor bleed instead of a thin, sharp-edged shape. */
+[data-theme='terminal'] .sr-topbar-title {
+  font-size: 19px;
+  line-height: 1;
+  font-weight: 400;
+  text-shadow: 0 0 6px rgba(255, 176, 0, 0.35);
 }
 
 [data-theme='terminal'] .term-glyph {

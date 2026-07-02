@@ -19,7 +19,8 @@
       "PowerShell(npx vitest:*)",
       "PowerShell(npx oxlint:*)",
       "PowerShell(npx vite:*)",
-      "PowerShell(npx tsc:*)"
+      "PowerShell(npx tsc:*)",
+      "Bash(npx eslint:*)"
     ]
   }
 }
