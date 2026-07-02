@@ -138,6 +138,16 @@ body {
   color: var(--sr-rate, var(--sr-accent));
 }
 
+/* ---- notes ("scribbles") — shared layout only; look is entirely per-theme. */
+.sr-note {
+  position: relative;
+  font-family: var(--sr-font-note);
+  cursor: pointer;
+  pointer-events: auto;
+  user-select: none;
+  word-break: break-word;
+}
+
 /* ---- fixed backdrop layers, one set active at a time via data-theme ----
    z-index is negative: this is a fixed-position stacking context, and a
    non-negative z-index would paint it above the app's non-positioned (static)

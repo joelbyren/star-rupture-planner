@@ -15,12 +15,9 @@ export function BlueprintEdge({
       <path d={path} className="react-flow__edge-interaction" fill="none" strokeWidth={16} stroke="transparent" />
       <circle className="bp-edge-dot" cx={sourceX} cy={sourceY} r={2} />
       {isHot && rate != null && (
-        <>
-          <line className="bp-edge-tick" x1={labelX} y1={labelY - 3} x2={labelX} y2={labelY - 13} />
-          <text className="bp-edge-label" x={labelX + 4} y={labelY - 7}>
-            {rate.toFixed(1)}/min
-          </text>
-        </>
+        <text className="bp-edge-label" x={labelX + 4} y={labelY - 7}>
+          {rate.toFixed(1)}/min
+        </text>
       )}
     </g>
   );

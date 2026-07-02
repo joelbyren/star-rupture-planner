@@ -1,5 +1,6 @@
 import { Modal } from './ui/Modal.tsx';
 import { usePlanStore, type ItemNodeType } from '../store/planStore.ts';
+import { useUiStore } from '../store/uiStore.ts';
 import recipesJson from '../data/recipes.json';
 import itemsJson from '../data/items.json';
 import type { Recipe, Item, ResourcePurity, ExtractorVersion, ExtractorMode } from '../engine/types.ts';
@@ -26,6 +27,7 @@ export function NodeConfigDialog() {
   const removeNode = usePlanStore(s => s.removeNode);
   const setNodeRawConfig = usePlanStore(s => s.setNodeRawConfig);
   const setNodeHardLimit = usePlanStore(s => s.setNodeHardLimit);
+  const openNoteDialogCreate = useUiStore(s => s.openNoteDialogCreate);
 
   const node = nodes.find(n => n.id === editingNodeId && n.type === 'itemNode') as
     | ItemNodeType
@@ -158,6 +160,13 @@ export function NodeConfigDialog() {
             )}
           </div>
         )}
+
+        <button
+          onClick={() => openNoteDialogCreate(node.id)}
+          className="w-full px-3 py-1.5 text-sm rounded bg-panel-2 text-ink-mid hover:text-ink"
+        >
+          + Add note
+        </button>
 
         <div className="flex justify-between gap-2 pt-1">
           <button

@@ -255,6 +255,18 @@
   text-transform: uppercase;
 }
 
+/* ---- notes: boxless operator log line, invented (no mockup reference). ---- */
+[data-theme='terminal'] .sr-note {
+  font-size: 16px;
+  line-height: 1.1;
+  color: var(--sr-ink-dim);
+  text-decoration: underline dotted var(--sr-line);
+  text-underline-offset: 3px;
+}
+[data-theme='terminal'] .sr-note-prefix {
+  color: var(--sr-accent);
+}
+
 @media (prefers-reduced-motion: reduce) {
   [data-theme='terminal'] .term-cursor {
     animation: none;

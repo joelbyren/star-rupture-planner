@@ -57,8 +57,15 @@ export interface FactoryNodeData {
 }
 export type FactoryNodeType = Node<FactoryNodeData, 'factoryNode'>;
 
+/** A "scribble" note attached to a raw or production item node. */
+export interface NoteNodeData {
+  text: string;
+  [key: string]: unknown;
+}
+export type NoteNodeType = Node<NoteNodeData, 'noteNode'>;
+
 /** Nodes that live in (and persist with) a graph. */
-export type AnyNode = ItemNodeType | FactoryNodeType;
+export type AnyNode = ItemNodeType | FactoryNodeType | NoteNodeType;
 
 /** Synthesized, non-persisted port node rendered inside a factory's inner view. */
 export interface PortNodeData {
@@ -122,6 +129,8 @@ export interface PlanState {
   setNodeHardLimit: (id: string, limit: number | null) => void;
   connectNodes: (connection: Connection) => void;
   autoLayout: () => void;
+  addNote: (parentId: string, text: string) => void;
+  updateNoteText: (id: string, text: string) => void;
 
   // Factory navigation + ports
   enterFactory: (id: string) => void;
@@ -168,6 +177,48 @@ export function isFactoryNode(n: { type?: string }): n is FactoryNodeType {
 }
 export function isPortNode(n: { type?: string }): boolean {
   return n.type === 'inputPort' || n.type === 'outputPort';
+}
+export function isNoteNode(n: { type?: string }): n is NoteNodeType {
+  return n.type === 'noteNode';
+}
+/** Excludes notes; narrows to the node kinds the balance engine understands. */
+function isBalanceable(n: AnyNode): n is ItemNodeType | FactoryNodeType {
+  return !isNoteNode(n);
+}
+
+/** Max distance (flow units) a note may be dragged from its parent's origin. */
+export const NOTE_MAX_DISTANCE = 250;
+
+/** Default spawn offset for a new note, staggered per existing sibling note. */
+function noteSpawnPosition(siblingCount: number): { x: number; y: number } {
+  return { x: 40 + siblingCount * 16, y: -70 - siblingCount * 12 };
+}
+
+/** Clamp a note's parent-relative position to NOTE_MAX_DISTANCE from its parent's origin. */
+function clampNotePosition(n: NoteNodeType): NoteNodeType {
+  const { x, y } = n.position;
+  const dist = Math.hypot(x, y);
+  if (dist <= NOTE_MAX_DISTANCE || dist === 0) return n;
+  const k = NOTE_MAX_DISTANCE / dist;
+  return { ...n, position: { x: x * k, y: y * k } };
+}
+
+/** Defensive re-order for hand-edited imports: React Flow requires a parent node to precede its children. */
+function sortParentsFirst(nodes: AnyNode[]): AnyNode[] {
+  const byId = new Map(nodes.map(n => [n.id, n]));
+  const placed = new Set<string>();
+  const out: AnyNode[] = [];
+  function place(n: AnyNode) {
+    if (placed.has(n.id)) return;
+    if (n.parentId) {
+      const parent = byId.get(n.parentId);
+      if (parent) place(parent);
+    }
+    placed.add(n.id);
+    out.push(n);
+  }
+  for (const n of nodes) place(n);
+  return out;
 }
 
 // ------------------------------------------------------------------
@@ -309,7 +360,7 @@ function annotateEndProducts(nodes: AnyNode[], edges: Edge[]): AnyNode[] {
 
 function project(root: InnerGraph, path: string[]): { nodes: ViewNode[]; edges: Edge[] } {
   const g = graphAt(root, path);
-  const annotated = annotateEndProducts(g.nodes, g.edges);
+  const annotated = annotateEndProducts(sortParentsFirst(g.nodes), g.edges);
   if (path.length === 0) return { nodes: annotated, edges: g.edges };
   const fac = currentFactory(root, path);
   const ports = fac ? synthesizePorts(fac.data) : [];
@@ -338,7 +389,10 @@ function buildFactoryDef(fac: FactoryNodeType): FactoryDef {
     itemId: p.itemId ?? '',
     recipeId: null,
   }));
-  const innerNodes: BalanceNodeInput[] = [...inner.nodes.map(toBalanceNode), ...inputPortNodes];
+  const innerNodes: BalanceNodeInput[] = [
+    ...inner.nodes.filter(isBalanceable).map(toBalanceNode),
+    ...inputPortNodes,
+  ];
   const innerEdges = inner.edges.map(toBalanceEdge);
 
   const outputs: FactoryPortDef[] = fac.data.outputs.map(p => {
@@ -362,7 +416,7 @@ function effectiveHardLimit(d: ItemNodeData): number | undefined {
   return typeof d.hardLimitPerMin === 'number' && d.hardLimitPerMin > 0 ? d.hardLimitPerMin : undefined;
 }
 
-function toBalanceNode(n: AnyNode): BalanceNodeInput {
+function toBalanceNode(n: ItemNodeType | FactoryNodeType): BalanceNodeInput {
   if (isFactoryNode(n)) {
     return { id: n.id, itemId: '', recipeId: null, kind: 'factory', factory: buildFactoryDef(n) };
   }
@@ -390,7 +444,11 @@ function writeBalance(g: InnerGraph, balance: Record<string, AnyBalanceResult>):
 
 /** Balance the entire root tree (demand-driven through every factory) and write results back. */
 function rebalanceRoot(g: InnerGraph): InnerGraph {
-  const balance = balanceTree(g.nodes.map(toBalanceNode), g.edges.map(toBalanceEdge), ALL_RECIPES);
+  const balance = balanceTree(
+    g.nodes.filter(isBalanceable).map(toBalanceNode),
+    g.edges.map(toBalanceEdge),
+    ALL_RECIPES,
+  );
   return writeBalance(g, balance);
 }
 
@@ -550,8 +608,11 @@ export function findMissingInputs(nodes: ViewNode[], edges: Edge[]): MissingInpu
 const LAYOUT_COL_W = 240;
 const LAYOUT_ROW_H = 120;
 
-function layoutNodes(nodes: AnyNode[], edges: Edge[]): AnyNode[] {
-  if (nodes.length === 0) return nodes;
+function layoutNodes(allNodes: AnyNode[], edges: Edge[]): AnyNode[] {
+  if (allNodes.length === 0) return allNodes;
+  // Notes follow their parent via `parentId` (relative position) — exclude them
+  // from ranking/ordering entirely and leave their position untouched below.
+  const nodes = allNodes.filter(n => !isNoteNode(n));
 
   const idSet = new Set(nodes.map(n => n.id));
   const consumers = new Map<string, string[]>();
@@ -604,7 +665,7 @@ function layoutNodes(nodes: AnyNode[], edges: Edge[]): AnyNode[] {
     layer.forEach((id, i) => pos.set(id, { x, y: (i - (layer.length - 1) / 2) * LAYOUT_ROW_H }));
   });
 
-  return nodes.map(n => ({ ...n, position: pos.get(n.id) ?? n.position }));
+  return allNodes.map(n => (isNoteNode(n) ? n : { ...n, position: pos.get(n.id) ?? n.position }));
 }
 
 // ------------------------------------------------------------------
@@ -678,10 +739,11 @@ export const usePlanStore = create<PlanState>((set, get) => {
       // measured dimensions). Re-synthesizing port nodes would lose measurements and
       // cause an infinite render loop.
       const { rootGraph, viewPath } = get();
-      const real = stripPortNodes(incoming) as AnyNode[];
+      const real = stripPortNodes(incoming).map(n => (isNoteNode(n) ? clampNotePosition(n) : n)) as AnyNode[];
       const g = graphAt(rootGraph, viewPath);
       const nextRoot = setGraphAt(rootGraph, viewPath, { ...g, nodes: real });
-      set({ rootGraph: nextRoot, nodes: incoming });
+      const clamped = incoming.map(n => (isNoteNode(n) ? clampNotePosition(n) : n));
+      set({ rootGraph: nextRoot, nodes: clamped });
     },
     setEdges(edges) {
       commitViewedGraph(g => ({ ...g, edges }));
@@ -803,10 +865,33 @@ export const usePlanStore = create<PlanState>((set, get) => {
 
     removeNode(id) {
       commitViewedGraph(g => ({
-        nodes: g.nodes.filter(n => n.id !== id),
+        nodes: g.nodes.filter(n => n.id !== id && n.parentId !== id),
         edges: g.edges.filter(e => e.source !== id && e.target !== id),
       }));
       set({ editingNodeId: null });
+    },
+
+    addNote(parentId, text) {
+      const { rootGraph, viewPath } = get();
+      const viewed = graphAt(rootGraph, viewPath);
+      const parent = viewed.nodes.find(n => n.id === parentId);
+      if (!parent || !isItemNode(parent)) return;
+      const siblingCount = viewed.nodes.filter(n => isNoteNode(n) && n.parentId === parentId).length;
+      const note: NoteNodeType = {
+        id: crypto.randomUUID(),
+        type: 'noteNode',
+        parentId,
+        position: noteSpawnPosition(siblingCount),
+        draggable: true,
+        data: { text },
+      };
+      commitViewedGraph(g => ({ ...g, nodes: [...g.nodes, note] }));
+    },
+    updateNoteText(id, text) {
+      commitViewedGraph(g => ({
+        ...g,
+        nodes: g.nodes.map(n => (isNoteNode(n) && n.id === id ? { ...n, data: { ...n.data, text } } : n)),
+      }));
     },
 
     setNodeRawConfig(id, patch) {

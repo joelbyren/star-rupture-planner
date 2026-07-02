@@ -276,12 +276,40 @@
   text-shadow: 0 0 4px rgba(57, 215, 255, 0.6);
 }
 
+/* ---- notes: translucent cyan annotation chip, invented (no mockup reference). ---- */
+[data-theme='holotable'] .sr-note {
+  padding: 4px 8px;
+  font-size: 11px;
+  font-style: italic;
+  color: var(--sr-ink);
+  background: rgba(57, 215, 255, 0.06);
+  border: 1px dashed var(--sr-line);
+  clip-path: polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px);
+}
+[data-theme='holotable'] .sr-note-dot {
+  display: inline-block;
+  width: 4px;
+  height: 4px;
+  margin-left: 4px;
+  border-radius: 50%;
+  background: var(--sr-accent);
+  box-shadow: 0 0 4px var(--sr-accent);
+  animation: holo-note-blink 1.4s steps(1) infinite;
+}
+@keyframes holo-note-blink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0.15; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   [data-theme='holotable'] .holo-stars,
   [data-theme='holotable'] .holo-stars2 {
     animation: none;
   }
   [data-theme='holotable'] .holo-edge-flow {
+    animation: none;
+  }
+  [data-theme='holotable'] .sr-note-dot {
     animation: none;
   }
 }

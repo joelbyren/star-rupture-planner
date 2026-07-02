@@ -23,9 +23,11 @@ import { Sidebar } from './components/layout/Sidebar.tsx';
 import { FactoryNode } from './components/FactoryNode.tsx';
 import { ItemNode } from './components/ItemNode.tsx';
 import { PortNode } from './components/PortNode.tsx';
+import { NoteNode } from './components/NoteNode.tsx';
 import { AddNodeDialog } from './components/AddNodeDialog.tsx';
 import { NodeConfigDialog } from './components/NodeConfigDialog.tsx';
 import { PortConfigDialog } from './components/PortConfigDialog.tsx';
+import { NoteDialog } from './components/NoteDialog.tsx';
 import { usePlanStore, handleItemId, isPortNode } from './store/planStore.ts';
 import type { ViewNode } from './store/planStore.ts';
 import { usePinnedPorts } from './lib/usePinnedPorts.ts';
@@ -38,6 +40,7 @@ const NODE_TYPES: NodeTypes = {
   factoryNode: FactoryNode,
   inputPort: PortNode,
   outputPort: PortNode,
+  noteNode: NoteNode,
 };
 
 const EDGE_TYPES: EdgeTypes = {
@@ -51,6 +54,7 @@ function Flow() {
   } = usePlanStore();
   const theme = useThemeStore(s => s.theme);
   const setHoveredNode = useUiStore(s => s.setHoveredNode);
+  const openNoteDialogEdit = useUiStore(s => s.openNoteDialogEdit);
   const { screenToFlowPosition, fitView } = useReactFlow();
   const connectFrom = useRef<OnConnectStartParams | null>(null);
   // Whether onConnect fired during the current drag. React Flow can complete a
@@ -140,8 +144,9 @@ function Flow() {
     (_: React.MouseEvent, node: ViewNode) => {
       if (node.type === 'factoryNode') enterFactory(node.id);
       else if (node.type === 'itemNode') openConfig(node.id);
+      else if (node.type === 'noteNode') openNoteDialogEdit(node.id);
     },
-    [enterFactory, openConfig],
+    [enterFactory, openConfig, openNoteDialogEdit],
   );
 
   const onNodeMouseEnter = useCallback(
@@ -199,6 +204,7 @@ export default function App() {
           <AddNodeDialog />
           <NodeConfigDialog />
           <PortConfigDialog />
+          <NoteDialog />
         </ReactFlowProvider>
       </div>
     </div>
