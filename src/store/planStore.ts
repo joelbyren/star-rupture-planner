@@ -13,6 +13,7 @@ import {
   type FactoryPortDef,
 } from '../engine/balanceGraph.ts';
 import recipesJson from '../data/recipes.json';
+import { computeEndProductIds } from '../lib/endProducts.ts';
 
 const ALL_RECIPES = recipesJson as Recipe[];
 
@@ -32,6 +33,8 @@ export interface ItemNodeData {
   hardLimitPerMin?: number;
   /** Latest balance result, recomputed on every structural change. */
   balance?: BalanceResult;
+  /** True for non-raw item nodes with no outgoing edge in their own graph. Recomputed on every projection. */
+  isEndProduct?: boolean;
   [key: string]: unknown;
 }
 export type ItemNodeType = Node<ItemNodeData, 'itemNode'>;
@@ -210,6 +213,13 @@ export function computePinnedPortPositions(
   return positions;
 }
 
+/**
+ * Ports are screen-pinned reference points — always render above regular
+ * nodes. React Flow adds +1000 (SELECTED_NODE_Z) to a *selected* node's
+ * effective z-index, so this must clear that plus a margin.
+ */
+const PORT_Z_INDEX = 10000;
+
 function synthesizePorts(data: FactoryNodeData): PortNodeType[] {
   const mk = (port: FactoryPort, side: 'input' | 'output', i: number, count: number): PortNodeType => ({
     id: portNodeId(side, port.id),
@@ -218,6 +228,7 @@ function synthesizePorts(data: FactoryNodeData): PortNodeType[] {
       x: side === 'input' ? PORT_X_LEFT : PORT_X_RIGHT,
       y: (i - (count - 1) / 2) * PORT_ROW_H,
     },
+    zIndex: PORT_Z_INDEX,
     deletable: false,
     draggable: false,
     data: { portId: port.id, side, itemId: port.itemId },
@@ -268,12 +279,23 @@ function currentFactory(root: InnerGraph, path: string[]): FactoryNodeType | nul
 }
 
 /** Build what <ReactFlow> renders for a given path: stored nodes + synthesized ports. */
+function annotateEndProducts(nodes: AnyNode[], edges: Edge[]): AnyNode[] {
+  const endIds = computeEndProductIds(nodes, edges);
+  return nodes.map(n =>
+    isItemNode(n) ? { ...n, data: { ...n.data, isEndProduct: endIds.has(n.id) } } : n,
+  );
+}
+
 function project(root: InnerGraph, path: string[]): { nodes: ViewNode[]; edges: Edge[] } {
   const g = graphAt(root, path);
-  if (path.length === 0) return { nodes: g.nodes, edges: g.edges };
+  const annotated = annotateEndProducts(g.nodes, g.edges);
+  if (path.length === 0) return { nodes: annotated, edges: g.edges };
   const fac = currentFactory(root, path);
   const ports = fac ? synthesizePorts(fac.data) : [];
-  return { nodes: [...ports, ...g.nodes], edges: g.edges };
+  // Ports last: React Flow bumps a *selected* node's effective z by +1000
+  // (SELECTED_NODE_Z), which ties our port zIndex — on a tie, later-in-array
+  // wins, so ports must come after real nodes to stay on top even then.
+  return { nodes: [...annotated, ...ports], edges: g.edges };
 }
 
 // ------------------------------------------------------------------

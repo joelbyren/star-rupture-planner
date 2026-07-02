@@ -1,0 +1,189 @@
+/* Blueprint — cyanotype drafting room. */
+[data-theme='blueprint'] {
+  --sr-canvas: #0a2440;
+  --sr-panel: rgba(9, 29, 52, 0.93);
+  --sr-panel-2: rgba(8, 26, 47, 0.9);
+  --sr-ink: #e9f3fc;
+  --sr-ink-mid: rgba(222, 238, 251, 0.72);
+  --sr-ink-dim: rgba(205, 228, 247, 0.42);
+  --sr-line: rgba(228, 242, 252, 0.85);
+  --sr-line-soft: rgba(210, 232, 250, 0.5);
+  --sr-accent: #ecc98b;
+  --sr-target: #e9f3fc;
+  --sr-danger: #f2545b;
+  --sr-c-resource: #dce9f6;
+  --sr-c-component: #8fcdf0;
+  --sr-c-fluid: #7de9da;
+  --sr-c-powder: #ecc98b;
+  --sr-font-disp: 'Big Shoulders Display', 'Arial Narrow', Impact, sans-serif;
+  --sr-font-data: 'IBM Plex Mono', 'Consolas', 'Courier New', monospace;
+  --sr-font-note: 'Caveat', 'Segoe Script', cursive;
+
+  --bp-grid-fine: rgba(160, 205, 240, 0.1);
+  --bp-grid-major: rgba(175, 215, 245, 0.2);
+  --sr-rate: var(--sr-c-fluid);
+}
+
+[data-theme='blueprint'] body {
+  background:
+    radial-gradient(1200px 800px at 24% 18%, rgba(38, 98, 158, 0.35), transparent 60%),
+    radial-gradient(1000px 900px at 82% 78%, rgba(10, 32, 58, 0.65), transparent 65%),
+    linear-gradient(158deg, #124070 0%, #0e3358 42%, #0a2440 100%);
+}
+
+[data-theme='blueprint'] .bp-grain {
+  position: fixed;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  opacity: 0.5;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.05 0'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+[data-theme='blueprint'] .bp-creases {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, transparent 0%, transparent 33.1%, rgba(255, 255, 255, 0.045) 33.28%, rgba(4, 18, 34, 0.16) 33.42%, transparent 33.9%),
+    linear-gradient(90deg, transparent 0%, transparent 66.4%, rgba(255, 255, 255, 0.04) 66.58%, rgba(4, 18, 34, 0.14) 66.72%, transparent 67.2%),
+    linear-gradient(0deg, transparent 0%, transparent 49.7%, rgba(255, 255, 255, 0.035) 49.9%, rgba(4, 18, 34, 0.13) 50.05%, transparent 50.55%);
+}
+
+[data-theme='blueprint'] .bp-vignette {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  box-shadow: inset 0 0 180px rgba(3, 14, 28, 0.75);
+}
+
+[data-theme='blueprint'] .bp-glyph {
+  position: relative;
+  width: 30px;
+  height: 30px;
+  flex: none;
+  cursor: pointer;
+  background: transparent;
+  border: 1px solid var(--sr-line);
+  outline: 1px solid rgba(190, 220, 244, 0.18);
+  outline-offset: 2px;
+}
+
+[data-theme='blueprint'] .bp-glyph-inner {
+  position: absolute;
+  inset: 5px;
+  border: 1px solid var(--sr-line-soft);
+  transform: rotate(45deg);
+}
+
+[data-theme='blueprint'] .bp-glyph-dot {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 4px;
+  height: 4px;
+  background: var(--sr-ink);
+  transform: translate(-50%, -50%);
+}
+
+[data-theme='blueprint'] .react-flow__background.bp-grid-major {
+  color: var(--bp-grid-major);
+}
+
+[data-theme='blueprint'] .react-flow__background.bp-grid-fine {
+  color: var(--bp-grid-fine);
+}
+
+/* ---- item-type badge colors ---- */
+[data-theme='blueprint'] .sr-t-resource { color: var(--sr-c-resource); }
+[data-theme='blueprint'] .sr-t-component { color: var(--sr-c-component); }
+[data-theme='blueprint'] .sr-t-fluid { color: var(--sr-c-fluid); }
+[data-theme='blueprint'] .sr-t-powder { color: var(--sr-c-powder); }
+[data-theme='blueprint'] .sr-t-ammo { color: #f2a3c9; }
+[data-theme='blueprint'] .sr-t-weapon { color: #f2545b; }
+[data-theme='blueprint'] .sr-t-default,
+[data-theme='blueprint'] .sr-t-unset { color: var(--sr-ink-dim); }
+
+/* ---- node head/title ----
+   Machine type is a faint dim caption; the item name is the drafting-room
+   headline: condensed display face, uppercase, letter-spaced (per mockup). */
+[data-theme='blueprint'] .sr-node-head {
+  background: transparent;
+}
+[data-theme='blueprint'] .sr-node-machine {
+  color: var(--sr-ink-dim);
+  letter-spacing: 0.24em;
+}
+[data-theme='blueprint'] .sr-node-title {
+  font-family: var(--sr-font-disp);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  line-height: 1.1;
+}
+[data-theme='blueprint'] .sr-node--target .sr-node-title {
+  font-size: 16px;
+}
+
+/* ---- node chrome ---- */
+[data-theme='blueprint'] .sr-node {
+  border-radius: 0;
+  background: linear-gradient(178deg, rgba(14, 44, 76, 0.88), rgba(10, 33, 58, 0.9));
+  box-shadow: 0 2px 10px rgba(3, 14, 28, 0.45);
+}
+[data-theme='blueprint'] .sr-node::before {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  border: 1px solid rgba(190, 220, 244, 0.18);
+  pointer-events: none;
+}
+[data-theme='blueprint'] .sr-node--raw {
+  background: linear-gradient(178deg, rgba(12, 38, 66, 0.82), rgba(9, 29, 52, 0.86));
+}
+[data-theme='blueprint'] .sr-node--factory {
+  border-width: 2px;
+  border-color: var(--sr-c-component);
+}
+[data-theme='blueprint'] .sr-node--limit {
+  border-color: var(--sr-accent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--sr-accent) 35%, transparent);
+}
+[data-theme='blueprint'] .sr-node--target {
+  border-width: 2px;
+  border-color: var(--sr-target);
+  box-shadow: 0 4px 18px rgba(3, 14, 28, 0.6), 0 0 0 3px rgba(228, 242, 252, 0.12), 0 0 24px rgba(140, 200, 245, 0.18);
+}
+
+[data-theme='blueprint'] .bp-callout {
+  position: absolute;
+  left: 50%;
+  bottom: 100%;
+  transform: translateX(-50%);
+  margin-bottom: 14px;
+  white-space: nowrap;
+  pointer-events: none;
+}
+[data-theme='blueprint'] .bp-callout-box {
+  display: inline-block;
+  border: 1px solid var(--sr-line);
+  padding: 2px 8px 1px;
+  font-family: var(--sr-font-disp);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  background: var(--sr-panel-2);
+}
+[data-theme='blueprint'] .bp-callout::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 100%;
+  height: 12px;
+  width: 1px;
+  background: var(--sr-line-soft);
+}

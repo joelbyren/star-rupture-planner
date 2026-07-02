@@ -47,7 +47,7 @@ export function PortConfigDialog() {
     <Modal open={open} title={`${side === 'input' ? 'Input' : 'Output'} port`} onClose={closePortDialog}>
       <div className="space-y-3">
         <div>
-          <label className="block text-xs text-slate-400 mb-1">Item {port.itemId === null && <span className="text-slate-500">(unset — "?")</span>}</label>
+          <label className="block text-xs text-ink-dim mb-1">Item {port.itemId === null && <span className="text-ink-dim">(unset — "?")</span>}</label>
           <Combobox
             options={ITEM_OPTIONS}
             value={port.itemId}
@@ -60,7 +60,7 @@ export function PortConfigDialog() {
         <div className="flex justify-between gap-2 pt-1">
           <button
             onClick={() => removePort(port.id)}
-            className="px-3 py-1.5 text-sm rounded bg-red-600/80 text-white hover:bg-red-600"
+            className="px-3 py-1.5 text-sm rounded bg-danger/80 text-canvas hover:bg-danger"
           >
             Delete port
           </button>
@@ -68,14 +68,14 @@ export function PortConfigDialog() {
             {port.itemId !== null && (
               <button
                 onClick={() => setPortItem(port.id, null)}
-                className="px-3 py-1.5 text-sm rounded bg-slate-700 text-slate-200 hover:bg-slate-600"
+                className="px-3 py-1.5 text-sm rounded bg-panel-2 text-ink-mid hover:text-ink"
               >
                 Set to ?
               </button>
             )}
             <button
               onClick={closePortDialog}
-              className="px-3 py-1.5 text-sm rounded bg-violet-600 text-white hover:bg-violet-500"
+              className="px-3 py-1.5 text-sm rounded bg-accent text-canvas hover:opacity-90"
             >
               Done
             </button>

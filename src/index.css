@@ -1,14 +1,12 @@
 @import "tailwindcss";
+@import "@xyflow/react/dist/style.css";
+@import "./themes/tokens.css";
+@import "./themes/blueprint.css";
+@import "./themes/holotable.css";
+@import "./themes/terminal.css";
 
 * {
   box-sizing: border-box;
-}
-
-body {
-  margin: 0;
-  font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
-  background: #0f1117;
-  color: #e2e8f0;
 }
 
 #root {

@@ -74,21 +74,21 @@ export function Combobox({ options, value, onChange, placeholder, autoFocus }: C
         onFocus={() => setOpen(true)}
         onBlur={() => setTimeout(() => setOpen(false), 120)}
         onKeyDown={onKeyDown}
-        className="w-full bg-slate-700 border border-slate-500 rounded text-sm text-white px-2 py-1.5 outline-none focus:border-violet-500"
+        className="w-full bg-panel-2 border border-line-soft rounded text-sm text-ink px-2 py-1.5 outline-none focus:border-accent"
       />
       {open && filtered.length > 0 && (
-        <ul className="absolute z-10 mt-1 w-full max-h-60 overflow-auto bg-slate-700 border border-slate-500 rounded shadow-lg">
+        <ul className="absolute z-10 mt-1 w-full max-h-60 overflow-auto bg-panel-2 border border-line-soft rounded shadow-lg">
           {filtered.map((o, i) => (
             <li
               key={o.id}
               onMouseDown={() => choose(o)}
               onMouseEnter={() => setActive(i)}
               className={`px-2 py-1.5 text-sm cursor-pointer flex justify-between gap-2 ${
-                i === active ? 'bg-violet-600 text-white' : 'text-slate-200'
+                i === active ? 'bg-accent text-canvas' : 'text-ink-mid'
               }`}
             >
               <span className="truncate">{o.label}</span>
-              {o.hint && <span className="text-xs text-slate-400 shrink-0">{o.hint}</span>}
+              {o.hint && <span className="text-xs text-ink-dim shrink-0">{o.hint}</span>}
             </li>
           ))}
         </ul>

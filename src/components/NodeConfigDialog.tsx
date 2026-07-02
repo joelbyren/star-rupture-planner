@@ -50,11 +50,11 @@ export function NodeConfigDialog() {
         {data.isRaw && (
           <>
             <div>
-              <label className="block text-xs text-slate-400 mb-1">Extractor mode</label>
+              <label className="block text-xs text-ink-dim mb-1">Extractor mode</label>
               <select
                 value={rawConfig.mode ?? 'calculated'}
                 onChange={e => setNodeRawConfig(node.id, { mode: e.target.value as ExtractorMode })}
-                className="w-full bg-slate-700 border border-slate-500 rounded text-sm text-white px-2 py-1.5 cursor-pointer"
+                className="w-full bg-panel-2 border border-line-soft rounded text-sm text-ink px-2 py-1.5 cursor-pointer"
               >
                 <option value="calculated">Calculated (purity × version)</option>
                 <option value="custom">Custom (aggregate rate)</option>
@@ -63,7 +63,7 @@ export function NodeConfigDialog() {
 
             {rawConfig.mode === 'custom' ? (
               <div>
-                <label className="block text-xs text-slate-400 mb-1">Aggregate rate (items/min)</label>
+                <label className="block text-xs text-ink-dim mb-1">Aggregate rate (items/min)</label>
                 <input
                   type="number"
                   min={0}
@@ -72,17 +72,17 @@ export function NodeConfigDialog() {
                     const v = e.target.value;
                     setNodeRawConfig(node.id, { customRatePerMin: v === '' ? undefined : Number(v) });
                   }}
-                  className="w-full bg-slate-700 border border-slate-500 rounded text-sm text-white px-2 py-1.5"
+                  className="w-full bg-panel-2 border border-line-soft rounded text-sm text-ink px-2 py-1.5"
                 />
               </div>
             ) : (
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block text-xs text-slate-400 mb-1">Purity</label>
+                  <label className="block text-xs text-ink-dim mb-1">Purity</label>
                   <select
                     value={rawConfig.purity}
                     onChange={e => setNodeRawConfig(node.id, { purity: e.target.value as ResourcePurity })}
-                    className="w-full bg-slate-700 border border-slate-500 rounded text-sm text-white px-2 py-1.5 cursor-pointer"
+                    className="w-full bg-panel-2 border border-line-soft rounded text-sm text-ink px-2 py-1.5 cursor-pointer"
                   >
                     {PURITY.map(p => (
                       <option key={p.value} value={p.value}>{p.label}</option>
@@ -90,11 +90,11 @@ export function NodeConfigDialog() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs text-slate-400 mb-1">Extractor</label>
+                  <label className="block text-xs text-ink-dim mb-1">Extractor</label>
                   <select
                     value={rawConfig.extractorVersion}
                     onChange={e => setNodeRawConfig(node.id, { extractorVersion: e.target.value as ExtractorVersion })}
-                    className="w-full bg-slate-700 border border-slate-500 rounded text-sm text-white px-2 py-1.5 cursor-pointer"
+                    className="w-full bg-panel-2 border border-line-soft rounded text-sm text-ink px-2 py-1.5 cursor-pointer"
                   >
                     {VERSIONS.filter(v => v === 'V1' || showV2).map(v => (
                       <option key={v} value={v}>{v}</option>
@@ -104,15 +104,15 @@ export function NodeConfigDialog() {
               </div>
             )}
 
-            <div className={`text-xs font-medium ${balance?.isLimitBinding ? 'text-amber-400' : surplus !== null && surplus >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+            <div className={`text-xs font-medium ${balance?.isLimitBinding ? 'text-accent' : surplus !== null && surplus >= 0 ? 'text-emerald-400' : 'text-danger'}`}>
               {supplyRate?.toFixed(0)}/min supply (physical cap)
-              <span className="text-slate-400 font-normal ml-1">
+              <span className="text-ink-dim font-normal ml-1">
                 ({surplus !== null && surplus >= 0 ? '+' : ''}{surplus?.toFixed(0)} spare vs {needed.toFixed(0)} used)
               </span>
             </div>
 
             {balance?.isLimitBinding && (
-              <div className="text-xs text-amber-400 font-medium">
+              <div className="text-xs text-accent font-medium">
                 This extractor is the binding constraint on the network — extend it to raise the max output.
               </div>
             )}
@@ -120,27 +120,27 @@ export function NodeConfigDialog() {
         )}
 
         {recipe && (
-          <div className="text-xs text-slate-300 bg-slate-900/50 rounded p-2 space-y-1">
+          <div className="text-xs text-ink-mid bg-panel-2 rounded p-2 space-y-1">
             <div>
-              <span className="text-slate-400">Machine:</span> {recipe.machine}
-              {recipe.buildingTier && <span className="text-violet-400 ml-1">{recipe.buildingTier}</span>}
-              <span className="text-slate-400 ml-2">{recipe.outputRatePerMin}/min</span>
+              <span className="text-ink-dim">Machine:</span> {recipe.machine}
+              {recipe.buildingTier && <span className="text-comp ml-1">{recipe.buildingTier}</span>}
+              <span className="text-ink-dim ml-2">{recipe.outputRatePerMin}/min</span>
             </div>
-            <div className="text-slate-400">
+            <div className="text-ink-dim">
               Inputs: {recipe.inputs.map(i => `${itemById(i.itemId)?.name ?? i.itemId} ×${i.quantity}`).join(', ') || '—'}
             </div>
             {balance && (
-              <div className="text-slate-400">
-                Buildings: <span className="text-amber-400">{balance.buildingCountExact.toFixed(2)}</span>
+              <div className="text-ink-dim">
+                Buildings: <span className="text-accent">{balance.buildingCountExact.toFixed(2)}</span>
               </div>
             )}
-            <div className="text-slate-500 italic pt-1">To change the recipe, delete this node and add a new one.</div>
+            <div className="text-ink-dim italic pt-1">To change the recipe, delete this node and add a new one.</div>
           </div>
         )}
 
         {recipe && (
           <div>
-            <label className="block text-xs text-slate-400 mb-1">Max output (items/min) — blank = unlimited</label>
+            <label className="block text-xs text-ink-dim mb-1">Max output (items/min) — blank = unlimited</label>
             <input
               type="number"
               min={0}
@@ -149,10 +149,10 @@ export function NodeConfigDialog() {
                 const v = Number(e.target.value);
                 setNodeHardLimit(node.id, e.target.value === '' || !v ? null : v);
               }}
-              className="w-full bg-slate-700 border border-slate-500 rounded text-sm text-white px-2 py-1.5"
+              className="w-full bg-panel-2 border border-line-soft rounded text-sm text-ink px-2 py-1.5"
             />
             {balance?.isLimitBinding && (
-              <div className="text-xs text-amber-400 font-medium mt-1">
+              <div className="text-xs text-accent font-medium mt-1">
                 This limit is the binding constraint on the network.
               </div>
             )}
@@ -162,13 +162,13 @@ export function NodeConfigDialog() {
         <div className="flex justify-between gap-2 pt-1">
           <button
             onClick={() => removeNode(node.id)}
-            className="px-3 py-1.5 text-sm rounded bg-red-600/80 text-white hover:bg-red-600"
+            className="px-3 py-1.5 text-sm rounded bg-danger/80 text-canvas hover:bg-danger"
           >
             Delete node
           </button>
           <button
             onClick={closeConfig}
-            className="px-3 py-1.5 text-sm rounded bg-slate-700 text-slate-200 hover:bg-slate-600"
+            className="px-3 py-1.5 text-sm rounded bg-panel-2 text-ink-mid hover:text-ink"
           >
             Done
           </button>

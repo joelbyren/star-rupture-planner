@@ -12,6 +12,12 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@fontsource/big-shoulders-display": "^5.2.5",
+    "@fontsource/caveat": "^5.2.8",
+    "@fontsource/chakra-petch": "^5.2.7",
+    "@fontsource/ibm-plex-mono": "^5.2.7",
+    "@fontsource/michroma": "^5.2.8",
+    "@fontsource/vt323": "^5.2.7",
     "@tailwindcss/vite": "^4.3.1",
     "@xyflow/react": "^12.11.1",
     "dexie": "^4.4.4",

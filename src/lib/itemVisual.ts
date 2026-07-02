@@ -15,18 +15,18 @@ export function abbr(item: Pick<Item, 'name' | 'id'>): string {
   return name.replace(/[^a-zA-Z0-9]/g, '').slice(0, 2).padEnd(2, '·');
 }
 
-/** Tailwind classes (badge background + text) per item type. */
-export const TYPE_COLORS: Record<string, string> = {
-  Resource:  'bg-amber-500/20 text-amber-300 border-amber-500/40',
-  Component: 'bg-violet-500/20 text-violet-300 border-violet-500/40',
-  Fluid:     'bg-cyan-500/20 text-cyan-300 border-cyan-500/40',
-  Powder:    'bg-orange-500/20 text-orange-300 border-orange-500/40',
-  Ammo:      'bg-rose-500/20 text-rose-300 border-rose-500/40',
-  Weapon:    'bg-red-500/20 text-red-300 border-red-500/40',
+/** Semantic badge class per item type; colors are defined per-theme (see themes/*.css). */
+export const TYPE_CLASSES: Record<string, string> = {
+  Resource: 'sr-t-resource',
+  Component: 'sr-t-component',
+  Fluid: 'sr-t-fluid',
+  Powder: 'sr-t-powder',
+  Ammo: 'sr-t-ammo',
+  Weapon: 'sr-t-weapon',
 };
 
-const DEFAULT_COLOR = 'bg-slate-500/20 text-slate-300 border-slate-500/40';
+const DEFAULT_CLASS = 'sr-t-default';
 
 export function colorForType(type: string | undefined): string {
-  return (type && TYPE_COLORS[type]) || DEFAULT_COLOR;
+  return (type && TYPE_CLASSES[type]) || DEFAULT_CLASS;
 }

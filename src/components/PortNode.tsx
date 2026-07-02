@@ -21,29 +21,26 @@ export function PortNode({ data }: NodeProps<PortNodeType>) {
 
   return (
     <div
-      className="relative bg-slate-900 border border-violet-600/70 rounded-md px-2 py-1.5 w-[120px] shadow-lg cursor-pointer hover:border-violet-400"
+      className="sr-node relative rounded-md w-[120px] cursor-pointer hover:border-accent"
       onClick={() => openPortDialog(data.portId)}
       title="Click to set item or delete"
     >
       <Handle
         type={isInput ? 'source' : 'target'}
         position={isInput ? Position.Right : Position.Left}
-        className="!bg-violet-500 !w-2.5 !h-2.5"
       />
-      <div className="text-[9px] text-violet-300 uppercase tracking-wide leading-tight">
-        {isInput ? 'Input' : 'Output'}
-      </div>
-      <div className="flex items-center gap-1.5 mt-0.5">
-        <span
-          className={`inline-flex items-center justify-center w-5 h-[14px] rounded-sm border text-[8px] font-bold shrink-0 ${
-            data.itemId ? colorForType(item?.type) : 'bg-slate-600/40 text-slate-300 border-slate-500/50'
-          }`}
-        >
-          {data.itemId ? (item ? abbr(item) : '??') : '?'}
-        </span>
-        <span className="text-[10px] text-slate-200 truncate">
-          {item?.name ?? (data.itemId ? data.itemId : 'Unset')}
-        </span>
+      <div className="sr-node-frame px-2 py-1.5">
+        <div className="text-[9px] uppercase tracking-wide leading-tight text-ink-dim">
+          {isInput ? 'Input' : 'Output'}
+        </div>
+        <div className="flex items-center gap-1.5 mt-0.5">
+          <span className={`sr-badge ${data.itemId ? colorForType(item?.type) : 'sr-t-unset'}`}>
+            {data.itemId ? (item ? abbr(item) : '??') : '?'}
+          </span>
+          <span className="text-[10px] text-ink truncate">
+            {item?.name ?? (data.itemId ? data.itemId : 'Unset')}
+          </span>
+        </div>
       </div>
     </div>
   );

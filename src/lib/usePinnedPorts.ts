@@ -45,8 +45,13 @@ export function usePinnedPorts(wrapperRef: RefObject<HTMLElement | null>) {
     reposition();
   }, [viewPath, nodes, layoutTick, reposition]);
 
+  // A ResizeObserver (rather than window resize) catches layout changes that
+  // don't resize the window itself — e.g. toggling the sidebar.
   useEffect(() => {
-    window.addEventListener('resize', reposition);
-    return () => window.removeEventListener('resize', reposition);
-  }, [reposition]);
+    const el = wrapperRef.current;
+    if (!el) return;
+    const observer = new ResizeObserver(reposition);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [reposition, wrapperRef]);
 }

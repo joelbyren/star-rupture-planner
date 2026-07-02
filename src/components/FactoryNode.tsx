@@ -14,9 +14,7 @@ function PortBadge({ itemId }: { itemId: string | null }) {
   const item = itemById(itemId);
   return (
     <span
-      className={`inline-flex items-center justify-center w-5 h-[14px] rounded-sm border text-[8px] font-bold shrink-0 ${
-        itemId ? colorForType(item?.type) : 'bg-slate-600/40 text-slate-300 border-slate-500/50'
-      }`}
+      className={`sr-badge ${itemId ? colorForType(item?.type) : 'sr-t-unset'}`}
       title={item?.name ?? (itemId ?? 'Unset')}
     >
       {itemId ? (item ? abbr(item) : '??') : '?'}
@@ -37,7 +35,7 @@ export function FactoryNode({ data }: NodeProps<FactoryNodeType>) {
   }, [inputs.length, outputs.length]);
 
   return (
-    <div className="relative bg-slate-800 border-2 border-violet-700/70 rounded-md w-[170px] shadow-lg">
+    <div className="sr-node sr-node--factory relative rounded-md w-[170px]">
       {inputs.map((p, i) => (
         <Handle
           key={p.id}
@@ -45,7 +43,6 @@ export function FactoryNode({ data }: NodeProps<FactoryNodeType>) {
           type="target"
           position={Position.Left}
           style={{ top: inTops[i] ?? 0 }}
-          className="!bg-violet-500 !w-2.5 !h-2.5"
         />
       ))}
       {outputs.map((p, i) => (
@@ -55,31 +52,35 @@ export function FactoryNode({ data }: NodeProps<FactoryNodeType>) {
           type="source"
           position={Position.Right}
           style={{ top: outTops[i] ?? 0 }}
-          className="!bg-violet-500 !w-2.5 !h-2.5"
         />
       ))}
 
-      <div className="px-2 py-1.5">
-        <div className="text-[9px] text-violet-300 uppercase tracking-wide leading-tight">Factory</div>
-        <div className="font-semibold text-white text-xs truncate leading-tight" title={data.name}>
-          {data.name}
+      <div className="sr-node-frame">
+        <div className="px-2 py-1 sr-node-head">
+          <div className="sr-node-machine text-[9px] uppercase tracking-wide leading-tight">Factory</div>
         </div>
-        <div className="text-[8px] text-slate-500 italic leading-tight mb-1">double-click to open</div>
 
-        <div className="flex justify-between gap-2">
-          <div className="space-y-px min-w-0">
-            {inputs.map((p, i) => (
-              <div key={p.id} ref={el => { inRefs.current[i] = el; }} className="flex items-center gap-1 leading-none">
-                <PortBadge itemId={p.itemId} />
-              </div>
-            ))}
+        <div className="px-2 pb-1.5 pt-1">
+          <div className="sr-node-title font-semibold text-xs truncate leading-tight" title={data.name}>
+            {data.name}
           </div>
-          <div className="space-y-px min-w-0">
-            {outputs.map((p, i) => (
-              <div key={p.id} ref={el => { outRefs.current[i] = el; }} className="flex items-center gap-1 leading-none justify-end">
-                <PortBadge itemId={p.itemId} />
-              </div>
-            ))}
+          <div className="text-[8px] text-ink-dim italic leading-tight mb-1">double-click to open</div>
+
+          <div className="flex justify-between gap-2">
+            <div className="space-y-px min-w-0">
+              {inputs.map((p, i) => (
+                <div key={p.id} ref={el => { inRefs.current[i] = el; }} className="flex items-center gap-1 leading-none">
+                  <PortBadge itemId={p.itemId} />
+                </div>
+              ))}
+            </div>
+            <div className="space-y-px min-w-0">
+              {outputs.map((p, i) => (
+                <div key={p.id} ref={el => { outRefs.current[i] = el; }} className="flex items-center gap-1 leading-none justify-end">
+                  <PortBadge itemId={p.itemId} />
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>

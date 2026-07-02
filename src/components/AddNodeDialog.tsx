@@ -95,21 +95,21 @@ export function AddNodeDialog() {
       <div className="space-y-3">
         <button
           onClick={addFactory}
-          className="w-full flex items-center gap-2 px-2 py-1.5 rounded bg-violet-600/20 border border-violet-600/60 text-violet-200 hover:bg-violet-600/30 text-sm"
+          className="w-full flex items-center gap-2 px-2 py-1.5 rounded bg-accent/20 border border-accent/60 text-ink hover:bg-accent/30 text-sm"
         >
-          <span className="inline-flex items-center justify-center w-5 h-5 rounded bg-violet-600 text-white text-xs font-bold">F</span>
+          <span className="inline-flex items-center justify-center w-5 h-5 rounded bg-accent text-canvas text-xs font-bold">F</span>
           <span className="font-medium">Factory</span>
-          <span className="text-xs text-violet-300/70 ml-auto">sub-diagram</span>
+          <span className="text-xs text-ink-dim ml-auto">sub-diagram</span>
         </button>
 
         <div className="flex items-center gap-2">
-          <div className="flex-1 h-px bg-slate-700" />
-          <span className="text-[10px] uppercase tracking-wide text-slate-500">or item</span>
-          <div className="flex-1 h-px bg-slate-700" />
+          <div className="flex-1 h-px bg-line-soft" />
+          <span className="text-[10px] uppercase tracking-wide text-ink-dim">or item</span>
+          <div className="flex-1 h-px bg-line-soft" />
         </div>
 
         <div>
-          <label className="block text-xs text-slate-400 mb-1">Item</label>
+          <label className="block text-xs text-ink-dim mb-1">Item</label>
           <Combobox
             options={options}
             value={itemId}
@@ -121,11 +121,11 @@ export function AddNodeDialog() {
 
         {recipes.length > 1 && (
           <div>
-            <label className="block text-xs text-slate-400 mb-1">Recipe / version</label>
+            <label className="block text-xs text-ink-dim mb-1">Recipe / version</label>
             <select
               value={recipeId ?? ''}
               onChange={e => setRecipeId(e.target.value)}
-              className="w-full bg-slate-700 border border-slate-500 rounded text-sm text-white px-2 py-1.5 cursor-pointer"
+              className="w-full bg-panel-2 border border-line-soft rounded text-sm text-ink px-2 py-1.5 cursor-pointer"
             >
               {recipes.map(r => (
                 <option key={r.id} value={r.id}>
@@ -138,20 +138,20 @@ export function AddNodeDialog() {
         )}
 
         {isRaw && (
-          <p className="text-xs text-amber-300/80">Raw resource — extractor settings can be configured after adding.</p>
+          <p className="text-xs text-accent/80">Raw resource — extractor settings can be configured after adding.</p>
         )}
 
         <div className="flex justify-end gap-2 pt-1">
           <button
             onClick={close}
-            className="px-3 py-1.5 text-sm rounded text-slate-300 hover:bg-slate-700"
+            className="px-3 py-1.5 text-sm rounded text-ink-mid hover:bg-panel-2"
           >
             Cancel
           </button>
           <button
             onClick={confirm}
             disabled={!itemId}
-            className="px-3 py-1.5 text-sm rounded bg-violet-600 text-white hover:bg-violet-500 disabled:opacity-40 disabled:cursor-not-allowed"
+            className="px-3 py-1.5 text-sm rounded bg-accent text-canvas hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
           >
             Add
           </button>

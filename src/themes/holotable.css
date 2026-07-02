@@ -1,0 +1,239 @@
+/* Holotable — cyan hologram on near-black, hot-pink target accents. */
+[data-theme='holotable'] {
+  --sr-canvas: #020408;
+  --sr-panel: rgba(6, 18, 28, 0.72);
+  --sr-panel-2: rgba(5, 16, 26, 0.82);
+  --sr-ink: #d9f6ff;
+  --sr-ink-mid: #8fc4d8;
+  --sr-ink-dim: #4d7e93;
+  --sr-line: rgba(57, 215, 255, 0.35);
+  --sr-line-soft: rgba(57, 215, 255, 0.16);
+  --sr-accent: #39d7ff;
+  --sr-target: #ff4fd8;
+  --sr-danger: #ff3b3b;
+  --sr-c-resource: #39d7ff;
+  --sr-c-component: #59efb4;
+  --sr-c-fluid: #8f9dff;
+  --sr-c-powder: #ffc35c;
+  --sr-font-disp: 'Michroma', 'Orbitron', 'Segoe UI', sans-serif;
+  --sr-font-data: 'Chakra Petch', 'Bahnschrift', 'Segoe UI', sans-serif;
+  --sr-font-note: 'Chakra Petch', 'Bahnschrift', 'Segoe UI', sans-serif;
+  --sr-rate: var(--sr-accent);
+}
+
+[data-theme='holotable'] .holo-space {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 90% 60% at 75% -10%, rgba(24, 60, 92, 0.35), transparent 60%),
+    radial-gradient(ellipse 70% 55% at 12% 108%, rgba(58, 22, 66, 0.3), transparent 62%),
+    radial-gradient(ellipse 45% 35% at 55% 55%, rgba(10, 34, 48, 0.35), transparent 70%),
+    var(--sr-canvas);
+}
+
+[data-theme='holotable'] .holo-stars,
+[data-theme='holotable'] .holo-stars2 {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+[data-theme='holotable'] .holo-stars {
+  background-image:
+    radial-gradient(1px 1px at 12% 22%, rgba(220, 245, 255, 0.8), transparent 100%),
+    radial-gradient(1px 1px at 34% 68%, rgba(220, 245, 255, 0.5), transparent 100%),
+    radial-gradient(1.5px 1.5px at 58% 12%, rgba(200, 240, 255, 0.7), transparent 100%),
+    radial-gradient(1px 1px at 71% 44%, rgba(220, 245, 255, 0.45), transparent 100%),
+    radial-gradient(1px 1px at 88% 76%, rgba(220, 245, 255, 0.6), transparent 100%),
+    radial-gradient(1.5px 1.5px at 44% 88%, rgba(200, 240, 255, 0.5), transparent 100%),
+    radial-gradient(1px 1px at 8% 82%, rgba(220, 245, 255, 0.5), transparent 100%),
+    radial-gradient(1px 1px at 93% 18%, rgba(220, 245, 255, 0.65), transparent 100%),
+    radial-gradient(1px 1px at 25% 42%, rgba(220, 245, 255, 0.35), transparent 100%),
+    radial-gradient(1px 1px at 66% 92%, rgba(220, 245, 255, 0.4), transparent 100%);
+  animation: holo-star-pulse 9s ease-in-out infinite alternate;
+}
+
+[data-theme='holotable'] .holo-stars2 {
+  background-image:
+    radial-gradient(1px 1px at 18% 55%, rgba(160, 220, 255, 0.4), transparent 100%),
+    radial-gradient(1px 1px at 48% 30%, rgba(160, 220, 255, 0.35), transparent 100%),
+    radial-gradient(1px 1px at 80% 60%, rgba(160, 220, 255, 0.4), transparent 100%),
+    radial-gradient(1px 1px at 62% 74%, rgba(160, 220, 255, 0.3), transparent 100%),
+    radial-gradient(1px 1px at 5% 38%, rgba(160, 220, 255, 0.35), transparent 100%),
+    radial-gradient(1px 1px at 90% 92%, rgba(160, 220, 255, 0.3), transparent 100%);
+  animation: holo-star-pulse 13s ease-in-out infinite alternate-reverse;
+}
+
+@keyframes holo-star-pulse {
+  from {
+    opacity: 0.55;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+[data-theme='holotable'] .holo-floor {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(57, 215, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(57, 215, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(rgba(57, 215, 255, 0.028) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(57, 215, 255, 0.028) 1px, transparent 1px);
+  background-size:
+    160px 160px,
+    160px 160px,
+    32px 32px,
+    32px 32px;
+  -webkit-mask-image: radial-gradient(ellipse 75% 70% at 50% 52%, #000 30%, transparent 92%);
+  mask-image: radial-gradient(ellipse 75% 70% at 50% 52%, #000 30%, transparent 92%);
+}
+
+[data-theme='holotable'] .holo-glyph {
+  position: relative;
+  width: 30px;
+  height: 30px;
+  flex: none;
+  cursor: pointer;
+  background: var(--sr-panel-2);
+  border: 1px solid var(--sr-line);
+  clip-path: polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px);
+  box-shadow: 0 0 10px rgba(57, 215, 255, 0.25);
+}
+
+[data-theme='holotable'] .holo-glyph-dot {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--sr-accent);
+  box-shadow: 0 0 6px var(--sr-accent);
+  transform: translate(-50%, -50%);
+}
+
+/* ---- item-type badge colors ---- */
+[data-theme='holotable'] .sr-t-resource { color: var(--sr-c-resource); }
+[data-theme='holotable'] .sr-t-component { color: var(--sr-c-component); }
+[data-theme='holotable'] .sr-t-fluid { color: var(--sr-c-fluid); }
+[data-theme='holotable'] .sr-t-powder { color: var(--sr-c-powder); }
+[data-theme='holotable'] .sr-t-ammo { color: #ff8f6b; }
+[data-theme='holotable'] .sr-t-weapon { color: #ff5f5f; }
+[data-theme='holotable'] .sr-t-default,
+[data-theme='holotable'] .sr-t-unset { color: var(--sr-ink-dim); }
+
+/* ---- node chrome ----
+   `.sr-node` stays unclipped and unstyled (it hosts the Handles and the
+   target-tag/reticle overlay, which sit outside the visual box) — the
+   chamfered shape, background, and border live on `.sr-node-frame` instead,
+   so they never clip those overlays. */
+[data-theme='holotable'] .sr-node {
+  background: transparent;
+  border: none;
+}
+[data-theme='holotable'] .sr-node-frame {
+  height: 100%;
+  background: linear-gradient(160deg, rgba(12, 34, 48, 0.85), rgba(5, 16, 26, 0.82));
+  border: 1px solid var(--sr-line-soft);
+  clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+  box-shadow: 0 0 18px rgba(57, 215, 255, 0.1), inset 0 0 24px rgba(57, 215, 255, 0.05);
+  overflow: hidden;
+}
+[data-theme='holotable'] .sr-node--raw .sr-node-frame {
+  border-style: dashed;
+  box-shadow: 0 0 10px rgba(57, 215, 255, 0.06);
+}
+[data-theme='holotable'] .sr-node--factory .sr-node-frame {
+  border-width: 2px;
+  border-color: var(--sr-c-component);
+}
+[data-theme='holotable'] .sr-node--limit .sr-node-frame {
+  border-color: var(--sr-accent);
+  box-shadow: 0 0 16px rgba(57, 215, 255, 0.45), inset 0 0 24px rgba(57, 215, 255, 0.08);
+}
+[data-theme='holotable'] .sr-node--target .sr-node-frame {
+  border-color: var(--sr-target);
+  background: linear-gradient(160deg, rgba(48, 12, 42, 0.85), rgba(20, 6, 22, 0.85));
+  box-shadow: 0 0 20px rgba(255, 79, 216, 0.5), inset 0 0 24px rgba(255, 79, 216, 0.1);
+}
+
+[data-theme='holotable'] .sr-node-head {
+  background: rgba(57, 215, 255, 0.09);
+  border-bottom: 1px solid rgba(57, 215, 255, 0.18);
+  color: var(--sr-ink-mid);
+  letter-spacing: 0.22em;
+}
+/* Item name is the body headline (mixed case, not the display face) — the
+   header bar above stays machine-only. */
+[data-theme='holotable'] .sr-node-title {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--sr-ink);
+}
+
+/* Hover: lift + cyan border/glow, mirroring the mockup's .node:hover/.focus.
+   The border + glow live on the frame (which carries the visible box); the
+   lift + stacking go on .sr-node (React Flow drives the node wrapper's own
+   transform, so animating .sr-node here is safe). */
+[data-theme='holotable'] .sr-node-frame {
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+/* Border/glow only on hover — deliberately NO transform lift: moving the node
+   under the cursor makes edge-of-node handles slip away when approached from
+   above/below. */
+[data-theme='holotable'] .sr-node:hover .sr-node-frame {
+  border-color: var(--sr-accent);
+  box-shadow: 0 0 28px rgba(57, 215, 255, 0.35), inset 0 0 30px rgba(57, 215, 255, 0.08);
+}
+[data-theme='holotable'] .sr-node--target:hover .sr-node-frame {
+  border-color: var(--sr-target);
+  box-shadow: 0 0 34px rgba(255, 79, 216, 0.4), inset 0 0 30px rgba(255, 79, 216, 0.1);
+}
+[data-theme='holotable'] .sr-node--target .sr-node-head {
+  background: rgba(255, 79, 216, 0.1);
+  border-bottom-color: rgba(255, 79, 216, 0.25);
+  color: #e8a8d8;
+}
+
+[data-theme='holotable'] .holo-target-tag {
+  position: absolute;
+  top: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--sr-font-disp);
+  font-size: 8.5px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--sr-target);
+  text-shadow: 0 0 8px rgba(255, 79, 216, 0.7);
+  white-space: nowrap;
+  z-index: 4;
+}
+[data-theme='holotable'] .holo-reticle {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  pointer-events: none;
+  border: 2px solid var(--sr-target);
+  filter: drop-shadow(0 0 4px rgba(255, 79, 216, 0.6));
+  z-index: 4;
+}
+[data-theme='holotable'] .holo-reticle.tl { top: -7px; left: -7px; border-right: none; border-bottom: none; }
+[data-theme='holotable'] .holo-reticle.tr { top: -7px; right: -7px; border-left: none; border-bottom: none; }
+[data-theme='holotable'] .holo-reticle.bl { bottom: -7px; left: -7px; border-right: none; border-top: none; }
+[data-theme='holotable'] .holo-reticle.br { bottom: -7px; right: -7px; border-left: none; border-top: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  [data-theme='holotable'] .holo-stars,
+  [data-theme='holotable'] .holo-stars2 {
+    animation: none;
+  }
+}

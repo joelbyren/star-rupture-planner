@@ -1,0 +1,158 @@
+/* Semantic token contract. Each theme file defines the --sr-* custom
+   properties under [data-theme='...']; @theme inline re-exposes them as
+   Tailwind utilities that re-resolve live when data-theme changes. */
+@theme inline {
+  --color-canvas: var(--sr-canvas);
+  --color-panel: var(--sr-panel);
+  --color-panel-2: var(--sr-panel-2);
+  --color-ink: var(--sr-ink);
+  --color-ink-mid: var(--sr-ink-mid);
+  --color-ink-dim: var(--sr-ink-dim);
+  --color-line: var(--sr-line);
+  --color-line-soft: var(--sr-line-soft);
+  --color-accent: var(--sr-accent);
+  --color-target: var(--sr-target);
+  --color-danger: var(--sr-danger);
+  --color-res: var(--sr-c-resource);
+  --color-comp: var(--sr-c-component);
+  --color-fluid: var(--sr-c-fluid);
+  --color-powder: var(--sr-c-powder);
+  --font-disp: var(--sr-font-disp);
+  --font-data: var(--sr-font-data);
+  --font-note: var(--sr-font-note);
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  background: var(--sr-canvas);
+  color: var(--sr-ink);
+  font-family: var(--sr-font-data);
+}
+
+/* ---- base React Flow chrome, retinted per theme via the vars above ---- */
+.react-flow__attribution {
+  display: none;
+}
+
+.react-flow__controls {
+  background: var(--sr-panel);
+  border: 1px solid var(--sr-line-soft);
+  box-shadow: none;
+}
+
+.react-flow__controls-button {
+  background: transparent;
+  border-bottom: 1px solid var(--sr-line-soft);
+  color: var(--sr-ink);
+}
+
+.react-flow__controls-button:hover {
+  background: var(--sr-panel-2);
+}
+
+.react-flow__controls-button svg {
+  fill: var(--sr-ink);
+}
+
+.react-flow__minimap {
+  background: var(--sr-panel);
+  border: 1px solid var(--sr-line-soft);
+}
+
+.react-flow__handle {
+  /* Size lives here (unlayered CSS) rather than on Tailwind `w-2.5`/`h-2.5`
+     utilities: React Flow's own stylesheet is unlayered and beats Tailwind's
+     @layer utilities, so utility sizing needs `!important` to stick — and the
+     Tailwind-version-specific important syntax (`!w-2.5` v3 vs `w-2.5!` v4) is
+     exactly the kind of silent breakage we want to avoid. Plain CSS is
+     version-proof. */
+  width: 10px;
+  height: 10px;
+  background: var(--sr-accent);
+  border: 1px solid var(--sr-line);
+  border-radius: 0;
+  /* Handles are siblings of `.sr-node-frame`, which is `position: relative`.
+     Positioned siblings paint in DOM order, so the frame (later in the DOM)
+     would otherwise cover the *input* handle that precedes it — leaving only
+     the outer half of the handle interactive. A z-index lifts every handle
+     above the frame regardless of order. */
+  z-index: 3;
+}
+
+.react-flow__edge-path,
+.react-flow__connection-path {
+  stroke: var(--sr-line-soft);
+}
+
+.react-flow__selection {
+  background: color-mix(in srgb, var(--sr-accent) 12%, transparent);
+  border: 1px dashed var(--sr-accent);
+}
+
+/* ---- shared node / badge hooks — colors + structural extras are per-theme ---- */
+.sr-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 14px;
+  flex: none;
+  font-size: 8px;
+  font-weight: 700;
+  border-radius: 2px;
+  border: 1px solid currentColor;
+  background: color-mix(in srgb, currentColor 12%, transparent);
+}
+
+.sr-node {
+  position: relative;
+  background: var(--sr-panel);
+  border: 1px solid var(--sr-line-soft);
+  color: var(--sr-ink);
+  transition: border-color 0.18s, box-shadow 0.18s, opacity 0.18s;
+}
+
+.sr-node-head {
+  font-family: var(--sr-font-data);
+}
+
+.sr-node--dimmed {
+  opacity: 0.4;
+}
+
+/* Inner content wrapper, separate from .sr-node itself: themes whose node
+   shape needs `clip-path` (which also clips children) apply it here instead
+   of on `.sr-node`, so Handles and outside-the-box decorations (target tags,
+   reticles, callouts) — direct children of `.sr-node` — are never clipped. */
+.sr-node-frame {
+  position: relative;
+}
+
+/* The primary rate/throughput figure on a node; each theme picks its own
+   highlight color (mockups don't all use their "accent" color for this). */
+.sr-rate {
+  color: var(--sr-rate, var(--sr-accent));
+}
+
+/* ---- fixed backdrop layers, one set active at a time via data-theme ----
+   z-index is negative: this is a fixed-position stacking context, and a
+   non-negative z-index would paint it above the app's non-positioned (static)
+   chrome regardless of DOM order. Negative keeps it behind everything except
+   the html/body canvas paint. */
+.sr-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.react-flow,
+.react-flow__pane,
+.react-flow__viewport {
+  background: transparent;
+}

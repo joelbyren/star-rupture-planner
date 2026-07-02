@@ -1,0 +1,217 @@
+/* Terminal — amber phosphor CRT/SCADA. */
+[data-theme='terminal'] {
+  --sr-canvas: #050705;
+  --sr-panel: #0a0d08;
+  --sr-panel-2: #070a06;
+  --sr-ink: #ffd254;
+  --sr-ink-mid: #ffb000;
+  --sr-ink-dim: #c98a10;
+  --sr-line: #7a5a0e;
+  --sr-line-soft: #3c2d08;
+  --sr-accent: #ffb000;
+  --sr-target: #ffd254;
+  --sr-danger: #ff5555;
+  --sr-c-resource: #ffb000;
+  --sr-c-component: #5fe07a;
+  --sr-c-fluid: #4fd4d4;
+  --sr-c-powder: #d9c8a0;
+  --sr-font-disp: 'VT323', 'Courier New', monospace;
+  --sr-font-data: 'IBM Plex Mono', 'Consolas', 'Courier New', monospace;
+  --sr-font-note: 'VT323', 'Courier New', monospace;
+  --sr-rate: var(--sr-target);
+
+  --term-grid-line: rgba(255, 176, 0, 0.05);
+}
+
+[data-theme='terminal'] .term-scanlines {
+  position: fixed;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.22) 0px,
+    rgba(0, 0, 0, 0.22) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  mix-blend-mode: multiply;
+}
+
+[data-theme='terminal'] .term-vignette {
+  position: fixed;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  background: radial-gradient(ellipse 120% 100% at 50% 50%, transparent 55%, rgba(0, 0, 0, 0.28) 84%, rgba(0, 0, 0, 0.62) 100%);
+}
+
+[data-theme='terminal'] .term-glow {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: radial-gradient(ellipse 90% 70% at 50% 42%, rgba(255, 176, 0, 0.045), transparent 70%);
+  animation: term-breathe 7s ease-in-out infinite;
+}
+
+@keyframes term-breathe {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.78;
+  }
+}
+
+[data-theme='terminal'] .term-flicker {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: rgba(210, 160, 40, 0.018);
+  animation: term-flick 4s steps(1) infinite;
+}
+
+@keyframes term-flick {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  61% {
+    opacity: 0;
+  }
+  61.5% {
+    opacity: 0.4;
+  }
+  62% {
+    opacity: 1;
+  }
+  87% {
+    opacity: 1;
+  }
+  88% {
+    opacity: 0.2;
+  }
+  88.5% {
+    opacity: 1;
+  }
+}
+
+[data-theme='terminal'] .term-glyph {
+  flex: none;
+  cursor: pointer;
+  padding: 6px 10px 4px;
+  font-family: var(--sr-font-disp);
+  font-size: 19px;
+  line-height: 1;
+  color: var(--sr-canvas);
+  background: var(--sr-accent);
+  border: none;
+  box-shadow: 0 0 14px rgba(255, 176, 0, 0.35);
+}
+
+[data-theme='terminal'] .react-flow__background.term-grid {
+  color: var(--term-grid-line);
+}
+
+/* ---- item-type badge colors ---- */
+[data-theme='terminal'] .sr-t-resource { color: var(--sr-c-resource); }
+[data-theme='terminal'] .sr-t-component { color: var(--sr-c-component); }
+[data-theme='terminal'] .sr-t-fluid { color: var(--sr-c-fluid); }
+[data-theme='terminal'] .sr-t-powder { color: var(--sr-c-powder); }
+[data-theme='terminal'] .sr-t-ammo { color: #e0a458; }
+[data-theme='terminal'] .sr-t-weapon { color: #ff6a3d; }
+[data-theme='terminal'] .sr-t-default,
+[data-theme='terminal'] .sr-t-unset { color: var(--sr-ink-dim); }
+
+/* ---- node chrome ----
+   Header brightness signals state: dim amber by default, transparent for raw
+   (text-only), and full bright amber only on hover or for the target node —
+   mirrors the mockup's .n-head / .node.raw .n-head / .node.target .n-head. */
+[data-theme='terminal'] .sr-node {
+  border-radius: 0;
+  background: var(--sr-panel-2);
+  border: 2px solid var(--sr-line);
+  outline: 1px solid rgba(255, 176, 0, 0.14);
+  outline-offset: 2px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.8), inset 0 0 18px rgba(255, 176, 0, 0.03);
+}
+[data-theme='terminal'] .sr-node:hover {
+  border-color: var(--sr-accent);
+  outline-color: rgba(255, 176, 0, 0.45);
+}
+[data-theme='terminal'] .sr-node-head {
+  background: var(--sr-line);
+  color: var(--sr-canvas);
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  transition: background 0.15s, color 0.15s;
+}
+[data-theme='terminal'] .sr-node:hover .sr-node-head {
+  background: var(--sr-accent);
+}
+/* Item name is the body headline: big VT323 phosphor glyphs (per mockup
+   .n-item). The header bar above is machine-only. */
+[data-theme='terminal'] .sr-node-title {
+  font-family: var(--sr-font-disp);
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  color: var(--sr-accent);
+  text-shadow: 0 0 6px rgba(255, 176, 0, 0.35);
+}
+[data-theme='terminal'] .sr-node--target .sr-node-title {
+  color: var(--sr-ink);
+  text-shadow: 0 0 12px rgba(255, 210, 84, 0.6);
+}
+[data-theme='terminal'] .sr-node--raw {
+  border-style: dashed;
+}
+[data-theme='terminal'] .sr-node--raw .sr-node-head {
+  background: transparent;
+  color: var(--sr-ink-dim);
+  border-bottom: 1px solid var(--sr-line-soft);
+}
+/* Extractors keep a black/transparent header even on hover — the generic
+   `.sr-node:hover .sr-node-head` rule above would otherwise fill it with the
+   same amber used for the text, making the label unreadable. */
+[data-theme='terminal'] .sr-node--raw:hover .sr-node-head {
+  background: transparent;
+  color: var(--sr-accent);
+}
+[data-theme='terminal'] .sr-node--factory {
+  border-color: var(--sr-target);
+}
+[data-theme='terminal'] .sr-node--limit {
+  outline: 2px solid var(--sr-accent);
+  outline-offset: 2px;
+}
+[data-theme='terminal'] .sr-node--target {
+  border-color: var(--sr-target);
+  box-shadow: 0 0 12px 2px rgba(255, 210, 84, 0.5);
+}
+[data-theme='terminal'] .sr-node--target .sr-node-head {
+  background: var(--sr-accent);
+  color: var(--sr-canvas);
+}
+[data-theme='terminal'] .term-cursor {
+  display: inline-block;
+  animation: term-cursor-blink 1s steps(1) infinite;
+}
+@keyframes term-cursor-blink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-theme='terminal'] .term-cursor {
+    animation: none;
+  }
+  [data-theme='terminal'] .term-glow,
+  [data-theme='terminal'] .term-flicker {
+    animation: none;
+  }
+}

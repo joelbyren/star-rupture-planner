@@ -14,13 +14,14 @@ import {
   applyNodeChanges,
   applyEdgeChanges,
 } from '@xyflow/react';
-import '@xyflow/react/dist/style.css';
 
-import { PersistenceBar } from './components/PersistenceBar.tsx';
+import { ThemeBackdrop } from './components/ThemeBackdrop.tsx';
+import { useThemeStore } from './store/themeStore.ts';
+import { TopBar } from './components/layout/TopBar.tsx';
+import { Sidebar } from './components/layout/Sidebar.tsx';
 import { FactoryNode } from './components/FactoryNode.tsx';
 import { ItemNode } from './components/ItemNode.tsx';
 import { PortNode } from './components/PortNode.tsx';
-import { Breadcrumb } from './components/Breadcrumb.tsx';
 import { AddNodeDialog } from './components/AddNodeDialog.tsx';
 import { NodeConfigDialog } from './components/NodeConfigDialog.tsx';
 import { PortConfigDialog } from './components/PortConfigDialog.tsx';
@@ -40,6 +41,7 @@ function Flow() {
     nodes, edges, setNodes, setEdges, connectNodes,
     openAddDialog, enterFactory, openConfig, layoutTick,
   } = usePlanStore();
+  const theme = useThemeStore(s => s.theme);
   const { screenToFlowPosition, fitView } = useReactFlow();
   const connectFrom = useRef<OnConnectStartParams | null>(null);
   // Whether onConnect fired during the current drag. React Flow can complete a
@@ -141,24 +143,34 @@ function Flow() {
         onNodeDoubleClick={onNodeDoubleClick}
         zoomOnDoubleClick={false}
         fitView
-        colorMode="dark"
       >
-        <Background color="#334155" gap={24} />
+        {theme === 'blueprint' && (
+          <>
+            <Background id="bp-major" className="bp-grid-major" gap={120} lineWidth={1} />
+            <Background id="bp-fine" className="bp-grid-fine" gap={24} lineWidth={1} />
+          </>
+        )}
+        {theme === 'terminal' && (
+          <Background className="term-grid" gap={36} lineWidth={1} />
+        )}
         <Controls />
-        <MiniMap nodeColor="#6d28d9" maskColor="rgba(15,17,23,0.8)" />
+        <MiniMap nodeColor="var(--sr-accent)" maskColor="var(--sr-panel)" />
       </ReactFlow>
-      <Breadcrumb />
     </div>
   );
 }
 
 export default function App() {
   return (
-    <div className="flex flex-col h-screen bg-slate-950">
-      <PersistenceBar />
-      <div className="flex-1 overflow-hidden relative">
+    <div className="flex flex-col h-screen bg-canvas">
+      <ThemeBackdrop />
+      <TopBar />
+      <div className="flex-1 overflow-hidden relative flex">
         <ReactFlowProvider>
-          <Flow />
+          <Sidebar />
+          <div className="flex-1 relative">
+            <Flow />
+          </div>
           <AddNodeDialog />
           <NodeConfigDialog />
           <PortConfigDialog />
