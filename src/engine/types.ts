@@ -7,6 +7,9 @@ export interface Item {
 
 export type BuildingTier = 'V1' | 'V2';
 
+/** Power draw (kW) per machine display name, by building tier. Keyed by `Recipe.machine` / extractor machine name. */
+export type MachinePower = Record<string, { V1: number; V2: number }>;
+
 export type ResourcePurity = 'impure' | 'normal' | 'pure';
 export type ExtractorVersion = 'V1' | 'V2';
 

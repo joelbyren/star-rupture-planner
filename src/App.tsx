@@ -68,6 +68,12 @@ function Flow() {
     fitView({ duration: 400, padding: 0.15, nodes: real.length ? real : undefined });
   }, [layoutTick, fitView]);
 
+  // Navigating in/out of a factory swaps the node/edge set wholesale, so the
+  // hovered node's onMouseLeave never fires — clear stale hover explicitly.
+  useEffect(() => {
+    setHoveredNode(null);
+  }, [layoutTick, setHoveredNode]);
+
   const onNodesChange = useCallback(
     (changes: NodeChange<ViewNode>[]) => setNodes(applyNodeChanges(changes, nodes)),
     [nodes, setNodes],

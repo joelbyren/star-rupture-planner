@@ -1,0 +1,12 @@
+{
+  "Fabricator": { "V1": 10, "V2": 10 },
+  "Furnace": { "V1": 10, "V2": 10 },
+  "Smelter": { "V1": 10, "V2": 10 },
+  "Chemicals at": { "V1": 10, "V2": 10 },
+  "Refinery": { "V1": 10, "V2": 10 },
+  "Mega Press": { "V1": 10, "V2": 10 },
+  "Ore Extractor": { "V1": 10, "V2": 10 },
+  "Helium Extractor": { "V1": 10, "V2": 10 },
+  "Sulphur Extractor": { "V1": 10, "V2": 10 },
+  "Oil Pump": { "V1": 10, "V2": 10 }
+}

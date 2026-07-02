@@ -1,10 +1,24 @@
+import { useMemo } from 'react';
+import { usePlanStore } from '../../../store/planStore.ts';
+import { selectScopedNodes } from '../../../lib/scopedTotals.ts';
+import { toPowerNodes } from '../../../lib/powerNodes.ts';
+import { graphPower } from '../../../engine/power.ts';
 import { SidebarSection } from './SidebarSection.tsx';
 
-// Placeholder until Stage 5 wires up engine/power.ts + data/power.json.
 export function PowerSection() {
+  const rootGraph = usePlanStore(s => s.rootGraph);
+  const viewPath = usePlanStore(s => s.viewPath);
+
+  const totalKw = useMemo(() => {
+    const scoped = selectScopedNodes(rootGraph, viewPath);
+    return graphPower(toPowerNodes(scoped));
+  }, [rootGraph, viewPath]);
+
   return (
     <SidebarSection title="Power">
-      <p className="text-xs text-ink-dim">— (coming soon)</p>
+      <p className="text-xs text-ink-mid">
+        Total: <span className="text-ink tabular-nums">{totalKw.toFixed(0)} kW</span>
+      </p>
     </SidebarSection>
   );
 }
