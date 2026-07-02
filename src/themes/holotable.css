@@ -165,27 +165,42 @@
   box-shadow: 0 0 20px rgba(255, 79, 216, 0.5), inset 0 0 24px rgba(255, 79, 216, 0.1);
 }
 
-/* ---- load-in: hologram materialize — the node lifts into place while the
-   frame pulses a one-shot cyan glow. `backwards` so both revert to their base
-   (hover-transitioned) styles once done. Gated in tokens.css. ---- */
+/* ---- load-in: hologram materialize — the frame lifts into place while it
+   pulses a one-shot cyan glow. `backwards` so both revert to their base
+   (hover-transitioned) styles once done. Gated in tokens.css.
+   The lift+scale transform lives on `.sr-node-frame`, NOT `.sr-node` — React
+   Flow measures `.sr-node` (the Handles' positioning root) to place edge
+   endpoints, and it snapshots that box shortly after mount without
+   re-measuring once a CSS animation settles. A transform there left edges
+   permanently anchored to the node's mid-animation position instead of its
+   resting one. `.sr-node-frame` is purely decorative (no Handles), so
+   animating it is free of that trap. */
 [data-theme='holotable'] .sr-node {
-  animation: holo-materialize 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+  animation: holo-fade-in 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
 }
-@keyframes holo-materialize {
+@keyframes holo-fade-in {
   from {
     opacity: 0;
-    transform: translateY(7px) scale(0.96);
   }
   60% {
     opacity: 1;
   }
   to {
     opacity: 1;
-    transform: translateY(0) scale(1);
   }
 }
 [data-theme='holotable'] .sr-node-frame {
-  animation: holo-frame-flash 0.6s ease-out backwards;
+  animation:
+    holo-frame-flash 0.6s ease-out backwards,
+    holo-frame-materialize 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+}
+@keyframes holo-frame-materialize {
+  from {
+    transform: translateY(7px) scale(0.96);
+  }
+  to {
+    transform: translateY(0) scale(1);
+  }
 }
 @keyframes holo-frame-flash {
   0% {
@@ -305,6 +320,18 @@
 }
 [data-theme='holotable'] .holo-edge.sr-edge--dim .holo-edge-flow {
   stroke-opacity: 0.06;
+}
+[data-theme='holotable'] .holo-edge-dot {
+  fill: var(--sr-accent);
+  opacity: 0.45;
+  transition: opacity 0.25s ease;
+}
+[data-theme='holotable'] .holo-edge.sr-edge--hot .holo-edge-dot {
+  opacity: 1;
+  filter: drop-shadow(0 0 4px rgba(57, 215, 255, 0.7));
+}
+[data-theme='holotable'] .holo-edge.sr-edge--dim .holo-edge-dot {
+  opacity: 0.06;
 }
 [data-theme='holotable'] .holo-edge-label {
   font-family: var(--sr-font-data);

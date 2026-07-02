@@ -94,12 +94,18 @@ function Flow() {
   const onConnectStart = useCallback((_: unknown, params: OnConnectStartParams) => {
     connectFrom.current = params;
     didConnect.current = false;
+    // Handles are hidden until hovered/connecting (see .react-flow__handle in
+    // tokens.css) — reveal all of them for the duration of the drag so the
+    // user can see where a connection can land. Toggled imperatively rather
+    // than via React state so it doesn't re-render the whole flow per drag.
+    wrapperRef.current?.classList.add('sr-connecting');
   }, []);
 
   // Drag off a handle and release on empty canvas → open the add dialog there,
   // pre-filled (when dragged off an input) and auto-connected to the origin handle.
   const onConnectEnd = useCallback(
     (event: MouseEvent | TouchEvent) => {
+      wrapperRef.current?.classList.remove('sr-connecting');
       const from = connectFrom.current;
       const connected = didConnect.current;
       connectFrom.current = null;

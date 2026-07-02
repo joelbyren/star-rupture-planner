@@ -82,6 +82,19 @@ body {
      the outer half of the handle interactive. A z-index lifts every handle
      above the frame regardless of order. */
   z-index: 3;
+  /* Hidden by default — a node's ports are clutter until they're actually
+     needed. Revealed on node hover, and for the whole canvas while a
+     connection drag is in progress (`.sr-connecting`, toggled in App.tsx)
+     so drop targets stay visible without per-pixel proximity tracking. */
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.12s ease;
+}
+
+.sr-node:hover .react-flow__handle,
+.sr-connecting .react-flow__handle {
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .react-flow__edge-path,

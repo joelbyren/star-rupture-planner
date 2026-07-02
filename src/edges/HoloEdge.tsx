@@ -17,6 +17,11 @@ export function HoloEdge({
       <path className="holo-edge-base" d={path} />
       <path className="holo-edge-flow" d={path} style={{ animationDuration: `${duration.toFixed(2)}s` }} />
       <path d={path} className="react-flow__edge-interaction" fill="none" strokeWidth={16} stroke="transparent" />
+      {/* Base/flow are dim at idle by design — without a permanent marker at
+          each end (Blueprint/Terminal both have one), the now-hidden handle
+          left nothing anchoring the line to the node's edge. */}
+      <circle className="holo-edge-dot" cx={sourceX} cy={sourceY} r={2} />
+      <circle className="holo-edge-dot" cx={targetX} cy={targetY} r={2} />
       {isHot && rate != null && (
         <text className="holo-edge-label" x={labelX} y={labelY - 6}>
           {rate.toFixed(1)}/min

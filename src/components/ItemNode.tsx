@@ -1,5 +1,5 @@
-import { useLayoutEffect, useRef, useState } from 'react';
-import { Handle, Position } from '@xyflow/react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { Handle, Position, useUpdateNodeInternals } from '@xyflow/react';
 import type { NodeProps } from '@xyflow/react';
 import type { ItemNodeType } from '../store/planStore.ts';
 import recipesJson from '../data/recipes.json';
@@ -34,9 +34,20 @@ export function ItemNode({ id, data }: NodeProps<ItemNodeType>) {
   // Measure input-row centers so the left handles line up with their labels.
   const rowRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [handleTops, setHandleTops] = useState<number[]>([]);
+  const updateNodeInternals = useUpdateNodeInternals();
   useLayoutEffect(() => {
     setHandleTops(rowRefs.current.map(el => (el ? el.offsetTop + el.offsetHeight / 2 : 0)));
-  }, [inputs.length, data.itemId]);
+    // Row heights/spacing vary per theme (fonts, letter-spacing, header sizing),
+    // so a theme switch must re-measure — otherwise handles stay pinned to
+    // whichever theme's layout was active when the node last mounted/changed.
+  }, [inputs.length, data.itemId, theme]);
+  // React Flow caches handle bounding boxes for edge routing and only refreshes
+  // them via its own ResizeObserver on the node's outer box — a same-size
+  // reshuffle of handle positions (e.g. the row re-measure above) needs an
+  // explicit nudge or edges keep pointing at the stale spot.
+  useEffect(() => {
+    updateNodeInternals(id);
+  }, [handleTops, updateNodeInternals, id]);
 
   const [showTip, setShowTip] = useState(false);
   const limitBinding = !!balance?.isLimitBinding;
