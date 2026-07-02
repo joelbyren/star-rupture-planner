@@ -11,6 +11,7 @@
   --sr-accent: #ffb000;
   --sr-target: #ffd254;
   --sr-danger: #ff5555;
+  --sr-ok: #5fe07a;
   --sr-c-resource: #ffb000;
   --sr-c-component: #5fe07a;
   --sr-c-fluid: #4fd4d4;
@@ -197,6 +198,28 @@
   background: var(--sr-accent);
   color: var(--sr-canvas);
 }
+/* ---- load-in: CRT power-on — the node flickers up to full brightness like a
+   phosphor screen energizing. `backwards` so it reverts to the plain style
+   afterward. Gated in tokens.css. ---- */
+[data-theme='terminal'] .sr-node {
+  animation: term-power-on 0.45s linear backwards;
+}
+@keyframes term-power-on {
+  0% { opacity: 0; }
+  12% { opacity: 0.65; }
+  18% { opacity: 0.1; }
+  30% { opacity: 0.9; }
+  38% { opacity: 0.3; }
+  52% { opacity: 1; }
+  60% { opacity: 0.55; }
+  100% { opacity: 1; }
+}
+
+[data-theme='terminal'] .sr-empty-title,
+[data-theme='terminal'] .sr-empty-hint {
+  text-transform: uppercase;
+}
+
 [data-theme='terminal'] .term-cursor {
   display: inline-block;
   animation: term-cursor-blink 1s steps(1) infinite;

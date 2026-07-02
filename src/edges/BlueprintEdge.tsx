@@ -11,7 +11,7 @@ export function BlueprintEdge({
 
   return (
     <g className={cls}>
-      <path className="bp-edge-wire" d={path} markerEnd="url(#bp-arrow)" />
+      <path className="bp-edge-wire" d={path} pathLength={1} markerEnd="url(#bp-arrow)" />
       <path d={path} className="react-flow__edge-interaction" fill="none" strokeWidth={16} stroke="transparent" />
       <circle className="bp-edge-dot" cx={sourceX} cy={sourceY} r={2} />
       {isHot && rate != null && (

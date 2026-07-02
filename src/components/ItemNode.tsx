@@ -99,7 +99,7 @@ export function ItemNode({ id, data }: NodeProps<ItemNodeType>) {
             rawConfig && (
               <div
                 className={`text-[10px] leading-tight font-medium mt-0.5 ${
-                  balance?.isLimitBinding ? 'text-accent' : surplus !== null && surplus >= 0 ? 'text-emerald-400' : 'text-danger'
+                  balance?.isLimitBinding ? 'text-accent' : surplus !== null && surplus >= 0 ? 'text-ok' : 'text-danger'
                 }`}
               >
                 {supplyRate?.toFixed(0)}/min ({surplus !== null && surplus >= 0 ? '+' : ''}{surplus?.toFixed(0)})

@@ -155,8 +155,12 @@ function Flow() {
   );
   const onNodeMouseLeave = useCallback(() => setHoveredNode(null), [setHoveredNode]);
 
+  // Port nodes are synthesized even for an otherwise-empty factory, so the
+  // empty-state hinges on real (item/factory) content, not raw node count.
+  const hasContent = nodes.some(n => n.type === 'itemNode' || n.type === 'factoryNode');
+
   return (
-    <div className="w-full h-full" ref={wrapperRef} onDoubleClick={onWrapperDoubleClick}>
+    <div className="w-full h-full relative" ref={wrapperRef} onDoubleClick={onWrapperDoubleClick}>
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -186,6 +190,14 @@ function Flow() {
         <Controls />
         <MiniMap nodeColor="var(--sr-accent)" maskColor="var(--sr-panel)" />
       </ReactFlow>
+      {!hasContent && (
+        <div className="sr-empty" aria-hidden="true">
+          <div className="sr-empty-title">No nodes yet</div>
+          <div className="sr-empty-hint">
+            Double-click the canvas to place a node, or drag from a node's handle onto empty space to branch off a new one.
+          </div>
+        </div>
+      )}
     </div>
   );
 }

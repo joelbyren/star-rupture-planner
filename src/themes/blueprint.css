@@ -11,6 +11,7 @@
   --sr-accent: #ecc98b;
   --sr-target: #e9f3fc;
   --sr-danger: #f2545b;
+  --sr-ok: #7de9da;
   --sr-c-resource: #dce9f6;
   --sr-c-component: #8fcdf0;
   --sr-c-fluid: #7de9da;
@@ -158,6 +159,30 @@
   box-shadow: 0 4px 18px rgba(3, 14, 28, 0.6), 0 0 0 3px rgba(228, 242, 252, 0.12), 0 0 24px rgba(140, 200, 245, 0.18);
 }
 
+/* ---- load-in: a left-to-right clip wipe, like a line being drafted in.
+   fill-mode `backwards` (never `forwards`/`both`) so the clip-path is dropped
+   once the run ends — a retained inset(0) would clip the node's Handles and
+   the TARGET callout, which sit outside the border box. Gated in tokens.css. */
+[data-theme='blueprint'] .sr-node {
+  animation: bp-draft-in 0.42s ease-out backwards;
+}
+@keyframes bp-draft-in {
+  from {
+    opacity: 0;
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    opacity: 1;
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+/* Empty canvas: the drafting-room headline face, letter-spaced. */
+[data-theme='blueprint'] .sr-empty-title {
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
 [data-theme='blueprint'] .bp-callout {
   position: absolute;
   left: 50%;
@@ -205,6 +230,21 @@
   fill: none;
   stroke: currentColor;
   stroke-width: 1.25;
+  /* One-shot draft-in draw: the path is normalized to pathLength=1 in
+     BlueprintEdge, so a dash the full normalized length reveals from source to
+     target as the offset animates to 0. `backwards` shows the hidden state
+     before the run, then reverts to the plain (offsetless) style afterward, so
+     nothing lingers to fight the hover treatment. Gated in tokens.css. */
+  stroke-dasharray: 1;
+  animation: bp-draw 0.6s ease-out backwards;
+}
+@keyframes bp-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
 }
 [data-theme='blueprint'] .bp-edge-dot {
   fill: currentColor;

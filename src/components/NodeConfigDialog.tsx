@@ -106,7 +106,7 @@ export function NodeConfigDialog() {
               </div>
             )}
 
-            <div className={`text-xs font-medium ${balance?.isLimitBinding ? 'text-accent' : surplus !== null && surplus >= 0 ? 'text-emerald-400' : 'text-danger'}`}>
+            <div className={`text-xs font-medium ${balance?.isLimitBinding ? 'text-accent' : surplus !== null && surplus >= 0 ? 'text-ok' : 'text-danger'}`}>
               {supplyRate?.toFixed(0)}/min supply (physical cap)
               <span className="text-ink-dim font-normal ml-1">
                 ({surplus !== null && surplus >= 0 ? '+' : ''}{surplus?.toFixed(0)} spare vs {needed.toFixed(0)} used)

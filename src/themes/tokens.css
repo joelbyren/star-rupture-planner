@@ -13,6 +13,7 @@
   --color-accent: var(--sr-accent);
   --color-target: var(--sr-target);
   --color-danger: var(--sr-danger);
+  --color-ok: var(--sr-ok);
   --color-res: var(--sr-c-resource);
   --color-comp: var(--sr-c-component);
   --color-fluid: var(--sr-c-fluid);
@@ -165,4 +166,48 @@ body {
 .react-flow__pane,
 .react-flow__viewport {
   background: transparent;
+}
+
+/* ---- empty-state: shown over the canvas when a graph has no item/factory
+   nodes. Shared layout + typography; per-theme files add small accents. The
+   overlay is pointer-events:none so the pane's double-click-to-add still fires
+   through it. ---- */
+.sr-empty {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  pointer-events: none;
+  text-align: center;
+  padding: 24px;
+}
+.sr-empty-title {
+  font-family: var(--font-disp);
+  font-size: 24px;
+  letter-spacing: 0.14em;
+  color: var(--color-ink-mid);
+}
+.sr-empty-hint {
+  font-family: var(--font-data);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: var(--color-ink-dim);
+  max-width: 320px;
+  line-height: 1.5;
+}
+
+/* ---- reduced-motion: kill the one-shot load-in / draw-in animations added
+   for polish. Per-theme backdrop + flow animations are gated in their own
+   files; this covers the shared node/edge hooks in one place so every theme
+   inherits it. ---- */
+@media (prefers-reduced-motion: reduce) {
+  .sr-node,
+  .sr-node-frame,
+  .bp-edge-wire {
+    animation: none !important;
+  }
 }
