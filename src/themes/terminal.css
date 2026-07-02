@@ -206,12 +206,64 @@
   50%, 100% { opacity: 0; }
 }
 
+/* ---- edges: orthogonal Manhattan traces with per-source lane stagger,
+   marching-ants overlay, small "pad" rects at each endpoint. ---- */
+[data-theme='terminal'] .term-edge-base {
+  fill: none;
+  stroke: var(--sr-line);
+  stroke-width: 1.5;
+  transition: stroke 0.15s, opacity 0.15s, filter 0.15s;
+}
+[data-theme='terminal'] .term-edge-flow {
+  fill: none;
+  stroke: var(--sr-ink-dim);
+  stroke-width: 1.5;
+  stroke-dasharray: 5 7;
+  animation: term-march 1.1s linear infinite;
+  transition: stroke 0.15s, opacity 0.15s, filter 0.15s;
+}
+@keyframes term-march {
+  to {
+    stroke-dashoffset: -12;
+  }
+}
+[data-theme='terminal'] .term-edge-pad {
+  fill: var(--sr-ink-mid);
+  opacity: 0.7;
+  transition: opacity 0.15s, fill 0.15s;
+}
+[data-theme='terminal'] .term-edge.sr-edge--hot .term-edge-base,
+[data-theme='terminal'] .term-edge.sr-edge--hot .term-edge-flow {
+  stroke: var(--sr-ink);
+  filter: drop-shadow(0 0 3px rgba(255, 210, 84, 0.8));
+}
+[data-theme='terminal'] .term-edge.sr-edge--hot .term-edge-pad {
+  opacity: 1;
+  fill: var(--sr-ink);
+}
+[data-theme='terminal'] .term-edge.sr-edge--dim .term-edge-base,
+[data-theme='terminal'] .term-edge.sr-edge--dim .term-edge-flow {
+  opacity: 0.13;
+}
+[data-theme='terminal'] .term-edge.sr-edge--dim .term-edge-pad {
+  opacity: 0.13;
+}
+[data-theme='terminal'] .term-edge-label {
+  font-family: var(--sr-font-disp);
+  font-size: 14px;
+  fill: var(--sr-ink);
+  text-transform: uppercase;
+}
+
 @media (prefers-reduced-motion: reduce) {
   [data-theme='terminal'] .term-cursor {
     animation: none;
   }
   [data-theme='terminal'] .term-glow,
   [data-theme='terminal'] .term-flicker {
+    animation: none;
+  }
+  [data-theme='terminal'] .term-edge-flow {
     animation: none;
   }
 }

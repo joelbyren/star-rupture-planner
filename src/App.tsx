@@ -9,6 +9,7 @@ import {
   type NodeChange,
   type EdgeChange,
   type NodeTypes,
+  type EdgeTypes,
   type Connection,
   type OnConnectStartParams,
   applyNodeChanges,
@@ -28,6 +29,9 @@ import { PortConfigDialog } from './components/PortConfigDialog.tsx';
 import { usePlanStore, handleItemId, isPortNode } from './store/planStore.ts';
 import type { ViewNode } from './store/planStore.ts';
 import { usePinnedPorts } from './lib/usePinnedPorts.ts';
+import { useUiStore } from './store/uiStore.ts';
+import { ThemedEdge } from './edges/ThemedEdge.tsx';
+import { EdgeMarkerDefs } from './edges/EdgeMarkerDefs.tsx';
 
 const NODE_TYPES: NodeTypes = {
   itemNode: ItemNode,
@@ -36,12 +40,17 @@ const NODE_TYPES: NodeTypes = {
   outputPort: PortNode,
 };
 
+const EDGE_TYPES: EdgeTypes = {
+  default: ThemedEdge,
+};
+
 function Flow() {
   const {
     nodes, edges, setNodes, setEdges, connectNodes,
     openAddDialog, enterFactory, openConfig, layoutTick,
   } = usePlanStore();
   const theme = useThemeStore(s => s.theme);
+  const setHoveredNode = useUiStore(s => s.setHoveredNode);
   const { screenToFlowPosition, fitView } = useReactFlow();
   const connectFrom = useRef<OnConnectStartParams | null>(null);
   // Whether onConnect fired during the current drag. React Flow can complete a
@@ -129,21 +138,31 @@ function Flow() {
     [enterFactory, openConfig],
   );
 
+  const onNodeMouseEnter = useCallback(
+    (_: React.MouseEvent, node: ViewNode) => setHoveredNode(node.id),
+    [setHoveredNode],
+  );
+  const onNodeMouseLeave = useCallback(() => setHoveredNode(null), [setHoveredNode]);
+
   return (
     <div className="w-full h-full" ref={wrapperRef} onDoubleClick={onWrapperDoubleClick}>
       <ReactFlow
         nodes={nodes}
         edges={edges}
         nodeTypes={NODE_TYPES}
+        edgeTypes={EDGE_TYPES}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
         onConnectStart={onConnectStart}
         onConnectEnd={onConnectEnd}
         onNodeDoubleClick={onNodeDoubleClick}
+        onNodeMouseEnter={onNodeMouseEnter}
+        onNodeMouseLeave={onNodeMouseLeave}
         zoomOnDoubleClick={false}
         fitView
       >
+        <EdgeMarkerDefs />
         {theme === 'blueprint' && (
           <>
             <Background id="bp-major" className="bp-grid-major" gap={120} lineWidth={1} />

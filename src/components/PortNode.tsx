@@ -5,6 +5,7 @@ import { usePlanStore } from '../store/planStore.ts';
 import itemsJson from '../data/items.json';
 import type { Item } from '../engine/types.ts';
 import { abbr, colorForType } from '../lib/itemVisual.ts';
+import { useIsNodeDimmed } from '../lib/useNeighbors.ts';
 
 const ALL_ITEMS = itemsJson as Item[];
 const itemById = (id: string | null) => (id ? ALL_ITEMS.find(i => i.id === id) : undefined);
@@ -14,14 +15,15 @@ const itemById = (id: string | null) => (id ? ALL_ITEMS.find(i => i.id === id) :
  * SOURCE that feeds inner nodes (handle on the right); an output port is a SINK
  * that consumes from inner nodes (handle on the left). Click to edit/delete.
  */
-export function PortNode({ data }: NodeProps<PortNodeType>) {
+export function PortNode({ id, data }: NodeProps<PortNodeType>) {
   const openPortDialog = usePlanStore(s => s.openPortDialog);
+  const dimmed = useIsNodeDimmed(id);
   const item = itemById(data.itemId);
   const isInput = data.side === 'input';
 
   return (
     <div
-      className="sr-node relative rounded-md w-[120px] cursor-pointer hover:border-accent"
+      className={`sr-node relative rounded-md w-[120px] cursor-pointer hover:border-accent ${dimmed ? 'sr-node--dimmed' : ''}`}
       onClick={() => openPortDialog(data.portId)}
       title="Click to set item or delete"
     >

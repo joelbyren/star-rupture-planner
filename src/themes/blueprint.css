@@ -187,3 +187,38 @@
   width: 1px;
   background: var(--sr-line-soft);
 }
+
+/* ---- edges: soft-white bezier, drafted chevron arrowhead, hover-revealed
+   dimension-tick + rate label. No continuous animation (one-shot draw-in is
+   stage-7 polish). ---- */
+[data-theme='blueprint'] .bp-edge {
+  color: var(--sr-line-soft);
+  transition: color 0.18s;
+}
+[data-theme='blueprint'] .bp-edge.sr-edge--hot {
+  color: var(--sr-ink);
+}
+[data-theme='blueprint'] .bp-edge.sr-edge--dim {
+  color: rgba(190, 220, 244, 0.13);
+}
+[data-theme='blueprint'] .bp-edge-wire {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.25;
+}
+[data-theme='blueprint'] .bp-edge-dot {
+  fill: currentColor;
+}
+[data-theme='blueprint'] .bp-arrow-path {
+  fill: var(--sr-line-soft);
+}
+[data-theme='blueprint'] .bp-edge-tick {
+  stroke: currentColor;
+  stroke-width: 1;
+}
+[data-theme='blueprint'] .bp-edge-label {
+  font-family: var(--sr-font-data);
+  font-size: 9px;
+  fill: var(--sr-ink);
+  letter-spacing: 0.02em;
+}

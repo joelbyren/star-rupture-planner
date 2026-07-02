@@ -270,12 +270,33 @@ function setGraphAt(root: InnerGraph, path: string[], next: InnerGraph): InnerGr
   };
 }
 
+/**
+ * Strip the legacy `animated` flag from every edge, recursing into nested
+ * factory inner graphs. Snapshots exported before ThemedEdge existed persist
+ * `animated: true`; React Flow's own stylesheet still keys off that flag
+ * (`.react-flow__edge.animated path { stroke-dasharray: 5; animation: ... }`),
+ * which fights the per-theme dash/animation styling on every path in the edge.
+ */
+function stripLegacyAnimatedFlag(g: InnerGraph): InnerGraph {
+  return {
+    edges: g.edges.map(e => (e.animated ? { ...e, animated: undefined } : e)),
+    nodes: g.nodes.map(n =>
+      isFactoryNode(n) ? { ...n, data: { ...n.data, inner: stripLegacyAnimatedFlag(n.data.inner) } } : n,
+    ),
+  };
+}
+
 /** The factory node whose inner graph is currently being viewed (null at root). */
 function currentFactory(root: InnerGraph, path: string[]): FactoryNodeType | null {
   if (path.length === 0) return null;
   const parent = graphAt(root, path.slice(0, -1));
   const fac = parent.nodes.find(n => n.id === path[path.length - 1] && isFactoryNode(n));
   return (fac as FactoryNodeType) ?? null;
+}
+
+/** The balance of the factory whose inner graph is currently being viewed (null at root). */
+export function currentFactoryBalance(root: InnerGraph, path: string[]): FactoryBalanceResult | null {
+  return currentFactory(root, path)?.data.balance ?? null;
 }
 
 /** Build what <ReactFlow> renders for a given path: stored nodes + synthesized ports. */
@@ -435,7 +456,6 @@ function buildEdge(
     target,
     sourceHandle: sourceHandle ?? undefined,
     targetHandle: targetHandle ?? undefined,
-    animated: true,
   };
 }
 
@@ -684,7 +704,7 @@ export const usePlanStore = create<PlanState>((set, get) => {
     },
 
     loadPlan(snapshot) {
-      const root = rebalanceRoot({ nodes: snapshot.nodes, edges: snapshot.edges });
+      const root = rebalanceRoot(stripLegacyAnimatedFlag({ nodes: snapshot.nodes, edges: snapshot.edges }));
       set({
         planId: snapshot.planId,
         planName: snapshot.planName,

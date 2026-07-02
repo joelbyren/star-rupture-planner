@@ -231,9 +231,57 @@
 [data-theme='holotable'] .holo-reticle.bl { bottom: -7px; left: -7px; border-right: none; border-top: none; }
 [data-theme='holotable'] .holo-reticle.br { bottom: -7px; right: -7px; border-left: none; border-top: none; }
 
+/* ---- edges: static cyan base + a marching-dash flow overlay, speed scaled
+   by throughput; hover reveals the rate label and brightens both paths. ---- */
+[data-theme='holotable'] .holo-edge-base {
+  fill: none;
+  stroke: var(--sr-line);
+  stroke-width: 1;
+  stroke-opacity: 0.22;
+  transition: stroke-opacity 0.25s ease, stroke-width 0.25s ease;
+}
+[data-theme='holotable'] .holo-edge-flow {
+  fill: none;
+  stroke: var(--sr-accent);
+  stroke-width: 1.4;
+  stroke-opacity: 0.12;
+  stroke-dasharray: 5 11;
+  animation: holo-flow linear infinite;
+  transition: stroke-opacity 0.25s ease, stroke-width 0.25s ease;
+}
+@keyframes holo-flow {
+  to {
+    stroke-dashoffset: -160;
+  }
+}
+[data-theme='holotable'] .holo-edge.sr-edge--hot .holo-edge-base {
+  stroke-opacity: 0.5;
+  stroke-width: 1.8;
+}
+[data-theme='holotable'] .holo-edge.sr-edge--hot .holo-edge-flow {
+  stroke-opacity: 1;
+  stroke-width: 2;
+  filter: drop-shadow(0 0 4px rgba(57, 215, 255, 0.7));
+}
+[data-theme='holotable'] .holo-edge.sr-edge--dim .holo-edge-base {
+  stroke-opacity: 0.07;
+}
+[data-theme='holotable'] .holo-edge.sr-edge--dim .holo-edge-flow {
+  stroke-opacity: 0.06;
+}
+[data-theme='holotable'] .holo-edge-label {
+  font-family: var(--sr-font-data);
+  font-size: 9px;
+  fill: var(--sr-ink);
+  text-shadow: 0 0 4px rgba(57, 215, 255, 0.6);
+}
+
 @media (prefers-reduced-motion: reduce) {
   [data-theme='holotable'] .holo-stars,
   [data-theme='holotable'] .holo-stars2 {
+    animation: none;
+  }
+  [data-theme='holotable'] .holo-edge-flow {
     animation: none;
   }
 }

@@ -8,6 +8,7 @@ import type { Recipe, Item } from '../engine/types.ts';
 import { calcSupplyRate, DEFAULT_RAW_CONFIG, machineForResource } from '../engine/rawResources.ts';
 import { abbr, colorForType } from '../lib/itemVisual.ts';
 import { useThemeStore } from '../store/themeStore.ts';
+import { useIsNodeDimmed } from '../lib/useNeighbors.ts';
 import { TargetMark } from './NodeChrome.tsx';
 
 const ALL_RECIPES = recipesJson as Recipe[];
@@ -17,8 +18,9 @@ function itemById(id: string): Item | undefined {
   return ALL_ITEMS.find(i => i.id === id);
 }
 
-export function ItemNode({ data }: NodeProps<ItemNodeType>) {
+export function ItemNode({ id, data }: NodeProps<ItemNodeType>) {
   const theme = useThemeStore(s => s.theme);
+  const dimmed = useIsNodeDimmed(id);
   const item = itemById(data.itemId);
   const recipe = data.recipeId ? ALL_RECIPES.find(r => r.id === data.recipeId) : undefined;
   const balance = data.balance;
@@ -46,6 +48,7 @@ export function ItemNode({ data }: NodeProps<ItemNodeType>) {
     data.isRaw ? 'sr-node--raw' : 'sr-node--production',
     isTarget ? 'sr-node--target' : '',
     limitBinding ? 'sr-node--limit' : '',
+    dimmed ? 'sr-node--dimmed' : '',
   ].filter(Boolean).join(' ');
 
   return (

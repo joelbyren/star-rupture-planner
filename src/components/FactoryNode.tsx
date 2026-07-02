@@ -6,6 +6,7 @@ import { portNodeId } from '../store/planStore.ts';
 import itemsJson from '../data/items.json';
 import type { Item } from '../engine/types.ts';
 import { abbr, colorForType } from '../lib/itemVisual.ts';
+import { useIsNodeDimmed } from '../lib/useNeighbors.ts';
 
 const ALL_ITEMS = itemsJson as Item[];
 const itemById = (id: string | null) => (id ? ALL_ITEMS.find(i => i.id === id) : undefined);
@@ -22,8 +23,9 @@ function PortBadge({ itemId }: { itemId: string | null }) {
   );
 }
 
-export function FactoryNode({ data }: NodeProps<FactoryNodeType>) {
+export function FactoryNode({ id, data }: NodeProps<FactoryNodeType>) {
   const { inputs, outputs } = data as FactoryNodeData;
+  const dimmed = useIsNodeDimmed(id);
 
   const inRefs = useRef<(HTMLDivElement | null)[]>([]);
   const outRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -35,7 +37,7 @@ export function FactoryNode({ data }: NodeProps<FactoryNodeType>) {
   }, [inputs.length, outputs.length]);
 
   return (
-    <div className="sr-node sr-node--factory relative rounded-md w-[170px]">
+    <div className={`sr-node sr-node--factory relative rounded-md w-[170px] ${dimmed ? 'sr-node--dimmed' : ''}`}>
       {inputs.map((p, i) => (
         <Handle
           key={p.id}
