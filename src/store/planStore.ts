@@ -581,28 +581,36 @@ function portInheritFromEdge(
 }
 
 // ------------------------------------------------------------------
-// Missing-input detection (per current view)
+// Validation-issue detection (per current view): unfed recipe inputs and
+// raw-resource extractors whose sole output isn't wired to anything.
 // ------------------------------------------------------------------
 
-export interface MissingInput {
+export interface ValidationIssue {
   nodeId: string;
-  consumerItemId: string;
+  /** Null for an unconnected extractor output (there's no consumer to name). */
+  consumerItemId: string | null;
   itemId: string;
 }
 
-export function findMissingInputs(nodes: ViewNode[], edges: Edge[]): MissingInput[] {
+export function findValidationIssues(nodes: ViewNode[], edges: Edge[]): ValidationIssue[] {
   const recipeById = new Map(ALL_RECIPES.map(r => [r.id, r]));
-  const missing: MissingInput[] = [];
+  const issues: ValidationIssue[] = [];
   for (const n of nodes) {
-    if (!isItemNode(n) || n.data.recipeId === null) continue;
+    if (!isItemNode(n)) continue;
+    if (n.data.recipeId === null) {
+      if (n.data.isRaw && !edges.some(e => e.source === n.id)) {
+        issues.push({ nodeId: n.id, consumerItemId: null, itemId: n.data.itemId });
+      }
+      continue;
+    }
     const recipe = recipeById.get(n.data.recipeId);
     if (!recipe) continue;
     for (const inp of recipe.inputs) {
       const fed = edges.some(e => e.target === n.id && e.targetHandle === inp.itemId);
-      if (!fed) missing.push({ nodeId: n.id, consumerItemId: n.data.itemId, itemId: inp.itemId });
+      if (!fed) issues.push({ nodeId: n.id, consumerItemId: n.data.itemId, itemId: inp.itemId });
     }
   }
-  return missing;
+  return issues;
 }
 
 // ------------------------------------------------------------------
