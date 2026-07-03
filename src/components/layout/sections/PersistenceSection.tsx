@@ -1,20 +1,9 @@
 import { usePlanStore } from '../../../store/planStore.ts';
-import { buildSnapshot, saveSnapshot, loadLatestSnapshot, exportSnapshot, importSnapshotFromFile } from '../../../lib/persistence.ts';
+import { buildSnapshot, exportSnapshot, importSnapshotFromFile } from '../../../lib/persistence.ts';
 import { SidebarSection, SidebarButton } from './SidebarSection.tsx';
 
 export function PersistenceSection() {
   const store = usePlanStore();
-
-  async function handleSave() {
-    await saveSnapshot(buildSnapshot(store));
-    alert('Plan saved.');
-  }
-
-  async function handleLoad() {
-    const snapshot = await loadLatestSnapshot();
-    if (!snapshot) { alert('No saved plans found.'); return; }
-    store.loadPlan(snapshot);
-  }
 
   function handleExport() {
     exportSnapshot(buildSnapshot(store));
@@ -27,13 +16,21 @@ export function PersistenceSection() {
     );
   }
 
+  function handleNew() {
+    // The plan auto-saves to the browser, so starting fresh discards it — warn first.
+    if (!confirm('Start a new plan? The current plan will be cleared. Export it first if you want to keep a copy.')) return;
+    store.newPlan();
+  }
+
   return (
-    <SidebarSection title="Persistence">
+    <SidebarSection title="Plan">
+      <p className="text-[10px] leading-snug text-ink-dim mb-2">
+        Your plan is saved in this browser automatically. Use Export to back it up or move it to another machine.
+      </p>
       <div className="flex flex-col gap-1.5">
-        <SidebarButton onClick={handleSave}>Save</SidebarButton>
-        <SidebarButton onClick={handleLoad}>Load</SidebarButton>
         <SidebarButton onClick={handleExport}>Export JSON</SidebarButton>
         <SidebarButton onClick={handleImport}>Import JSON</SidebarButton>
+        <SidebarButton onClick={handleNew} danger>New plan</SidebarButton>
       </div>
     </SidebarSection>
   );

@@ -14,6 +14,7 @@ import {
 } from '../engine/balanceGraph.ts';
 import recipesJson from '../data/recipes.json';
 import { computeEndProductIds } from '../lib/endProducts.ts';
+import { buildSnapshot, saveLocalSnapshot, loadLocalSnapshot } from '../lib/persistence.ts';
 
 const ALL_RECIPES = recipesJson as Recipe[];
 
@@ -120,6 +121,8 @@ export interface PlanState {
   /** Reposition synthesized port nodes only — no rootGraph write, no layoutTick bump. */
   setPortPositions: (positions: Record<string, { x: number; y: number }>) => void;
   loadPlan: (snapshot: PlanSnapshot) => void;
+  /** Discard the current plan and start a blank one (fresh id). Autosave persists the empty plan. */
+  newPlan: () => void;
 
   // Builder actions (operate on the currently-viewed graph)
   addNode: (itemId: string, recipeId: string | null, position?: { x: number; y: number }) => void;
@@ -675,6 +678,17 @@ function layoutNodes(allNodes: AnyNode[], edges: Edge[]): AnyNode[] {
 
 const EMPTY: InnerGraph = { nodes: [], edges: [] };
 
+/** A blank plan, or the auto-saved one restored from localStorage. Runs once at store creation. */
+function hydrateInitial(): Pick<PlanState, 'planId' | 'planName' | 'rootGraph' | 'nodes' | 'edges'> {
+  const snapshot = loadLocalSnapshot();
+  if (!snapshot) {
+    return { planId: crypto.randomUUID(), planName: 'New Plan', rootGraph: EMPTY, nodes: [], edges: [] };
+  }
+  // Same normalization path as loadPlan: strip legacy flags, then balance the tree.
+  const root = rebalanceRoot(stripLegacyAnimatedFlag({ nodes: snapshot.nodes, edges: snapshot.edges }));
+  return { planId: snapshot.planId, planName: snapshot.planName, rootGraph: root, nodes: root.nodes, edges: root.edges };
+}
+
 export const usePlanStore = create<PlanState>((set, get) => {
   /** Apply a mutation to the currently-viewed graph, rebalance, write back, re-project. */
   function commitViewedGraph(mutate: (g: InnerGraph) => InnerGraph) {
@@ -717,13 +731,15 @@ export const usePlanStore = create<PlanState>((set, get) => {
     });
   }
 
+  const initial = hydrateInitial();
+
   return {
-    planId: crypto.randomUUID(),
-    planName: 'New Plan',
-    rootGraph: EMPTY,
+    planId: initial.planId,
+    planName: initial.planName,
+    rootGraph: initial.rootGraph,
     viewPath: [],
-    nodes: [],
-    edges: [],
+    nodes: initial.nodes,
+    edges: initial.edges,
 
     addDialogOpen: false,
     addDialogPos: null,
@@ -776,6 +792,25 @@ export const usePlanStore = create<PlanState>((set, get) => {
         nodes: root.nodes,
         edges: root.edges,
         layoutTick: get().layoutTick + 1,
+      });
+    },
+
+    newPlan() {
+      set({
+        planId: crypto.randomUUID(),
+        planName: 'New Plan',
+        rootGraph: EMPTY,
+        viewPath: [],
+        nodes: [],
+        edges: [],
+        layoutTick: get().layoutTick + 1,
+        editingNodeId: null,
+        portDialogPortId: null,
+        addDialogOpen: false,
+        addDialogPos: null,
+        addDialogPrefillItemId: null,
+        addDialogFilterInputItemId: null,
+        pendingConnect: null,
       });
     },
 
@@ -1064,4 +1099,16 @@ export const usePlanStore = create<PlanState>((set, get) => {
     openPortDialog(portId) { set({ portDialogPortId: portId }); },
     closePortDialog() { set({ portDialogPortId: null }); },
   };
+});
+
+// ------------------------------------------------------------------
+// Autosave: persist the live plan to localStorage on every change, debounced
+// so a drag (which fires per frame) collapses to a single write. Only the plan
+// document is saved; transient dialog/UI state rides along in the snapshot but
+// is dropped by buildSnapshot.
+// ------------------------------------------------------------------
+let saveTimer: ReturnType<typeof setTimeout> | undefined;
+usePlanStore.subscribe(state => {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => saveLocalSnapshot(buildSnapshot(state)), 400);
 });

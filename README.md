@@ -27,9 +27,9 @@ src/
 ├── components/
 │   ├── FactoryNode.tsx   # Custom React Flow node
 │   ├── SidePanel.tsx     # Target picker + chain summary
-│   └── PersistenceBar.tsx # Save / Load / Export / Import buttons
-├── db/
-│   └── db.ts             # Dexie (IndexedDB) schema
+│   └── PersistenceBar.tsx # Export / Import / New plan buttons
+├── lib/
+│   └── persistence.ts    # localStorage autosave + JSON import/export
 └── App.tsx               # Root layout + React Flow canvas
 ```
 
@@ -75,9 +75,10 @@ recipes.json ──▶ engine/calculate.ts ──▶ planStore.ts ──▶ Reac
 
 ## Persistence
 
-- **Save / Load** — persists to IndexedDB (Dexie) in the browser. Data survives page reloads on the same machine.
-- **Export JSON** — downloads the current plan as a `.json` file. Use this to share plans between users or machines.
+- **Autosave** — the current plan is written to `localStorage` on every change (debounced) and restored on startup, so a page reload resumes where you left off. No buttons to remember.
+- **Export JSON** — downloads the current plan as a `.json` file. Use this to back it up or share plans between users or machines.
 - **Import JSON** — imports a previously exported `.json` file and restores the full plan.
+- **New plan** — clears the current (auto-saved) plan and starts a blank one.
 
 The export format is the `PlanSnapshot` type defined in `src/store/planStore.ts`.
 

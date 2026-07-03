@@ -1,4 +1,3 @@
-import { db } from '../db/db.ts';
 import type { PlanSnapshot } from '../store/planStore.ts';
 
 export function buildSnapshot(store: { planId: string; planName: string; rootGraph: { nodes: PlanSnapshot['nodes']; edges: PlanSnapshot['edges'] } }): PlanSnapshot {
@@ -10,13 +9,37 @@ export function buildSnapshot(store: { planId: string; planName: string; rootGra
   };
 }
 
-export async function saveSnapshot(snapshot: PlanSnapshot): Promise<void> {
-  await db.plans.put(snapshot);
+/**
+ * The live plan auto-persists here on every change (see planStore), and is
+ * restored on startup — so a page reload resumes where the user left off.
+ * IndexedDB/Dexie was overkill for a single JSON document that fits comfortably
+ * in localStorage; file Import/Export remains the portable backup path.
+ */
+const LOCAL_KEY = 'srp.plan';
+
+/** Persist the current plan to localStorage. Silently no-ops if storage is unavailable/full. */
+export function saveLocalSnapshot(snapshot: PlanSnapshot): void {
+  try {
+    localStorage.setItem(LOCAL_KEY, JSON.stringify(snapshot));
+  } catch {
+    // Storage disabled (private mode) or quota exceeded — nothing we can do here.
+  }
 }
 
-export async function loadLatestSnapshot(): Promise<PlanSnapshot | null> {
-  const plans = await db.plans.toArray();
-  return plans.length ? plans[plans.length - 1] : null;
+/** Restore the auto-saved plan from localStorage, or null if none / corrupt. */
+export function loadLocalSnapshot(): PlanSnapshot | null {
+  let raw: string | null;
+  try {
+    raw = localStorage.getItem(LOCAL_KEY);
+  } catch {
+    return null;
+  }
+  if (!raw) return null;
+  try {
+    return parseSnapshot(raw);
+  } catch {
+    return null; // stale/corrupt entry — start fresh rather than crash on boot
+  }
 }
 
 export function exportSnapshot(snapshot: PlanSnapshot): void {
