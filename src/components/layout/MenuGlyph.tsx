@@ -25,6 +25,16 @@ export function MenuGlyph() {
     );
   }
 
+  if (theme === 'graphite') {
+    return (
+      <button onClick={toggleSidebar} title={label} aria-label={label} className="gr-glyph">
+        <span />
+        <span />
+        <span />
+      </button>
+    );
+  }
+
   return (
     <button onClick={toggleSidebar} title={label} aria-label={label} className="bp-glyph">
       <span className="bp-glyph-inner" />

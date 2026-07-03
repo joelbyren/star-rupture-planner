@@ -4,6 +4,7 @@ const THEME_LABELS: Record<ThemeName, string> = {
   blueprint: 'BLPR',
   holotable: 'HOLO',
   terminal: 'TERM',
+  graphite: 'GRPH',
 };
 
 export function ThemeSwitcher() {

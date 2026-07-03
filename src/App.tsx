@@ -193,6 +193,7 @@ function Flow() {
         {theme === 'terminal' && (
           <Background className="term-grid" gap={36} lineWidth={1} />
         )}
+        {/* graphite intentionally renders no grid — it uses a wash + grain backdrop. */}
         <Controls />
         <MiniMap nodeColor="var(--sr-accent)" maskColor="var(--sr-panel)" />
       </ReactFlow>

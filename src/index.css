@@ -4,6 +4,7 @@
 @import "./themes/blueprint.css";
 @import "./themes/holotable.css";
 @import "./themes/terminal.css";
+@import "./themes/graphite.css";
 
 * {
   box-sizing: border-box;

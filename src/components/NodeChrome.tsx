@@ -24,5 +24,8 @@ export function TargetMark({ theme }: { theme: ThemeName }) {
       </>
     );
   }
+  if (theme === 'graphite') {
+    return <div className="gr-flag">Target</div>;
+  }
   return null; // terminal's target treatment is pure CSS (alarm) + an inline cursor in ItemNode
 }

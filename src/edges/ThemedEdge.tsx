@@ -7,6 +7,7 @@ import { useEdgeLanes } from './useEdgeLanes.ts';
 import { BlueprintEdge } from './BlueprintEdge.tsx';
 import { HoloEdge } from './HoloEdge.tsx';
 import { TerminalEdge } from './TerminalEdge.tsx';
+import { GraphiteEdge } from './GraphiteEdge.tsx';
 
 export interface ThemedEdgeRenderProps extends EdgeProps {
   rate: number | null;
@@ -43,5 +44,6 @@ export function ThemedEdge(props: EdgeProps) {
 
   if (theme === 'holotable') return <HoloEdge {...renderProps} />;
   if (theme === 'terminal') return <TerminalEdge {...renderProps} />;
+  if (theme === 'graphite') return <GraphiteEdge {...renderProps} />;
   return <BlueprintEdge {...renderProps} />;
 }

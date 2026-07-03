@@ -1,0 +1,289 @@
+/* Graphite — editorial minimalism. Warm near-black, hairline rules, serif
+   headlines, quiet curved edges, one ember accent on the target. Ported from
+   design-mockups/graphite.html: colors, node/edge look and a grid-less
+   wash+grain backdrop — the app's own information layout is kept intact. */
+[data-theme='graphite'] {
+  --sr-canvas: #111110;
+  --sr-panel: #171716;
+  --sr-panel-2: #1c1c1a;
+  --sr-ink: #e9e7df;
+  --sr-ink-mid: #a6a49b;
+  --sr-ink-dim: #6d6b63;
+  --sr-line: rgba(232, 230, 222, 0.22);
+  --sr-line-soft: rgba(232, 230, 222, 0.11);
+  --sr-accent: #c9704a;
+  --sr-target: #c9704a;
+  --sr-danger: #cc6157;
+  --sr-ok: #8fa06a;
+  --sr-c-resource: #b8b6ac;
+  --sr-c-component: #a6a49b;
+  --sr-c-fluid: #9aa39e;
+  --sr-c-powder: #b0a890;
+  --sr-font-disp: 'Instrument Serif', Georgia, serif;
+  --sr-font-data: 'Schibsted Grotesk', 'Helvetica Neue', system-ui, sans-serif;
+  --sr-font-note: 'Instrument Serif', Georgia, serif;
+  --sr-rate: var(--sr-ink-mid);
+
+  /* faintest ink, for edge tips and the deepest captions (mockup --ink-4) */
+  --gr-ink-4: #45443f;
+  --gr-ember-soft: rgba(201, 112, 74, 0.14);
+
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* warm near-black paper; no grid — atmosphere comes from wash + grain */
+[data-theme='graphite'] body {
+  background: var(--sr-canvas);
+}
+
+/* ---- backdrop: window-light wash (behind) + paper grain (over content) ---- */
+[data-theme='graphite'] .gr-wash {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(120% 90% at 78% -12%, rgba(236, 232, 220, 0.05), transparent 55%),
+    radial-gradient(90% 70% at 8% 110%, rgba(236, 232, 220, 0.028), transparent 60%);
+}
+[data-theme='graphite'] .gr-grain {
+  position: fixed;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  opacity: 0.35;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='linear' slope='.05'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ---- top bar: serif-italic masthead wordmark ---- */
+[data-theme='graphite'] .sr-topbar-title {
+  font-family: var(--sr-font-disp);
+  font-style: italic;
+  font-weight: 400;
+  font-size: 18px;
+  letter-spacing: 0.01em;
+}
+
+/* ---- menu glyph: quiet three-line mark, ember middle rule ---- */
+[data-theme='graphite'] .gr-glyph {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  width: 26px;
+  height: 26px;
+  flex: none;
+  padding: 0 3px;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+}
+[data-theme='graphite'] .gr-glyph span {
+  display: block;
+  height: 1px;
+  background: var(--sr-ink-mid);
+  transition: background 0.15s;
+}
+[data-theme='graphite'] .gr-glyph span:nth-child(2) {
+  width: 60%;
+  background: var(--sr-accent);
+}
+[data-theme='graphite'] .gr-glyph:hover span:nth-child(1),
+[data-theme='graphite'] .gr-glyph:hover span:nth-child(3) {
+  background: var(--sr-ink);
+}
+
+/* ---- item-type badge colors (editorial grayscale, ember stays reserved) ---- */
+[data-theme='graphite'] .sr-t-resource { color: var(--sr-c-resource); }
+[data-theme='graphite'] .sr-t-component { color: var(--sr-c-component); }
+[data-theme='graphite'] .sr-t-fluid { color: var(--sr-c-fluid); }
+[data-theme='graphite'] .sr-t-powder { color: var(--sr-c-powder); }
+[data-theme='graphite'] .sr-t-ammo { color: #c99a6a; }
+[data-theme='graphite'] .sr-t-weapon { color: #c9704a; }
+[data-theme='graphite'] .sr-t-default,
+[data-theme='graphite'] .sr-t-unset { color: var(--sr-ink-dim); }
+
+/* ---- node chrome: gallery card, hairline border, soft lift on hover ---- */
+[data-theme='graphite'] .sr-node {
+  border-radius: 0;
+  background: var(--sr-panel);
+  border: 1px solid var(--sr-line-soft);
+  box-shadow: none;
+  transition: border-color 0.18s, background 0.18s, box-shadow 0.18s, opacity 0.18s;
+}
+[data-theme='graphite'] .sr-node:hover {
+  border-color: var(--sr-line);
+  background: var(--sr-panel-2);
+  box-shadow: 0 18px 44px -18px rgba(0, 0, 0, 0.75);
+}
+
+/* Header: machine as a tiny letter-spaced caption; hairline underrule. */
+[data-theme='graphite'] .sr-node-head {
+  background: transparent;
+  border-bottom: 1px solid var(--sr-line-soft);
+}
+[data-theme='graphite'] .sr-node-machine {
+  color: var(--sr-ink-dim);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+/* Item name is the serif headline. */
+[data-theme='graphite'] .sr-node-title {
+  font-family: var(--sr-font-disp);
+  font-weight: 400;
+  font-size: 18px;
+  line-height: 1.05;
+  letter-spacing: 0.005em;
+  color: var(--sr-ink);
+}
+/* Rate reads as an italic serif figure (per mockup). */
+[data-theme='graphite'] .sr-rate {
+  font-family: var(--sr-font-disp);
+  font-style: italic;
+  font-weight: 400;
+  font-size: 13px;
+  color: var(--sr-ink-mid);
+}
+
+/* Raw sources: unframed and airy. */
+[data-theme='graphite'] .sr-node--raw {
+  background: transparent;
+  border-style: dashed;
+}
+[data-theme='graphite'] .sr-node--raw:hover {
+  background: rgba(232, 230, 222, 0.025);
+}
+[data-theme='graphite'] .sr-node--raw .sr-node-machine {
+  color: var(--gr-ink-4);
+}
+
+/* Factory: quiet solid hairline to read as a container. */
+[data-theme='graphite'] .sr-node--factory {
+  border-color: var(--sr-line);
+}
+
+/* Limit-binding: ember hairline halo. */
+[data-theme='graphite'] .sr-node--limit {
+  border-color: var(--sr-accent);
+  box-shadow: 0 0 0 1px var(--gr-ember-soft);
+}
+
+/* Target: the one ember moment — left bar, ember border + flag. */
+[data-theme='graphite'] .sr-node--target {
+  border-color: rgba(201, 112, 74, 0.45);
+}
+[data-theme='graphite'] .sr-node--target::before {
+  content: '';
+  position: absolute;
+  left: -1px;
+  top: -1px;
+  bottom: -1px;
+  width: 3px;
+  background: var(--sr-accent);
+  z-index: 1;
+}
+[data-theme='graphite'] .sr-node--target:hover {
+  border-color: var(--sr-accent);
+}
+[data-theme='graphite'] .sr-node--target .sr-node-head {
+  border-bottom-color: rgba(201, 112, 74, 0.25);
+}
+[data-theme='graphite'] .sr-node--target .sr-node-machine {
+  color: var(--sr-accent);
+}
+[data-theme='graphite'] .sr-node--target .sr-rate {
+  color: var(--sr-accent);
+  font-style: normal;
+}
+[data-theme='graphite'] .gr-flag {
+  position: absolute;
+  top: -9px;
+  right: 10px;
+  z-index: 2;
+  padding: 2px 8px;
+  font-family: var(--sr-font-data);
+  font-size: 8px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--sr-accent);
+  background: var(--sr-canvas);
+  pointer-events: none;
+}
+
+/* ---- load-in: rise in reading order. Gated by tokens.css reduced-motion.
+   Applied to .sr-node-frame (the inner content), NOT .sr-node: the React Flow
+   connection handles are direct children of .sr-node, and a translateY on that
+   element offsets them while React Flow measures their positions for edge
+   routing — the offset gets baked into its cached handle bounds and never
+   re-measured once the animation settles, leaving every edge anchored too low.
+   Animating the frame keeps the transform off the handles (holotable does the
+   same with .sr-node-frame for its materialize effect). ---- */
+[data-theme='graphite'] .sr-node-frame {
+  animation: gr-rise 0.7s cubic-bezier(0.19, 1, 0.22, 1) backwards;
+}
+@keyframes gr-rise {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ---- empty state ---- */
+[data-theme='graphite'] .sr-empty-title {
+  font-style: italic;
+}
+
+/* ---- edges: quiet curved stroke, round tips; ember tint into the target,
+   hover brightens + reveals the rate label. ---- */
+[data-theme='graphite'] .gr-edge {
+  color: var(--sr-line);
+  transition: color 0.2s, opacity 0.2s;
+}
+[data-theme='graphite'] .gr-edge--target {
+  color: rgba(201, 112, 74, 0.5);
+}
+[data-theme='graphite'] .gr-edge.sr-edge--hot {
+  color: var(--sr-ink-mid);
+}
+[data-theme='graphite'] .gr-edge--target.sr-edge--hot {
+  color: var(--sr-accent);
+}
+[data-theme='graphite'] .gr-edge.sr-edge--dim {
+  opacity: 0.22;
+}
+[data-theme='graphite'] .gr-edge-wire {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1;
+}
+[data-theme='graphite'] .gr-edge-tip {
+  fill: var(--gr-ink-4);
+  transition: fill 0.2s, opacity 0.2s;
+}
+[data-theme='graphite'] .gr-edge.sr-edge--hot .gr-edge-tip {
+  fill: var(--sr-ink-mid);
+}
+[data-theme='graphite'] .gr-edge--target.sr-edge--hot .gr-edge-tip {
+  fill: var(--sr-accent);
+}
+[data-theme='graphite'] .gr-edge.sr-edge--dim .gr-edge-tip {
+  opacity: 0.22;
+}
+[data-theme='graphite'] .gr-edge-label {
+  font-family: var(--sr-font-data);
+  font-size: 9px;
+  fill: var(--sr-ink-mid);
+  letter-spacing: 0.08em;
+}
+
+/* ---- notes: editorial margin gloss — serif italic, ember em-dash. ---- */
+[data-theme='graphite'] .sr-note {
+  font-family: var(--sr-font-note);
+  font-style: italic;
+  font-size: 16px;
+  line-height: 1.3;
+  color: var(--sr-ink-mid);
+}
+[data-theme='graphite'] .sr-note::before {
+  content: '— ';
+  font-style: normal;
+  color: var(--sr-accent);
+}

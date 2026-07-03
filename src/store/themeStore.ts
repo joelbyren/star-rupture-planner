@@ -1,8 +1,12 @@
 import { create } from 'zustand';
 
-export type ThemeName = 'blueprint' | 'holotable' | 'terminal';
+export type ThemeName = 'blueprint' | 'holotable' | 'terminal' | 'graphite';
 
-const THEMES: ThemeName[] = ['blueprint', 'holotable', 'terminal'];
+// The full set of user-selectable themes, in switcher order (graphite last).
+const THEMES: ThemeName[] = ['blueprint', 'holotable', 'terminal', 'graphite'];
+// Themes eligible for the random first-run default. Graphite is deliberately
+// excluded — it's opt-in only, never handed out at random.
+const RANDOM_THEMES: ThemeName[] = ['blueprint', 'holotable', 'terminal'];
 const STORAGE_KEY = 'srp.theme';
 
 function isThemeName(value: string | null): value is ThemeName {
@@ -12,7 +16,7 @@ function isThemeName(value: string | null): value is ThemeName {
 function pickInitialTheme(): ThemeName {
   const stored = localStorage.getItem(STORAGE_KEY);
   if (isThemeName(stored)) return stored;
-  return THEMES[Math.floor(Math.random() * THEMES.length)];
+  return RANDOM_THEMES[Math.floor(Math.random() * RANDOM_THEMES.length)];
 }
 
 function applyTheme(theme: ThemeName) {

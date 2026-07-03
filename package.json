@@ -1,7 +1,7 @@
 {
   "name": "star-rupture-planner",
   "private": true,
-  "version": "0.4.8",
+  "version": "0.5.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -17,7 +17,9 @@
     "@fontsource/caveat": "^5.2.8",
     "@fontsource/chakra-petch": "^5.2.7",
     "@fontsource/ibm-plex-mono": "^5.2.7",
+    "@fontsource/instrument-serif": "^5.2.8",
     "@fontsource/michroma": "^5.2.8",
+    "@fontsource/schibsted-grotesk": "^5.2.8",
     "@fontsource/vt323": "^5.2.7",
     "@tailwindcss/vite": "^4.3.1",
     "@xyflow/react": "^12.11.1",

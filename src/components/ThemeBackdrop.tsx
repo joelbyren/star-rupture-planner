@@ -24,6 +24,19 @@ export function ThemeBackdrop() {
     );
   }
 
+  if (theme === 'graphite') {
+    return (
+      <>
+        <div className="sr-backdrop" aria-hidden="true">
+          <div className="gr-wash" />
+        </div>
+        {/* Paper grain sits above the canvas (not inside the z-index:-1 backdrop)
+            so the texture reads across the whole surface; pointer-events:none. */}
+        <div className="gr-grain" aria-hidden="true" />
+      </>
+    );
+  }
+
   return (
     <div className="sr-backdrop" aria-hidden="true">
       <div className="term-glow" />
