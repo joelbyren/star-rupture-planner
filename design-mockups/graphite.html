@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Graphite Atelier — StarRupture Planner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Schibsted+Grotesk:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+/* ════════════════════════════════════════════════════════════════
+   GRAPHITE ATELIER — StarRupture Planner mockup
+   Editorial minimalism: warm near-black, hairlines, one ember accent.
+   ════════════════════════════════════════════════════════════════ */
+:root{
+  --bg:      #111110;
+  --panel:   #171716;
+  --panel-2: #1c1c1a;
+  --hair:    rgba(232,230,222,.11);
+  --hair-2:  rgba(232,230,222,.22);
+  --ink:     #e9e7df;
+  --ink-2:   #a6a49b;
+  --ink-3:   #6d6b63;
+  --ink-4:   #45443f;
+  --ember:   #c9704a;
+  --ember-soft: rgba(201,112,74,.14);
+  --serif: 'Instrument Serif', Georgia, serif;
+  --sans:  'Schibsted Grotesk', 'Helvetica Neue', sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden}
+body{
+  background:var(--bg);
+  color:var(--ink);
+  font-family:var(--sans);
+  font-size:13px;
+  -webkit-font-smoothing:antialiased;
+}
+::selection{background:var(--ember);color:var(--bg)}
+
+/* atmosphere: faint window-light, paper grain — no grid */
+.wash{
+  position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(120% 90% at 78% -12%, rgba(236,232,220,.05), transparent 55%),
+    radial-gradient(90% 70% at 8% 110%, rgba(236,232,220,.028), transparent 60%);
+}
+.grain{
+  position:fixed;inset:0;z-index:90;pointer-events:none;opacity:.35;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='linear' slope='.05'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ── canvas fills the window; chrome floats over it ──────────── */
+#viewport{
+  position:fixed;inset:0;overflow:hidden;cursor:grab;z-index:1;
+}
+#viewport.panning{cursor:grabbing}
+#world{position:absolute;top:0;left:0;transform-origin:0 0;will-change:transform}
+#edgeLayer{position:absolute;top:0;left:0;overflow:visible;pointer-events:none}
+
+/* ── floating chrome ──────────────────────────────────────────── */
+.plate{
+  position:fixed;z-index:40;
+  background:color-mix(in srgb, var(--panel) 88%, transparent);
+  backdrop-filter:blur(10px);
+  border:1px solid var(--hair);
+  user-select:none;
+}
+.masthead{
+  top:28px;left:32px;
+  padding:18px 26px 20px;
+  max-width:340px;
+  background:transparent;border:none;backdrop-filter:none;
+}
+.masthead .over{
+  font-size:10px;letter-spacing:.34em;text-transform:uppercase;
+  color:var(--ink-3);
+}
+.masthead .over em{color:var(--ember);font-style:normal}
+.masthead h1{
+  font-family:var(--serif);font-weight:400;font-style:italic;
+  font-size:44px;line-height:1.02;margin-top:10px;
+  letter-spacing:.01em;
+}
+.masthead .folio{
+  margin-top:14px;font-size:11px;color:var(--ink-3);line-height:1.7;
+}
+.masthead .folio b{color:var(--ink-2);font-weight:500}
+.masthead .rule{
+  width:44px;height:1px;background:var(--hair-2);margin-top:16px;
+}
+
+/* summary card, top right */
+.summary{
+  top:28px;right:32px;
+  padding:16px 20px 14px;
+  min-width:240px;
+}
+.summary .cap{
+  font-size:10px;letter-spacing:.3em;text-transform:uppercase;
+  color:var(--ink-3);margin-bottom:10px;
+}
+.srow{
+  display:flex;align-items:baseline;justify-content:space-between;gap:26px;
+  padding:5px 0;
+}
+.srow + .srow{border-top:1px solid var(--hair)}
+.srow .k{font-size:11px;color:var(--ink-3)}
+.srow .v{
+  font-family:var(--serif);font-size:19px;color:var(--ink);
+  font-variant-numeric:tabular-nums;
+}
+.srow .v small{font-family:var(--sans);font-size:10px;color:var(--ink-3);margin-left:3px}
+.srow.hero .v{font-size:26px;color:var(--ember)}
+.srow.hero .k{color:var(--ink-2)}
+
+/* legend, bottom left */
+.legend{
+  bottom:28px;left:32px;
+  padding:13px 18px 12px;
+  display:flex;gap:20px;align-items:center;
+}
+.lg{display:flex;align-items:center;gap:8px;font-size:10.5px;color:var(--ink-3);letter-spacing:.06em}
+.sw{width:9px;height:9px;flex:0 0 auto;border-radius:50%}
+.sw.resource {background:var(--ink-2)}
+.sw.component{background:transparent;border:1.5px solid var(--ink-2)}
+.sw.fluid    {background:linear-gradient(90deg, var(--ink-2) 50%, transparent 50%);border:1px solid var(--ink-2)}
+.sw.powder   {background:transparent;border:1.5px dotted var(--ink-2);border-radius:50%}
+.legend .div{width:1px;height:18px;background:var(--hair)}
+.legend .note{font-size:10.5px;color:var(--ink-4);letter-spacing:.06em}
+
+/* zoom, bottom right — quiet text buttons */
+.zoom{
+  bottom:28px;right:32px;
+  display:flex;align-items:center;
+}
+.zoom button{
+  appearance:none;border:none;background:transparent;cursor:pointer;
+  color:var(--ink-2);font-family:var(--sans);font-size:13px;
+  width:38px;height:36px;line-height:1;
+  transition:color .15s, background .15s;
+}
+.zoom button:hover{color:var(--ink);background:rgba(232,230,222,.05)}
+.zoom button + button{border-left:1px solid var(--hair)}
+.zoom .fit{font-size:10px;letter-spacing:.2em;width:auto;padding:0 14px}
+.zoom .pct{
+  font-size:11px;color:var(--ink-3);min-width:52px;text-align:center;
+  border-left:1px solid var(--hair);height:36px;display:flex;align-items:center;justify-content:center;
+  font-variant-numeric:tabular-nums;
+}
+
+/* ── edges: quiet curved strokes ──────────────────────────────── */
+.edge{
+  fill:none;stroke:var(--hair-2);stroke-width:1;
+  transition:opacity .2s, stroke .2s;
+}
+.edge-tip{fill:var(--ink-4);transition:opacity .2s, fill .2s}
+svg.has-hot .edge{opacity:.22}
+svg.has-hot .edge.hot{opacity:1;stroke:var(--ink-2)}
+svg.has-hot .edge-tip{opacity:.22}
+svg.has-hot .edge-tip.hot{opacity:1;fill:var(--ink-2)}
+.edge.to-target{stroke:rgba(201,112,74,.5)}
+svg.has-hot .edge.to-target.hot{stroke:var(--ember)}
+.edge-lbl{
+  font-family:var(--sans);font-size:9px;fill:var(--ink-4);
+  letter-spacing:.08em;transition:opacity .2s;opacity:0;
+}
+svg.has-hot .edge-lbl.hot{opacity:1;fill:var(--ink-2)}
+
+/* ── nodes: gallery cards ─────────────────────────────────────── */
+.node{
+  position:absolute;width:200px;
+  background:var(--panel);
+  border:1px solid var(--hair);
+  transition:border-color .18s, background .18s, box-shadow .18s;
+}
+.node:hover{
+  border-color:var(--hair-2);
+  background:var(--panel-2);
+  box-shadow:0 18px 44px -18px rgba(0,0,0,.75);
+  z-index:5;
+}
+.n-head{
+  height:26px;padding:0 12px;
+  display:flex;align-items:center;justify-content:space-between;
+  border-bottom:1px solid var(--hair);
+}
+.n-head .machine{
+  font-size:9px;letter-spacing:.26em;text-transform:uppercase;color:var(--ink-3);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.n-head .units{
+  font-size:9px;color:var(--ink-4);letter-spacing:.08em;white-space:nowrap;
+  font-variant-numeric:tabular-nums;
+}
+.n-body{height:64px;padding:9px 12px 0}
+.n-item{
+  font-family:var(--serif);font-size:20px;line-height:1.05;
+  color:var(--ink);letter-spacing:.005em;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.n-rate{display:flex;align-items:baseline;gap:5px;margin-top:6px}
+.n-rate .r{
+  font-family:var(--serif);font-size:17px;font-style:italic;color:var(--ink-2);
+  font-variant-numeric:tabular-nums;
+}
+.n-rate .u{font-size:9px;letter-spacing:.14em;color:var(--ink-4);text-transform:uppercase}
+.n-rate .plus{font-size:10px;color:var(--ember);letter-spacing:.04em}
+.n-in{border-top:1px solid var(--hair)}
+.n-row{
+  height:24px;display:flex;align-items:center;gap:9px;padding:0 12px;
+}
+.n-row + .n-row{border-top:1px solid rgba(232,230,222,.05)}
+.n-row .mk{width:7px;height:7px;flex:0 0 auto;border-radius:50%}
+.mk.t-resource {background:var(--ink-3)}
+.mk.t-component{background:transparent;border:1px solid var(--ink-3)}
+.mk.t-fluid    {background:linear-gradient(90deg, var(--ink-3) 50%, transparent 50%);border:1px solid var(--ink-3)}
+.mk.t-powder   {background:transparent;border:1px dotted var(--ink-2);}
+.n-row .in-name{
+  flex:1;font-size:10.5px;color:var(--ink-2);letter-spacing:.02em;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.n-row .in-rate{
+  font-size:10px;color:var(--ink-3);font-variant-numeric:tabular-nums;
+}
+
+/* raw sources: unframed, airy */
+.node.raw{background:transparent;border-style:dashed}
+.node.raw:hover{background:rgba(232,230,222,.025)}
+.node.raw .n-head .machine{color:var(--ink-4)}
+
+/* target: the one ember moment */
+.node.target{border-color:rgba(201,112,74,.45)}
+.node.target::before{
+  content:"";position:absolute;left:-1px;top:-1px;bottom:-1px;width:3px;
+  background:var(--ember);
+}
+.node.target:hover{border-color:var(--ember)}
+.node.target .n-head{border-bottom-color:rgba(201,112,74,.25)}
+.node.target .n-head .machine{color:var(--ember)}
+.node.target .n-rate .r{color:var(--ember);font-style:normal;font-size:19px}
+.n-flag{
+  position:absolute;top:-9px;right:10px;
+  font-size:8px;letter-spacing:.3em;text-transform:uppercase;
+  color:var(--ember);background:var(--bg);padding:2px 8px;
+}
+
+/* ── entrance ─────────────────────────────────────────────────── */
+.node{opacity:0;transform:translateY(14px)}
+.node.in{animation:rise .7s cubic-bezier(.19,1,.22,1) forwards}
+@keyframes rise{to{opacity:1;transform:translateY(0)}}
+#edgeLayer{opacity:0;transition:opacity 1.2s ease .15s}
+#edgeLayer.in{opacity:1}
+.plate,.masthead{opacity:0;animation:fade .9s ease forwards}
+@keyframes fade{to{opacity:1}}
+</style>
+</head>
+<body>
+
+<div class="wash"></div>
+
+<div id="viewport">
+  <div id="world">
+    <svg id="edgeLayer" xmlns="http://www.w3.org/2000/svg"></svg>
+    <div id="nodeLayer"></div>
+  </div>
+</div>
+
+<header class="masthead" style="animation-delay:.1s">
+  <div class="over">StarRupture <em>·</em> Planner</div>
+  <h1 id="planName">—</h1>
+  <div class="folio" id="folio"></div>
+  <div class="rule"></div>
+</header>
+
+<aside class="plate summary" style="animation-delay:.25s">
+  <div class="cap">Bill of Work</div>
+  <div class="srow hero">
+    <span class="k" id="targetItem">—</span>
+    <span class="v"><span id="targetRate">0</span><small>/min</small></span>
+  </div>
+  <div id="rawRows"></div>
+  <div class="srow"><span class="k">Machines, exact</span><span class="v" id="machinesExact">0</span></div>
+  <div class="srow"><span class="k">Buildings</span><span class="v" id="buildingsCeil">0</span></div>
+</aside>
+
+<div class="plate legend" style="animation-delay:.4s">
+  <span class="lg"><span class="sw resource"></span>Resource</span>
+  <span class="lg"><span class="sw component"></span>Component</span>
+  <span class="lg"><span class="sw fluid"></span>Fluid</span>
+  <span class="lg"><span class="sw powder"></span>Powder</span>
+  <span class="div"></span>
+  <span class="note">Drag to pan · scroll to zoom</span>
+</div>
+
+<div class="plate zoom" style="animation-delay:.4s">
+  <span class="pct" id="zoomPct">100%</span>
+  <button id="zout" aria-label="Zoom out">&minus;</button>
+  <button id="zin" aria-label="Zoom in">+</button>
+  <button id="zfit" class="fit" aria-label="Fit view">FIT</button>
+</div>
+
+<div class="grain"></div>
+
+<script src="./graph-data.js"></script>
+<script>
+(function(){
+  'use strict';
+  var G = window.FACTORY_GRAPH;
+
+  /* geometry — must match CSS:
+     .node width 200, border 1px
+     .n-head 26 | .n-body 64 | .n-in top border 1 | .n-row 24 (+1 sep) */
+  var NODE_W = 200, BORDER = 1, HEAD_H = 26, BODY_H = 64, SEP = 1, ROW_H = 24, ROW_SEP = 1;
+
+  function nodeHeight(n){
+    var rows = n.inputs.length;
+    var h = BORDER*2 + HEAD_H + BODY_H;
+    if(rows > 0) h += SEP + rows*ROW_H + (rows-1)*ROW_SEP;
+    return h;
+  }
+  function inputPoint(n, idx){
+    return {
+      x: n.x,
+      y: n.y + BORDER + HEAD_H + BODY_H + SEP + idx*(ROW_H+ROW_SEP) + ROW_H/2
+    };
+  }
+  function outputPoint(n){
+    return { x: n.x + NODE_W, y: n.y + nodeHeight(n)/2 };
+  }
+
+  var byId = {};
+  G.nodes.forEach(function(n){ byId[n.id] = n; });
+
+  /* ── chrome ─────────────────────────────────────────────── */
+  document.getElementById('planName').textContent = G.meta.planName;
+  document.getElementById('folio').innerHTML =
+    G.meta.breadcrumb.join(' — ') + '<br>' +
+    '<b>' + G.nodes.length + '</b> stations &nbsp;·&nbsp; <b>' + G.edges.length + '</b> lines of supply';
+  document.getElementById('targetItem').textContent = G.meta.target.item;
+  document.getElementById('targetRate').textContent = G.meta.target.rate;
+  document.getElementById('machinesExact').textContent = G.meta.totals.machinesExact.toFixed(2);
+  document.getElementById('buildingsCeil').textContent = G.meta.totals.buildingsCeil;
+
+  var rawRows = document.getElementById('rawRows');
+  G.meta.totals.raw.forEach(function(r){
+    var d = document.createElement('div');
+    d.className = 'srow';
+    d.innerHTML = '<span class="k">' + r.item + '</span>' +
+      '<span class="v">' + r.rate + '<small>/min</small></span>';
+    rawRows.appendChild(d);
+  });
+
+  /* ── nodes ──────────────────────────────────────────────── */
+  var typeClass = { Resource:'t-resource', Component:'t-component', Fluid:'t-fluid', Powder:'t-powder' };
+  var nodeLayer = document.getElementById('nodeLayer');
+  var nodeEls = {};
+
+  G.nodes.forEach(function(n){
+    var el = document.createElement('div');
+    el.className = 'node' + (n.isRaw ? ' raw' : '') + (n.isTarget ? ' target' : '');
+    el.style.left = n.x + 'px';
+    el.style.top  = n.y + 'px';
+    el.dataset.id = n.id;
+
+    var html = '';
+    if(n.isTarget) html += '<div class="n-flag">Target</div>';
+    html += '<div class="n-head"><span class="machine">' + n.machine + '</span>' +
+            '<span class="units">' + (n.isRaw ? 'source' : '×' + n.buildings.toFixed(2)) + '</span></div>';
+    html += '<div class="n-body">';
+    html += '<div class="n-item" title="' + n.item + '">' + n.item + '</div>';
+    html += '<div class="n-rate"><span class="r">' + n.rate + '</span><span class="u">/min</span>';
+    if(n.isRaw && n.surplus > 0){
+      html += '<span class="plus">+' + n.surplus + ' spare</span>';
+    }
+    html += '</div></div>';
+    if(n.inputs.length){
+      html += '<div class="n-in">';
+      n.inputs.forEach(function(inp){
+        html += '<div class="n-row">' +
+          '<span class="mk ' + (typeClass[inp.type]||'t-component') + '"></span>' +
+          '<span class="in-name">' + inp.item + '</span>' +
+          '<span class="in-rate">' + inp.rate + ' /min</span>' +
+          '</div>';
+      });
+      html += '</div>';
+    }
+    el.innerHTML = html;
+    nodeLayer.appendChild(el);
+    nodeEls[n.id] = el;
+  });
+
+  /* ── edges: curved strokes ──────────────────────────────── */
+  var SVGNS = 'http://www.w3.org/2000/svg';
+  var svg = document.getElementById('edgeLayer');
+  var edgeEls = [];
+
+  G.edges.forEach(function(e){
+    var s = byId[e.source], t = byId[e.target];
+    if(!s || !t) return;
+    var idx = t.inputs.findIndex(function(inp){ return inp.item === e.targetInput; });
+    if(idx < 0) idx = 0;
+    var p0 = outputPoint(s), p1 = inputPoint(t, idx);
+    var dx = Math.max(40, Math.min(120, (p1.x - p0.x) * 0.5));
+    var d = 'M' + p0.x + ' ' + p0.y +
+            ' C' + (p0.x + dx) + ' ' + p0.y + ',' +
+                   (p1.x - dx) + ' ' + p1.y + ',' +
+                   p1.x + ' ' + p1.y;
+
+    var path = document.createElementNS(SVGNS,'path');
+    path.setAttribute('d', d);
+    path.setAttribute('class', 'edge' + (t.isTarget ? ' to-target' : ''));
+    svg.appendChild(path);
+
+    var tipS = document.createElementNS(SVGNS,'circle');
+    tipS.setAttribute('cx', p0.x); tipS.setAttribute('cy', p0.y); tipS.setAttribute('r', 2);
+    tipS.setAttribute('class','edge-tip');
+    svg.appendChild(tipS);
+
+    var tipT = document.createElementNS(SVGNS,'circle');
+    tipT.setAttribute('cx', p1.x); tipT.setAttribute('cy', p1.y); tipT.setAttribute('r', 2);
+    tipT.setAttribute('class','edge-tip');
+    svg.appendChild(tipT);
+
+    var lbl = document.createElementNS(SVGNS,'text');
+    lbl.setAttribute('x', (p0.x + p1.x)/2);
+    lbl.setAttribute('y', (p0.y + p1.y)/2 - 6);
+    lbl.setAttribute('text-anchor','middle');
+    lbl.setAttribute('class','edge-lbl');
+    lbl.textContent = e.rate + '/min';
+    svg.appendChild(lbl);
+
+    edgeEls.push({ path: path, tipS: tipS, tipT: tipT, lbl: lbl, source: e.source, target: e.target });
+  });
+
+  /* hover: connected edges come forward */
+  Object.keys(nodeEls).forEach(function(id){
+    var el = nodeEls[id];
+    el.addEventListener('mouseenter', function(){
+      svg.classList.add('has-hot');
+      edgeEls.forEach(function(ed){
+        var hot = ed.source === id || ed.target === id;
+        ed.path.classList.toggle('hot', hot);
+        ed.tipS.classList.toggle('hot', hot);
+        ed.tipT.classList.toggle('hot', hot);
+        ed.lbl.classList.toggle('hot', hot);
+      });
+    });
+    el.addEventListener('mouseleave', function(){
+      svg.classList.remove('has-hot');
+      edgeEls.forEach(function(ed){
+        ed.path.classList.remove('hot');
+        ed.tipS.classList.remove('hot');
+        ed.tipT.classList.remove('hot');
+        ed.lbl.classList.remove('hot');
+      });
+    });
+  });
+
+  /* ── pan / zoom ─────────────────────────────────────────── */
+  var viewport = document.getElementById('viewport');
+  var world = document.getElementById('world');
+  var view = { x: 0, y: 0, z: 1 };
+  var ZMIN = 0.25, ZMAX = 2.5;
+
+  function applyView(){
+    world.style.transform = 'translate(' + view.x + 'px,' + view.y + 'px) scale(' + view.z + ')';
+    document.getElementById('zoomPct').textContent = Math.round(view.z * 100) + '%';
+  }
+  function bounds(){
+    var minX=Infinity, minY=Infinity, maxX=-Infinity, maxY=-Infinity;
+    G.nodes.forEach(function(n){
+      minX = Math.min(minX, n.x);
+      minY = Math.min(minY, n.y);
+      maxX = Math.max(maxX, n.x + NODE_W);
+      maxY = Math.max(maxY, n.y + nodeHeight(n));
+    });
+    return { minX:minX, minY:minY, maxX:maxX, maxY:maxY };
+  }
+  function fitView(){
+    var b = bounds();
+    var pad = 90;
+    var vw = viewport.clientWidth, vh = viewport.clientHeight;
+    var bw = b.maxX - b.minX, bh = b.maxY - b.minY;
+    var z = Math.min((vw - pad*2)/bw, (vh - pad*2)/bh);
+    z = Math.max(ZMIN, Math.min(ZMAX, z));
+    view.z = z;
+    view.x = (vw - bw*z)/2 - b.minX*z;
+    view.y = (vh - bh*z)/2 - b.minY*z;
+    applyView();
+  }
+  function zoomAt(cx, cy, factor){
+    var nz = Math.max(ZMIN, Math.min(ZMAX, view.z * factor));
+    if(nz === view.z) return;
+    view.x = cx - (cx - view.x) * (nz / view.z);
+    view.y = cy - (cy - view.y) * (nz / view.z);
+    view.z = nz;
+    applyView();
+  }
+  viewport.addEventListener('wheel', function(ev){
+    ev.preventDefault();
+    var rect = viewport.getBoundingClientRect();
+    var factor = Math.pow(1.0016, -ev.deltaY);
+    zoomAt(ev.clientX - rect.left, ev.clientY - rect.top, factor);
+  }, { passive:false });
+
+  var pan = null;
+  viewport.addEventListener('mousedown', function(ev){
+    if(ev.button !== 0) return;
+    if(ev.target.closest('.node')) return;
+    pan = { sx: ev.clientX, sy: ev.clientY, ox: view.x, oy: view.y };
+    viewport.classList.add('panning');
+    ev.preventDefault();
+  });
+  window.addEventListener('mousemove', function(ev){
+    if(!pan) return;
+    view.x = pan.ox + (ev.clientX - pan.sx);
+    view.y = pan.oy + (ev.clientY - pan.sy);
+    applyView();
+  });
+  window.addEventListener('mouseup', function(){
+    pan = null;
+    viewport.classList.remove('panning');
+  });
+
+  document.getElementById('zin').addEventListener('click', function(){
+    zoomAt(viewport.clientWidth/2, viewport.clientHeight/2, 1.25);
+  });
+  document.getElementById('zout').addEventListener('click', function(){
+    zoomAt(viewport.clientWidth/2, viewport.clientHeight/2, 1/1.25);
+  });
+  document.getElementById('zfit').addEventListener('click', fitView);
+  window.addEventListener('resize', fitView);
+
+  /* ── entrance: rise in reading order ────────────────────── */
+  fitView();
+  var order = G.nodes.slice().sort(function(a,b){ return (a.x - b.x) || (a.y - b.y); });
+  order.forEach(function(n, i){
+    var el = nodeEls[n.id];
+    el.style.animationDelay = (0.15 + i * 0.045) + 's';
+    el.classList.add('in');
+  });
+  setTimeout(function(){ svg.classList.add('in'); }, 150 + order.length * 45 + 300);
+})();
+</script>
+</body>
+</html>

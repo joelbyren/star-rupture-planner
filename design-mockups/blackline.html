@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BLACKLINE CONSOLE — SRP.PLAN/ELECTRONICS-WING</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Martian+Mono:wght@300;400;600;800&display=swap" rel="stylesheet">
+<style>
+/* ════════════════════════════════════════════════════════════════
+   BLACKLINE CONSOLE — StarRupture Planner mockup
+   Brutalist utility: true black, hard grays, one acid accent.
+   ════════════════════════════════════════════════════════════════ */
+:root{
+  --bg:     #000000;
+  --panel:  #0a0a0a;
+  --line:   #262626;
+  --line-2: #3d3d3d;
+  --white:  #e3e3e3;
+  --gray:   #8f8f8f;
+  --gray-2: #5a5a5a;
+  --gray-3: #333333;
+  --acid:   #c8f31d;
+  --acid-dim: rgba(200,243,29,.15);
+  --mono: 'Martian Mono', 'Consolas', monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden}
+body{
+  background:var(--bg);
+  color:var(--white);
+  font-family:var(--mono);
+  font-size:11px;
+  display:flex;flex-direction:column;
+  -webkit-font-smoothing:antialiased;
+}
+::selection{background:var(--acid);color:#000}
+
+/* ── top bar ──────────────────────────────────────────────────── */
+header{
+  flex:0 0 auto;height:44px;
+  display:flex;align-items:stretch;
+  border-bottom:1px solid var(--line);
+  background:var(--bg);
+  user-select:none;
+}
+.brand{
+  display:flex;align-items:center;gap:10px;
+  padding:0 16px;border-right:1px solid var(--line);
+  font-weight:800;font-size:12px;letter-spacing:-.02em;
+  white-space:nowrap;
+}
+.brand .bx{
+  width:14px;height:14px;background:var(--white);
+  clip-path:polygon(0 0, 100% 0, 100% 65%, 65% 100%, 0 100%);
+}
+.brand small{font-weight:300;color:var(--gray-2);font-size:9px;letter-spacing:.1em}
+.crumbs{
+  display:flex;align-items:center;padding:0 16px;gap:8px;
+  border-right:1px solid var(--line);
+  color:var(--gray);font-size:10px;white-space:nowrap;
+}
+.crumbs .sep{color:var(--gray-3)}
+.crumbs .here{color:var(--white);font-weight:600}
+/* raw-feed ticker */
+.ticker{
+  flex:1 1 auto;overflow:hidden;position:relative;
+  display:flex;align-items:center;
+  border-right:1px solid var(--line);
+}
+.ticker .strip{
+  display:flex;gap:0;white-space:nowrap;
+  animation:tick 26s linear infinite;
+}
+.ticker:hover .strip{animation-play-state:paused}
+@keyframes tick{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.tk{
+  display:inline-flex;align-items:baseline;gap:7px;
+  padding:0 22px;font-size:9px;color:var(--gray-2);letter-spacing:.08em;
+}
+.tk b{color:var(--gray);font-weight:600;font-size:10px}
+.tk .up{color:var(--acid)}
+.mode{
+  display:flex;align-items:center;gap:8px;padding:0 16px;
+  font-size:9px;letter-spacing:.18em;color:var(--gray-2);white-space:nowrap;
+}
+.mode .dot{
+  width:7px;height:7px;background:var(--acid);
+  animation:blip 1.4s steps(2,jump-none) infinite;
+}
+@keyframes blip{0%{opacity:1}50%{opacity:.25}100%{opacity:1}}
+
+/* ── frame ────────────────────────────────────────────────────── */
+main{flex:1 1 auto;display:flex;min-height:0}
+
+/* ── canvas ───────────────────────────────────────────────────── */
+#viewport{
+  flex:1 1 auto;position:relative;overflow:hidden;cursor:grab;
+  background-image:radial-gradient(var(--gray-3) 1px, transparent 1px);
+  background-size:28px 28px;
+  background-position:14px 14px;
+}
+#viewport.panning{cursor:grabbing}
+#world{position:absolute;top:0;left:0;transform-origin:0 0;will-change:transform}
+#edgeLayer{position:absolute;top:0;left:0;overflow:visible;pointer-events:none}
+/* corner registration marks */
+.reg{position:absolute;width:18px;height:18px;z-index:2;pointer-events:none;opacity:.55}
+.reg::before,.reg::after{content:"";position:absolute;background:var(--line-2)}
+.reg::before{width:100%;height:1px;top:50%}
+.reg::after{width:1px;height:100%;left:50%}
+.reg.tl{top:10px;left:10px}.reg.tr{top:10px;right:10px}
+.reg.bl{bottom:10px;left:10px}.reg.br{bottom:10px;right:10px}
+
+/* ── edges: hard right-angle traces ───────────────────────────── */
+.edge{
+  fill:none;stroke:var(--line-2);stroke-width:1;shape-rendering:crispEdges;
+  transition:opacity .15s, stroke .15s;
+}
+svg.has-hot .edge{opacity:.15}
+svg.has-hot .edge.hot{opacity:1;stroke:var(--white)}
+.edge.to-target{
+  stroke:var(--acid);opacity:.75;
+  stroke-dasharray:3 5;
+  animation:feed 1s linear infinite;
+}
+@keyframes feed{to{stroke-dashoffset:-8}}
+svg.has-hot .edge.to-target{opacity:.15}
+svg.has-hot .edge.to-target.hot{opacity:1}
+.joint{fill:var(--gray-2);transition:opacity .15s, fill .15s}
+svg.has-hot .joint{opacity:.15}
+svg.has-hot .joint.hot{opacity:1;fill:var(--white)}
+
+/* ── nodes: stamped index cards ───────────────────────────────── */
+.node{
+  position:absolute;width:190px;
+  background:var(--bg);
+  border:1px solid var(--line-2);
+  box-shadow:4px 4px 0 rgba(38,38,38,.55);
+  transition:border-color .12s, box-shadow .12s, transform .12s;
+}
+.node:hover{
+  border-color:var(--white);
+  box-shadow:6px 6px 0 rgba(38,38,38,.9);
+  transform:translate(-1px,-1px);
+  z-index:5;
+}
+.n-head{
+  height:20px;padding:0 8px;
+  background:var(--white);color:#000;
+  display:flex;align-items:center;justify-content:space-between;
+  font-size:8px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;
+}
+.n-head .tag{font-weight:300;letter-spacing:.05em}
+.n-body{height:54px;padding:7px 8px 0;position:relative}
+.n-item{
+  font-size:11px;font-weight:600;letter-spacing:-.01em;text-transform:uppercase;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.n-rate{
+  display:flex;align-items:baseline;gap:5px;margin-top:5px;
+  font-variant-numeric:tabular-nums;
+}
+.n-rate .r{font-size:17px;font-weight:800;letter-spacing:-.04em;line-height:1}
+.n-rate .u{font-size:8px;color:var(--gray-2);letter-spacing:.1em}
+.n-rate .plus{font-size:8px;color:var(--gray);border:1px solid var(--line-2);padding:1px 4px;margin-left:2px}
+.n-body .units{
+  position:absolute;right:8px;top:8px;
+  font-size:8px;color:var(--gray-2);letter-spacing:.06em;
+}
+.n-in{border-top:1px solid var(--line)}
+.n-row{
+  height:18px;display:flex;align-items:center;gap:6px;padding:0 8px;
+  font-size:8.5px;letter-spacing:.03em;
+}
+.n-row + .n-row{border-top:1px dashed var(--gray-3)}
+.n-badge{
+  width:20px;height:12px;flex:0 0 auto;
+  display:flex;align-items:center;justify-content:center;
+  font-size:7px;font-weight:600;letter-spacing:.08em;
+}
+/* grayscale type coding: fill / outline / stripes / dots */
+.n-badge.t-resource {background:var(--white);color:#000}
+.n-badge.t-component{border:1px solid var(--gray);color:var(--gray)}
+.n-badge.t-fluid{
+  border:1px solid var(--gray);color:var(--white);
+  background:repeating-linear-gradient(135deg, transparent 0 2px, var(--gray-3) 2px 4px);
+}
+.n-badge.t-powder{border:1px dotted var(--gray);color:var(--gray)}
+.n-row .in-name{
+  flex:1;color:var(--gray);text-transform:uppercase;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.n-row .in-rate{color:var(--white);font-variant-numeric:tabular-nums}
+
+/* raw: hollow, dashed, no inverted head */
+.node.raw{border-style:dashed;box-shadow:none;background:transparent}
+.node.raw .n-head{
+  background:transparent;color:var(--gray);
+  border-bottom:1px dashed var(--line-2);
+}
+.node.raw:hover{border-color:var(--gray)}
+
+/* target: the acid card */
+.node.target{border-color:var(--acid);box-shadow:4px 4px 0 var(--acid-dim)}
+.node.target .n-head{background:var(--acid);color:#000}
+.node.target .n-rate .r{color:var(--acid)}
+.node.target:hover{box-shadow:6px 6px 0 var(--acid-dim)}
+
+/* ── right sidebar ────────────────────────────────────────────── */
+aside{
+  flex:0 0 236px;
+  border-left:1px solid var(--line);
+  background:var(--panel);
+  overflow-y:auto;
+  user-select:none;
+}
+aside::-webkit-scrollbar{width:6px}
+aside::-webkit-scrollbar-thumb{background:var(--gray-3)}
+.sec{border-bottom:1px solid var(--line);padding:12px 14px 14px}
+.sec-t{
+  font-size:8px;font-weight:800;letter-spacing:.24em;color:var(--gray-2);
+  margin-bottom:10px;display:flex;align-items:center;gap:8px;
+}
+.sec-t::after{content:"";flex:1;height:1px;background:var(--line)}
+.big-target{border:1px solid var(--line-2);padding:10px;position:relative}
+.big-target::after{
+  content:"TGT";position:absolute;top:-1px;right:-1px;
+  background:var(--acid);color:#000;font-size:7px;font-weight:800;
+  letter-spacing:.15em;padding:2px 6px;
+}
+.big-target .it{font-size:12px;font-weight:600;text-transform:uppercase}
+.big-target .rt{
+  font-size:26px;font-weight:800;letter-spacing:-.05em;line-height:1.1;
+  font-variant-numeric:tabular-nums;
+}
+.big-target .rt small{font-size:9px;font-weight:300;color:var(--gray-2);letter-spacing:.1em}
+.trow{
+  display:flex;justify-content:space-between;align-items:baseline;
+  padding:4px 0;font-size:10px;
+}
+.trow + .trow{border-top:1px dashed var(--gray-3)}
+.trow .k{color:var(--gray-2);font-size:9px;letter-spacing:.06em}
+.trow .v{font-weight:600;font-variant-numeric:tabular-nums}
+/* ascii-style utilisation bars */
+.bar{display:flex;align-items:center;gap:8px;padding:3px 0;font-size:9px}
+.bar .lbl{width:74px;color:var(--gray);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar .tr{flex:1;height:8px;background:var(--gray-3);position:relative}
+.bar .fl{position:absolute;inset:0 auto 0 0;background:var(--gray)}
+.bar.max .fl{background:var(--white)}
+.bar .pc{width:32px;text-align:right;color:var(--gray-2);font-variant-numeric:tabular-nums}
+.key-row{display:flex;align-items:center;gap:8px;padding:3px 0;font-size:9px;color:var(--gray)}
+.foot-note{
+  padding:12px 14px;font-size:8px;line-height:1.9;color:var(--gray-2);letter-spacing:.08em;
+}
+.foot-note b{color:var(--gray)}
+
+/* ── bottom status bar ────────────────────────────────────────── */
+footer{
+  flex:0 0 auto;height:26px;
+  border-top:1px solid var(--line);
+  display:flex;align-items:stretch;
+  font-size:8.5px;letter-spacing:.12em;color:var(--gray-2);
+  user-select:none;background:var(--bg);
+}
+footer .fcell{
+  display:flex;align-items:center;padding:0 14px;gap:7px;
+  border-right:1px solid var(--line);white-space:nowrap;
+}
+footer .fcell b{color:var(--gray);font-weight:600}
+footer .spring{flex:1;border-right:none}
+footer .acid{color:var(--acid)}
+.zoomer{display:flex;align-items:stretch;border-left:1px solid var(--line)}
+.zoomer button{
+  appearance:none;border:none;background:transparent;cursor:pointer;
+  color:var(--gray);font-family:var(--mono);font-size:11px;width:30px;
+  border-right:1px solid var(--line);
+}
+.zoomer button:last-child{border-right:none}
+.zoomer button:hover{background:var(--white);color:#000}
+.zoomer .pct{
+  display:flex;align-items:center;justify-content:center;
+  width:50px;border-right:1px solid var(--line);
+  color:var(--gray);font-variant-numeric:tabular-nums;
+}
+
+/* ── entrance: stamp, fast, no ceremony ───────────────────────── */
+.node{opacity:0}
+.node.in{animation:stamp .18s steps(3) forwards}
+@keyframes stamp{from{opacity:0;transform:scale(1.06)}to{opacity:1;transform:scale(1)}}
+#edgeLayer{opacity:0}
+#edgeLayer.in{opacity:1;transition:opacity .3s steps(4)}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand"><span class="bx"></span>BLACKLINE<small>SRP/CONSOLE 0.4</small></div>
+  <div class="crumbs" id="crumbs"></div>
+  <div class="ticker"><div class="strip" id="tickerStrip"></div></div>
+  <div class="mode"><span class="dot"></span>PLAN&nbsp;VIEW&nbsp;/&nbsp;READ-ONLY</div>
+</header>
+
+<main>
+  <div id="viewport">
+    <div id="world">
+      <svg id="edgeLayer" xmlns="http://www.w3.org/2000/svg"></svg>
+      <div id="nodeLayer"></div>
+    </div>
+    <span class="reg tl"></span><span class="reg tr"></span>
+    <span class="reg bl"></span><span class="reg br"></span>
+  </div>
+
+  <aside>
+    <div class="sec">
+      <div class="sec-t">OUTPUT CONTRACT</div>
+      <div class="big-target">
+        <div class="it" id="targetItem">—</div>
+        <div class="rt"><span id="targetRate">0</span> <small>UNITS/MIN</small></div>
+      </div>
+    </div>
+    <div class="sec">
+      <div class="sec-t">RAW INTAKE</div>
+      <div id="rawRows"></div>
+    </div>
+    <div class="sec">
+      <div class="sec-t">LINE TOTALS</div>
+      <div class="trow"><span class="k">MACHINES.EXACT</span><span class="v" id="machinesExact">0</span></div>
+      <div class="trow"><span class="k">BUILDINGS.CEIL</span><span class="v" id="buildingsCeil">0</span></div>
+      <div class="trow"><span class="k">NODES</span><span class="v" id="nodeCount">0</span></div>
+      <div class="trow"><span class="k">EDGES</span><span class="v" id="edgeCount">0</span></div>
+    </div>
+    <div class="sec">
+      <div class="sec-t">STATION LOAD</div>
+      <div id="loadBars"></div>
+    </div>
+    <div class="sec">
+      <div class="sec-t">KEY</div>
+      <div class="key-row"><span class="n-badge t-resource">RE</span>RESOURCE / RAW FEED</div>
+      <div class="key-row"><span class="n-badge t-component">CO</span>COMPONENT / FABRICATED</div>
+      <div class="key-row"><span class="n-badge t-fluid">FL</span>FLUID / GAS</div>
+      <div class="key-row"><span class="n-badge t-powder">PW</span>POWDER / FINES</div>
+    </div>
+    <div class="foot-note">
+      DRAG&nbsp;=&nbsp;PAN&nbsp;&nbsp;WHEEL&nbsp;=&nbsp;ZOOM<br>
+      STATIC DESIGN STUDY — <b>NO WRITE</b><br>
+      DATA: GRAPH-DATA.JS
+    </div>
+  </aside>
+</main>
+
+<footer>
+  <div class="fcell"><b id="fPlan">—</b></div>
+  <div class="fcell">GRID <b>28PX</b></div>
+  <div class="fcell">FLOW <b class="acid">NOMINAL</b></div>
+  <div class="fcell spring" id="fHint">HOVER A STATION TO TRACE ITS SUPPLY LINES</div>
+  <div class="zoomer">
+    <span class="pct" id="zoomPct">100%</span>
+    <button id="zout" aria-label="Zoom out">-</button>
+    <button id="zin" aria-label="Zoom in">+</button>
+    <button id="zfit" aria-label="Fit view">□</button>
+  </div>
+</footer>
+
+<script src="./graph-data.js"></script>
+<script>
+(function(){
+  'use strict';
+  var G = window.FACTORY_GRAPH;
+
+  /* geometry — must match CSS:
+     .node width 190, border 1px
+     .n-head 20 | .n-body 54 | .n-in top border 1 | .n-row 18 (+1 dashed sep) */
+  var NODE_W = 190, BORDER = 1, HEAD_H = 20, BODY_H = 54, SEP = 1, ROW_H = 18, ROW_SEP = 1;
+
+  function nodeHeight(n){
+    var rows = n.inputs.length;
+    var h = BORDER*2 + HEAD_H + BODY_H;
+    if(rows > 0) h += SEP + rows*ROW_H + (rows-1)*ROW_SEP;
+    return h;
+  }
+  function inputPoint(n, idx){
+    return {
+      x: n.x,
+      y: n.y + BORDER + HEAD_H + BODY_H + SEP + idx*(ROW_H+ROW_SEP) + ROW_H/2
+    };
+  }
+  function outputPoint(n){
+    return { x: n.x + NODE_W, y: n.y + nodeHeight(n)/2 };
+  }
+
+  var byId = {};
+  G.nodes.forEach(function(n){ byId[n.id] = n; });
+
+  /* ── chrome ─────────────────────────────────────────────── */
+  var crumbs = document.getElementById('crumbs');
+  G.meta.breadcrumb.forEach(function(c, i, arr){
+    if(i>0){
+      var s = document.createElement('span');
+      s.className = 'sep'; s.textContent = '/';
+      crumbs.appendChild(s);
+    }
+    var sp = document.createElement('span');
+    if(i === arr.length-1) sp.className = 'here';
+    sp.textContent = c.toUpperCase().replace(/ /g,'-');
+    crumbs.appendChild(sp);
+  });
+
+  /* ticker: raw feed rates, doubled for seamless loop */
+  var strip = document.getElementById('tickerStrip');
+  function tickerHTML(){
+    var h = '';
+    G.meta.totals.raw.forEach(function(r){
+      h += '<span class="tk">' + r.item.toUpperCase() + ' <b>' + r.rate + '/MIN</b></span>';
+    });
+    h += '<span class="tk">MACHINES <b>' + G.meta.totals.machinesExact.toFixed(2) + '</b></span>';
+    h += '<span class="tk">BUILDINGS <b>' + G.meta.totals.buildingsCeil + '</b></span>';
+    h += '<span class="tk">TARGET ' + G.meta.target.item.toUpperCase() + ' <b class="up">' + G.meta.target.rate + '/MIN ▲</b></span>';
+    return h;
+  }
+  strip.innerHTML = tickerHTML() + tickerHTML();
+
+  document.getElementById('targetItem').textContent = G.meta.target.item;
+  document.getElementById('targetRate').textContent = G.meta.target.rate;
+  document.getElementById('machinesExact').textContent = G.meta.totals.machinesExact.toFixed(2);
+  document.getElementById('buildingsCeil').textContent = G.meta.totals.buildingsCeil;
+  document.getElementById('nodeCount').textContent = G.nodes.length;
+  document.getElementById('edgeCount').textContent = G.edges.length;
+  document.getElementById('fPlan').textContent = 'PLAN: ' + G.meta.planName.toUpperCase();
+
+  var rawRows = document.getElementById('rawRows');
+  G.meta.totals.raw.forEach(function(r){
+    var d = document.createElement('div');
+    d.className = 'trow';
+    d.innerHTML = '<span class="k">' + r.item.toUpperCase() + '</span>' +
+      '<span class="v">' + r.rate + '/MIN</span>';
+    rawRows.appendChild(d);
+  });
+
+  /* station load bars: buildings per producing node, vs max */
+  var producers = G.nodes.filter(function(n){ return !n.isRaw; })
+    .sort(function(a,b){ return b.buildings - a.buildings; }).slice(0, 7);
+  var maxB = producers.reduce(function(m,n){ return Math.max(m, n.buildings); }, 0);
+  var loadBars = document.getElementById('loadBars');
+  producers.forEach(function(n, i){
+    var pct = Math.round(n.buildings / maxB * 100);
+    var d = document.createElement('div');
+    d.className = 'bar' + (i === 0 ? ' max' : '');
+    d.innerHTML = '<span class="lbl">' + n.item.toUpperCase() + '</span>' +
+      '<span class="tr"><span class="fl" style="width:' + pct + '%"></span></span>' +
+      '<span class="pc">' + n.buildings.toFixed(1) + '</span>';
+    loadBars.appendChild(d);
+  });
+
+  /* ── nodes ──────────────────────────────────────────────── */
+  var typeClass = { Resource:'t-resource', Component:'t-component', Fluid:'t-fluid', Powder:'t-powder' };
+  var nodeLayer = document.getElementById('nodeLayer');
+  var nodeEls = {};
+
+  G.nodes.forEach(function(n, i){
+    var el = document.createElement('div');
+    el.className = 'node' + (n.isRaw ? ' raw' : '') + (n.isTarget ? ' target' : '');
+    el.style.left = n.x + 'px';
+    el.style.top  = n.y + 'px';
+    el.dataset.id = n.id;
+
+    var tag = n.isRaw ? 'SRC' : (n.isTarget ? 'OUT' : 'ST-' + (i<10?'0':'') + i);
+    var html = '';
+    html += '<div class="n-head"><span>' + n.machine.toUpperCase() + '</span><span class="tag">' + tag + '</span></div>';
+    html += '<div class="n-body">';
+    if(!n.isRaw) html += '<span class="units">×' + n.buildings.toFixed(2) + '</span>';
+    html += '<div class="n-item" title="' + n.item + '">' + n.item + '</div>';
+    html += '<div class="n-rate"><span class="r">' + n.rate + '</span><span class="u">/MIN</span>';
+    if(n.isRaw && n.surplus > 0) html += '<span class="plus">+' + n.surplus + '</span>';
+    html += '</div></div>';
+    if(n.inputs.length){
+      html += '<div class="n-in">';
+      n.inputs.forEach(function(inp){
+        html += '<div class="n-row">' +
+          '<span class="n-badge ' + (typeClass[inp.type]||'t-component') + '">' + inp.abbr + '</span>' +
+          '<span class="in-name">' + inp.item + '</span>' +
+          '<span class="in-rate">' + inp.rate + '</span>' +
+          '</div>';
+      });
+      html += '</div>';
+    }
+    el.innerHTML = html;
+    nodeLayer.appendChild(el);
+    nodeEls[n.id] = el;
+  });
+
+  /* ── edges: hard orthogonal traces, laned per source ────── */
+  var SVGNS = 'http://www.w3.org/2000/svg';
+  var svg = document.getElementById('edgeLayer');
+  var edgeEls = [];
+  var srcSeen = {};
+
+  G.edges.forEach(function(e, i){
+    var s = byId[e.source], t = byId[e.target];
+    if(!s || !t) return;
+    var idx = t.inputs.findIndex(function(inp){ return inp.item === e.targetInput; });
+    if(idx < 0) idx = 0;
+    var p0 = outputPoint(s), p1 = inputPoint(t, idx);
+
+    srcSeen[e.source] = (srcSeen[e.source] || 0) + 1;
+    var lane = srcSeen[e.source];
+    var gap = p1.x - p0.x;
+    var midX = gap > 24
+      ? p0.x + Math.min(gap - 10, 20 + lane * 12 + (i % 3) * 4)
+      : p0.x + gap/2;
+
+    var d = 'M' + p0.x + ' ' + p0.y +
+            ' H' + midX + ' V' + p1.y + ' H' + p1.x;
+
+    var path = document.createElementNS(SVGNS,'path');
+    path.setAttribute('d', d);
+    path.setAttribute('class', 'edge' + (t.isTarget ? ' to-target' : ''));
+    svg.appendChild(path);
+
+    var jS = document.createElementNS(SVGNS,'rect');
+    jS.setAttribute('x', p0.x - 2); jS.setAttribute('y', p0.y - 2);
+    jS.setAttribute('width', 4); jS.setAttribute('height', 4);
+    jS.setAttribute('class','joint');
+    svg.appendChild(jS);
+
+    var jT = document.createElementNS(SVGNS,'rect');
+    jT.setAttribute('x', p1.x - 2); jT.setAttribute('y', p1.y - 2);
+    jT.setAttribute('width', 4); jT.setAttribute('height', 4);
+    jT.setAttribute('class','joint');
+    svg.appendChild(jT);
+
+    edgeEls.push({ path: path, jS: jS, jT: jT, source: e.source, target: e.target });
+  });
+
+  /* hover: trace supply lines, narrate in the footer */
+  var fHint = document.getElementById('fHint');
+  var HINT_DEFAULT = fHint.textContent;
+  Object.keys(nodeEls).forEach(function(id){
+    var el = nodeEls[id];
+    el.addEventListener('mouseenter', function(){
+      svg.classList.add('has-hot');
+      var n = byId[id], ins = 0, outs = 0;
+      edgeEls.forEach(function(ed){
+        var hot = ed.source === id || ed.target === id;
+        if(ed.target === id) ins++;
+        if(ed.source === id) outs++;
+        ed.path.classList.toggle('hot', hot);
+        ed.jS.classList.toggle('hot', hot);
+        ed.jT.classList.toggle('hot', hot);
+      });
+      fHint.innerHTML = 'TRACE: <b>' + n.item.toUpperCase() + '</b> — ' + ins + ' IN / ' + outs + ' OUT — ' + n.rate + '/MIN';
+    });
+    el.addEventListener('mouseleave', function(){
+      svg.classList.remove('has-hot');
+      edgeEls.forEach(function(ed){
+        ed.path.classList.remove('hot');
+        ed.jS.classList.remove('hot');
+        ed.jT.classList.remove('hot');
+      });
+      fHint.textContent = HINT_DEFAULT;
+    });
+  });
+
+  /* ── pan / zoom ─────────────────────────────────────────── */
+  var viewport = document.getElementById('viewport');
+  var world = document.getElementById('world');
+  var view = { x: 0, y: 0, z: 1 };
+  var ZMIN = 0.25, ZMAX = 2.5;
+
+  function applyView(){
+    world.style.transform = 'translate(' + view.x + 'px,' + view.y + 'px) scale(' + view.z + ')';
+    document.getElementById('zoomPct').textContent = Math.round(view.z * 100) + '%';
+  }
+  function bounds(){
+    var minX=Infinity, minY=Infinity, maxX=-Infinity, maxY=-Infinity;
+    G.nodes.forEach(function(n){
+      minX = Math.min(minX, n.x);
+      minY = Math.min(minY, n.y);
+      maxX = Math.max(maxX, n.x + NODE_W);
+      maxY = Math.max(maxY, n.y + nodeHeight(n));
+    });
+    return { minX:minX, minY:minY, maxX:maxX, maxY:maxY };
+  }
+  function fitView(){
+    var b = bounds();
+    var pad = 56;
+    var vw = viewport.clientWidth, vh = viewport.clientHeight;
+    var bw = b.maxX - b.minX, bh = b.maxY - b.minY;
+    var z = Math.min((vw - pad*2)/bw, (vh - pad*2)/bh);
+    z = Math.max(ZMIN, Math.min(ZMAX, z));
+    view.z = z;
+    view.x = (vw - bw*z)/2 - b.minX*z;
+    view.y = (vh - bh*z)/2 - b.minY*z;
+    applyView();
+  }
+  function zoomAt(cx, cy, factor){
+    var nz = Math.max(ZMIN, Math.min(ZMAX, view.z * factor));
+    if(nz === view.z) return;
+    view.x = cx - (cx - view.x) * (nz / view.z);
+    view.y = cy - (cy - view.y) * (nz / view.z);
+    view.z = nz;
+    applyView();
+  }
+  viewport.addEventListener('wheel', function(ev){
+    ev.preventDefault();
+    var rect = viewport.getBoundingClientRect();
+    var factor = Math.pow(1.0016, -ev.deltaY);
+    zoomAt(ev.clientX - rect.left, ev.clientY - rect.top, factor);
+  }, { passive:false });
+
+  var pan = null;
+  viewport.addEventListener('mousedown', function(ev){
+    if(ev.button !== 0) return;
+    if(ev.target.closest('.node')) return;
+    pan = { sx: ev.clientX, sy: ev.clientY, ox: view.x, oy: view.y };
+    viewport.classList.add('panning');
+    ev.preventDefault();
+  });
+  window.addEventListener('mousemove', function(ev){
+    if(!pan) return;
+    view.x = pan.ox + (ev.clientX - pan.sx);
+    view.y = pan.oy + (ev.clientY - pan.sy);
+    applyView();
+  });
+  window.addEventListener('mouseup', function(){
+    pan = null;
+    viewport.classList.remove('panning');
+  });
+
+  document.getElementById('zin').addEventListener('click', function(){
+    zoomAt(viewport.clientWidth/2, viewport.clientHeight/2, 1.25);
+  });
+  document.getElementById('zout').addEventListener('click', function(){
+    zoomAt(viewport.clientWidth/2, viewport.clientHeight/2, 1/1.25);
+  });
+  document.getElementById('zfit').addEventListener('click', fitView);
+  window.addEventListener('resize', fitView);
+
+  /* ── entrance: quick column-by-column stamp ─────────────── */
+  fitView();
+  var order = G.nodes.slice().sort(function(a,b){ return (a.x - b.x) || (a.y - b.y); });
+  order.forEach(function(n, i){
+    var el = nodeEls[n.id];
+    el.style.animationDelay = (0.05 + i * 0.03) + 's';
+    el.classList.add('in');
+  });
+  setTimeout(function(){ svg.classList.add('in'); }, 50 + order.length * 30 + 200);
+})();
+</script>
+</body>
+</html>
