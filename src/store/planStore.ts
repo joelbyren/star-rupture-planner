@@ -140,6 +140,7 @@ export interface PlanState {
   setPortItem: (portId: string, itemId: string | null) => void;
   removePort: (portId: string) => void;
   renameFactory: (name: string) => void;
+  renamePlan: (name: string) => void;
   /** Delete the factory whose inner graph is currently open, then exit to its parent. */
   removeCurrentFactory: () => void;
 
@@ -1013,6 +1014,9 @@ export const usePlanStore = create<PlanState>((set, get) => {
     },
     renameFactory(name) {
       commitCurrentFactory(d => ({ ...d, name }), false);
+    },
+    renamePlan(name) {
+      set({ planName: name });
     },
     removeCurrentFactory() {
       const { rootGraph, viewPath, layoutTick } = get();
