@@ -1,28 +1,20 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npm run:*)",
-      "Bash(npm test:*)",
-      "Bash(npx vitest:*)",
-      "Bash(npx oxlint:*)",
-      "Bash(npx vite:*)",
-      "Bash(npx tsc:*)",
-      "Bash(tail:*)",
-      "Bash(head:*)",
-      "Bash(cat:*)",
-      "Bash(ls:*)",
-      "Bash(find:*)",
-      "Bash(sort:*)",
-      "Bash(grep:*)",
-      "Bash(wc:*)",
-      "PowerShell(npm run:*)",
-      "PowerShell(npx vitest:*)",
-      "PowerShell(npx oxlint:*)",
-      "PowerShell(npx vite:*)",
-      "PowerShell(npx tsc:*)",
-      "Bash(npx eslint:*)",
+      "Bash(npx vitest *)",
+      "Bash(npx tsc *)",
+      "Bash(npx eslint *)",
       "Bash(npx oxlint *)",
-      "Bash(npx vite *)"
+      "Bash(npx vite *)",
+      "Bash(npm run *)",
+      "Bash(tail *)",
+      "Bash(head *)",
+      "Bash(cat *)",
+      "Bash(ls *)",
+      "Bash(find *)",
+      "Bash(sort *)",
+      "Bash(grep *)",
+      "Bash(wc *)"
     ]
   }
 }

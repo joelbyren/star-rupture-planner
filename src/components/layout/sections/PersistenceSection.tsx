@@ -6,11 +6,11 @@ export function PersistenceSection() {
   const store = usePlanStore();
 
   function handleExport() {
-    exportSnapshot(buildSnapshot(store));
+    void exportSnapshot(buildSnapshot(store));
   }
 
   function handleImport() {
-    importSnapshotFromFile(
+    void importSnapshotFromFile(
       snapshot => store.loadPlan(snapshot),
       message => alert(message),
     );
