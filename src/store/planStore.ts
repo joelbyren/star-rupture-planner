@@ -694,7 +694,8 @@ function hydrateInitial(): Pick<PlanState, 'planId' | 'planName' | 'rootGraph' |
   }
   // Same normalization path as loadPlan: strip legacy flags, then balance the tree.
   const root = rebalanceRoot(stripLegacyAnimatedFlag({ nodes: snapshot.nodes, edges: snapshot.edges }));
-  return { planId: snapshot.planId, planName: snapshot.planName, rootGraph: root, nodes: root.nodes, edges: root.edges };
+  const view = project(root, []);
+  return { planId: snapshot.planId, planName: snapshot.planName, rootGraph: root, nodes: view.nodes, edges: view.edges };
 }
 
 export const usePlanStore = create<PlanState>((set, get) => {
@@ -792,13 +793,14 @@ export const usePlanStore = create<PlanState>((set, get) => {
 
     loadPlan(snapshot) {
       const root = rebalanceRoot(stripLegacyAnimatedFlag({ nodes: snapshot.nodes, edges: snapshot.edges }));
+      const view = project(root, []);
       set({
         planId: snapshot.planId,
         planName: snapshot.planName,
         rootGraph: root,
         viewPath: [],
-        nodes: root.nodes,
-        edges: root.edges,
+        nodes: view.nodes,
+        edges: view.edges,
         layoutTick: get().layoutTick + 1,
       });
     },
