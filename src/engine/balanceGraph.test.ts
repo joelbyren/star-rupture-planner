@@ -6,6 +6,20 @@ import type { Recipe } from './types.ts';
 const bal = (...args: Parameters<typeof balanceGraph>) =>
   balanceGraph(...args) as Record<string, BalanceResult>;
 
+/** Narrows a Record lookup for test assertions — throws with a clear message if the key is absent. */
+function at<T>(record: Record<string, T>, key: string): T {
+  const value = record[key];
+  if (value === undefined) throw new Error(`Expected an entry for "${key}"`);
+  return value;
+}
+
+/** Narrows an array index for test assertions — throws with a clear message if out of range. */
+function nth<T>(arr: readonly T[], index: number): T {
+  const value = arr[index];
+  if (value === undefined) throw new Error(`Expected an element at index ${index}`);
+  return value;
+}
+
 // Rotor V1 chain (real scraped values):
 //   Rotor:        Fabricator, 10 IPM, out rotor ×1, in wire_wolfram ×2, rod_titanium ×2
 //   Wire Wolfram: Fabricator, 30 IPM, out wire ×2,  in ingot_wolfram ×1
@@ -42,21 +56,21 @@ describe('balanceGraph — Rotor V1 worked example', () => {
 
   it('anchors the end product (Rotor) at 1 building', () => {
     const b = bal(nodes, edges, RECIPES);
-    expect(b['n_rotor'].buildingCountExact).toBeCloseTo(1);
-    expect(b['n_rotor'].outputRatePerMin).toBeCloseTo(10);
+    expect(at(b, 'n_rotor').buildingCountExact).toBeCloseTo(1);
+    expect(at(b, 'n_rotor').outputRatePerMin).toBeCloseTo(10);
   });
 
   it('computes upstream building counts from recipe ratios', () => {
     const b = bal(nodes, edges, RECIPES);
     // Rotor needs 20 wire/min and 20 rod/min; each producer runs 30 IPM → 0.667 buildings.
-    expect(b['n_wire'].buildingCountExact).toBeCloseTo(20 / 30);
-    expect(b['n_rod'].buildingCountExact).toBeCloseTo(20 / 30);
-    expect(b['n_wire'].outputRatePerMin).toBeCloseTo(20);
+    expect(at(b, 'n_wire').buildingCountExact).toBeCloseTo(20 / 30);
+    expect(at(b, 'n_rod').buildingCountExact).toBeCloseTo(20 / 30);
+    expect(at(b, 'n_wire').outputRatePerMin).toBeCloseTo(20);
   });
 
   it('exposes per-ingredient demand on the consuming node', () => {
     const b = bal(nodes, edges, RECIPES);
-    const rotorInputs = b['n_rotor'].inputs;
+    const rotorInputs = at(b, 'n_rotor').inputs;
     expect(rotorInputs.find(i => i.itemId === 'wire_wolfram')!.neededPerMin).toBeCloseTo(20);
     expect(rotorInputs.find(i => i.itemId === 'rod_titanium')!.neededPerMin).toBeCloseTo(20);
   });
@@ -66,9 +80,9 @@ describe('balanceGraph — Rotor V1 worked example', () => {
     // Wire now pulls from an ore node (ratio 1 ingot... here simplified: ore feeds wire handle directly)
     const withRawEdges = [...edges, { source: 'n_ore', target: 'n_wire', targetHandle: 'ingot_wolfram' }];
     const b = bal(withRaw, withRawEdges, RECIPES);
-    expect(b['n_ore'].isRaw).toBe(true);
-    expect(b['n_ore'].inputs).toHaveLength(0);
-    expect(b['n_ore'].buildingCount).toBe(0);
+    expect(at(b, 'n_ore').isRaw).toBe(true);
+    expect(at(b, 'n_ore').inputs).toHaveLength(0);
+    expect(at(b, 'n_ore').buildingCount).toBe(0);
   });
 });
 
@@ -93,8 +107,8 @@ describe('balanceGraph — normalization to the bottleneck', () => {
     const r = bal(nodes, edges, [A, B]);
     // Pre-norm: A=1 building, B needs 10/min @ 2 IPM = 5 buildings (bottleneck, K=5).
     // After ÷5: B = 1, A = 0.2.
-    expect(r['b'].buildingCountExact).toBeCloseTo(1);
-    expect(r['a'].buildingCountExact).toBeCloseTo(0.2);
+    expect(at(r, 'b').buildingCountExact).toBeCloseTo(1);
+    expect(at(r, 'a').buildingCountExact).toBeCloseTo(0.2);
   });
 
   it('balanceTree equals balanceGraph for the Rotor example (backward compat)', () => {
@@ -157,8 +171,8 @@ describe('balanceGraph — demand-driven (inner) mode', () => {
   it('anchors output at an absolute rate with no normalization (counts may exceed 1)', () => {
     const r = bal([{ id: 'i_bar', itemId: 'bar_titanium', recipeId: 'recipe_bar' }], [], FAC_RECIPES,
       { anchors: { i_bar: 200 }, normalize: false });
-    expect(r['i_bar'].outputRatePerMin).toBeCloseTo(200);
-    expect(r['i_bar'].buildingCountExact).toBeCloseTo(200 / 30); // 6.67, NOT normalized to 1
+    expect(at(r, 'i_bar').outputRatePerMin).toBeCloseTo(200);
+    expect(at(r, 'i_bar').buildingCountExact).toBeCloseTo(200 / 30); // 6.67, NOT normalized to 1
   });
 
   it('keeps a multi-building inner chain absolute', () => {
@@ -172,9 +186,9 @@ describe('balanceGraph — demand-driven (inner) mode', () => {
       { source: 'i_in', target: 'i_smelt', targetHandle: 'ore_titanium' },
     ];
     const r = bal(nodes, edges, FAC_RECIPES, { anchors: { i_bar: 20 }, normalize: false });
-    expect(r['i_bar'].buildingCountExact).toBeCloseTo(20 / 30);
-    expect(r['i_smelt'].buildingCountExact).toBeCloseTo(2); // 20/min @ 10 IPM, not divided by the bottleneck
-    expect(r['i_in'].outputRatePerMin).toBeCloseTo(20);
+    expect(at(r, 'i_bar').buildingCountExact).toBeCloseTo(20 / 30);
+    expect(at(r, 'i_smelt').buildingCountExact).toBeCloseTo(2); // 20/min @ 10 IPM, not divided by the bottleneck
+    expect(at(r, 'i_in').outputRatePerMin).toBeCloseTo(20);
   });
 });
 
@@ -184,13 +198,13 @@ describe('balanceGraph — factory nodes', () => {
     const edges = [{ source: 'F', target: 'n_asm', sourceHandle: 'port-out-POUT', targetHandle: 'bar_titanium' }];
     const r = balanceTree(nodes, edges, FAC_RECIPES);
 
-    expect((r['n_asm'] as BalanceResult).buildingCountExact).toBeCloseTo(1);
-    const fr = r['F'] as FactoryBalanceResult;
+    expect((at(r, 'n_asm') as BalanceResult).buildingCountExact).toBeCloseTo(1);
+    const fr = at(r, 'F') as FactoryBalanceResult;
     expect(fr.isFactory).toBe(true);
     expect(fr.buildingCount).toBe(0);
-    expect(fr.outputPorts[0].ratePerMin).toBeCloseTo(20); // asm needs 2×10 = 20 bar/min
-    expect(fr.inputPorts[0].ratePerMin).toBeCloseTo(20);   // 1 ingot per bar → 20 ingot/min
-    expect((fr.inner['i_bar'] as BalanceResult).buildingCountExact).toBeCloseTo(20 / 30);
+    expect(nth(fr.outputPorts, 0).ratePerMin).toBeCloseTo(20); // asm needs 2×10 = 20 bar/min
+    expect(nth(fr.inputPorts, 0).ratePerMin).toBeCloseTo(20);   // 1 ingot per bar → 20 ingot/min
+    expect((at(fr.inner, 'i_bar') as BalanceResult).buildingCountExact).toBeCloseTo(20 / 30);
   });
 
   it('scales the inner graph above 1 building while the outer end product stays at 1', () => {
@@ -198,11 +212,11 @@ describe('balanceGraph — factory nodes', () => {
     const edges = [{ source: 'F', target: 'n_asm', sourceHandle: 'port-out-POUT', targetHandle: 'bar_titanium' }];
     // asm needs 20 bars each → output demand 200/min → inner 6.67 buildings.
     const r = balanceTree(nodes, edges, [BAR, SMELT, INGOT, ASM(20)]);
-    expect((r['n_asm'] as BalanceResult).buildingCountExact).toBeCloseTo(1);
-    const fr = r['F'] as FactoryBalanceResult;
+    expect((at(r, 'n_asm') as BalanceResult).buildingCountExact).toBeCloseTo(1);
+    const fr = at(r, 'F') as FactoryBalanceResult;
     expect(fr.buildingCount).toBe(0);
-    expect((fr.inner['i_bar'] as BalanceResult).buildingCountExact).toBeGreaterThan(1);
-    expect((fr.inner['i_bar'] as BalanceResult).buildingCountExact).toBeCloseTo(200 / 30);
+    expect((at(fr.inner, 'i_bar') as BalanceResult).buildingCountExact).toBeGreaterThan(1);
+    expect((at(fr.inner, 'i_bar') as BalanceResult).buildingCountExact).toBeCloseTo(200 / 30);
   });
 
   it('propagates the input requirement onto an upstream parent producer', () => {
@@ -216,7 +230,7 @@ describe('balanceGraph — factory nodes', () => {
       { source: 'n_ingot', target: 'F', targetHandle: 'port-in-PIN' },
     ];
     const r = balanceTree(nodes, edges, FAC_RECIPES);
-    expect((r['n_ingot'] as BalanceResult).outputRatePerMin).toBeCloseTo(20);
+    expect((at(r, 'n_ingot') as BalanceResult).outputRatePerMin).toBeCloseTo(20);
   });
 
   it('treats UNSET ports as inert (zero demand, no NaN)', () => {
@@ -229,10 +243,10 @@ describe('balanceGraph — factory nodes', () => {
       },
     };
     const r = balanceTree([unset], [], FAC_RECIPES);
-    const fr = r['F'] as FactoryBalanceResult;
-    expect(fr.outputPorts[0].ratePerMin).toBe(0);
-    expect(fr.inputPorts[0].ratePerMin).toBe(0);
-    expect(Number.isNaN(fr.outputPorts[0].ratePerMin)).toBe(false);
+    const fr = at(r, 'F') as FactoryBalanceResult;
+    expect(nth(fr.outputPorts, 0).ratePerMin).toBe(0);
+    expect(nth(fr.inputPorts, 0).ratePerMin).toBe(0);
+    expect(Number.isNaN(nth(fr.outputPorts, 0).ratePerMin)).toBe(false);
   });
 
   it('recurses through nested factories (depth 2)', () => {
@@ -272,11 +286,11 @@ describe('balanceGraph — factory nodes', () => {
     const edges = [{ source: 'F', target: 'n_asm', sourceHandle: 'port-out-POUT', targetHandle: 'bar_titanium' }];
     const r = balanceTree(nodes, edges, FAC_RECIPES);
 
-    const frF = r['F'] as FactoryBalanceResult;
-    const frG = frF.inner['G'] as FactoryBalanceResult;
-    expect((frF.inner['i_bar'] as BalanceResult).buildingCountExact).toBeCloseTo(20 / 30);
-    expect((frG.inner['g_smelt'] as BalanceResult).buildingCountExact).toBeCloseTo(2); // 20 ingot/min @ 10 IPM
-    expect(frG.inputPorts[0].ratePerMin).toBeCloseTo(20); // ore requirement bubbles up
+    const frF = at(r, 'F') as FactoryBalanceResult;
+    const frG = at(frF.inner, 'G') as FactoryBalanceResult;
+    expect((at(frF.inner, 'i_bar') as BalanceResult).buildingCountExact).toBeCloseTo(20 / 30);
+    expect((at(frG.inner, 'g_smelt') as BalanceResult).buildingCountExact).toBeCloseTo(2); // 20 ingot/min @ 10 IPM
+    expect(nth(frG.inputPorts, 0).ratePerMin).toBeCloseTo(20); // ore requirement bubbles up
   });
 });
 
@@ -297,9 +311,9 @@ describe('balanceGraph — hard limits', () => {
     };
     const edges = [{ source: 'b', target: 'a', targetHandle: 'B' }];
     const r = bal(nodes, edges, [A, B]);
-    expect(r['b'].buildingCountExact).toBeCloseTo(1);
-    expect(r['a'].buildingCountExact).toBeCloseTo(0.2);
-    expect(r['a'].isLimitBinding).toBeUndefined();
+    expect(at(r, 'b').buildingCountExact).toBeCloseTo(1);
+    expect(at(r, 'a').buildingCountExact).toBeCloseTo(0.2);
+    expect(at(r, 'a').isLimitBinding).toBeUndefined();
   });
 
   const A: Recipe = {
@@ -320,33 +334,33 @@ describe('balanceGraph — hard limits', () => {
   it('scales DOWN to a production limit', () => {
     // Relative solution: a=1 building (10/min A → 10/min B demand), b relative rate 10.
     const r = bal(abNodes(1), abEdges, [A, B]);
-    expect(r['b'].outputRatePerMin).toBeCloseTo(1);
-    expect(r['a'].outputRatePerMin).toBeCloseTo(1);
-    expect(r['b'].isLimitBinding).toBe(true);
-    expect(r['b'].hardLimitPerMin).toBe(1);
+    expect(at(r, 'b').outputRatePerMin).toBeCloseTo(1);
+    expect(at(r, 'a').outputRatePerMin).toBeCloseTo(1);
+    expect(at(r, 'b').isLimitBinding).toBe(true);
+    expect(at(r, 'b').hardLimitPerMin).toBe(1);
   });
 
   it('scales UP past 1 building', () => {
     const r = bal(abNodes(20), abEdges, [A, B]);
-    expect(r['b'].buildingCountExact).toBeCloseTo(10);
-    expect(r['a'].buildingCountExact).toBeCloseTo(2);
-    expect(r['b'].isLimitBinding).toBe(true);
+    expect(at(r, 'b').buildingCountExact).toBeCloseTo(10);
+    expect(at(r, 'a').buildingCountExact).toBeCloseTo(2);
+    expect(at(r, 'b').isLimitBinding).toBe(true);
   });
 
   it('most restrictive of several limits wins; only it is binding', () => {
     // relative demand: b = 10, a(building) relative demand-based rate = 10 (outputRatePerMin).
     // limit on a with ratio 3 (limit 30) vs limit on b with ratio 1 (limit 10) → b's ratio wins.
     const r = bal(abNodes(10, 30), abEdges, [A, B]);
-    expect(r['b'].isLimitBinding).toBe(true);
-    expect(r['a'].isLimitBinding).toBe(false);
-    expect(r['a'].outputRatePerMin).toBeLessThan(r['a'].hardLimitPerMin!);
+    expect(at(r, 'b').isLimitBinding).toBe(true);
+    expect(at(r, 'a').isLimitBinding).toBe(false);
+    expect(at(r, 'a').outputRatePerMin).toBeLessThan(at(r, 'a').hardLimitPerMin!);
   });
 
   it('equal ratios → both marked binding', () => {
     // relative: b=10, a=10 (outputRatePerMin both 10 pre-scale... a's relative demand equals its own anchor 10)
     const r = bal(abNodes(10, 10), abEdges, [A, B]);
-    expect(r['b'].isLimitBinding).toBe(true);
-    expect(r['a'].isLimitBinding).toBe(true);
+    expect(at(r, 'b').isLimitBinding).toBe(true);
+    expect(at(r, 'a').isLimitBinding).toBe(true);
   });
 
   it('raw-node limit constrains its consumers (rotor fixture)', () => {
@@ -362,8 +376,8 @@ describe('balanceGraph — hard limits', () => {
       { source: 'n_ore', target: 'n_wire', targetHandle: 'ingot_wolfram' },
     ];
     const r = bal(withRaw, withRawEdges, RECIPES);
-    expect(r['n_ore'].outputRatePerMin).toBeCloseTo(10);
-    expect(r['n_ore'].isLimitBinding).toBe(true);
+    expect(at(r, 'n_ore').outputRatePerMin).toBeCloseTo(10);
+    expect(at(r, 'n_ore').isLimitBinding).toBe(true);
   });
 
   it('limit on a disconnected/zero-demand node is ignored → falls back to normalization', () => {
@@ -373,9 +387,9 @@ describe('balanceGraph — hard limits', () => {
       { id: 'orphan', itemId: 'C', recipeId: null, hardLimit: 50 },
     ];
     const r = bal(nodes, abEdges, [A, B]);
-    expect(r['b'].buildingCountExact).toBeCloseTo(1);
-    expect(r['a'].buildingCountExact).toBeCloseTo(0.2);
-    expect(r['orphan'].isLimitBinding).toBeFalsy();
+    expect(at(r, 'b').buildingCountExact).toBeCloseTo(1);
+    expect(at(r, 'a').buildingCountExact).toBeCloseTo(0.2);
+    expect(at(r, 'orphan').isLimitBinding).toBeFalsy();
   });
 
   it('limit inside a factory constrains the parent', () => {
@@ -399,12 +413,12 @@ describe('balanceGraph — hard limits', () => {
     const nodes = [{ id: 'n_asm', itemId: 'asm', recipeId: 'recipe_asm' }, F];
     const edges = [{ source: 'F', target: 'n_asm', sourceHandle: 'port-out-POUT', targetHandle: 'bar_titanium' }];
     const r = balanceTree(nodes, edges, FAC_RECIPES);
-    expect((r['n_asm'] as BalanceResult).buildingCountExact).toBeCloseTo(0.5);
-    expect((r['n_asm'] as BalanceResult).outputRatePerMin).toBeCloseTo(5);
-    const fr = r['F'] as FactoryBalanceResult;
-    expect((fr.inner['i_bar'] as BalanceResult).outputRatePerMin).toBeCloseTo(10);
-    expect((fr.inner['i_bar'] as BalanceResult).isLimitBinding).toBe(true);
-    expect(fr.inputPorts[0].ratePerMin).toBeCloseTo(10);
+    expect((at(r, 'n_asm') as BalanceResult).buildingCountExact).toBeCloseTo(0.5);
+    expect((at(r, 'n_asm') as BalanceResult).outputRatePerMin).toBeCloseTo(5);
+    const fr = at(r, 'F') as FactoryBalanceResult;
+    expect((at(fr.inner, 'i_bar') as BalanceResult).outputRatePerMin).toBeCloseTo(10);
+    expect((at(fr.inner, 'i_bar') as BalanceResult).isLimitBinding).toBe(true);
+    expect(nth(fr.inputPorts, 0).ratePerMin).toBeCloseTo(10);
   });
 
   it('limit two factories deep', () => {
@@ -443,19 +457,19 @@ describe('balanceGraph — hard limits', () => {
     const edges = [{ source: 'F', target: 'n_asm', sourceHandle: 'port-out-POUT', targetHandle: 'bar_titanium' }];
     const r = balanceTree(nodes, edges, FAC_RECIPES);
     // Relative: g_smelt at 20 ingot/min (from earlier nested test). Limit 10 → scale 0.5.
-    const frF = r['F'] as FactoryBalanceResult;
-    const frG = frF.inner['G'] as FactoryBalanceResult;
-    expect((r['n_asm'] as BalanceResult).buildingCountExact).toBeCloseTo(0.5);
-    expect((frG.inner['g_smelt'] as BalanceResult).isLimitBinding).toBe(true);
-    expect((frG.inner['g_smelt'] as BalanceResult).outputRatePerMin).toBeCloseTo(10);
+    const frF = at(r, 'F') as FactoryBalanceResult;
+    const frG = at(frF.inner, 'G') as FactoryBalanceResult;
+    expect((at(r, 'n_asm') as BalanceResult).buildingCountExact).toBeCloseTo(0.5);
+    expect((at(frG.inner, 'g_smelt') as BalanceResult).isLimitBinding).toBe(true);
+    expect((at(frG.inner, 'g_smelt') as BalanceResult).outputRatePerMin).toBeCloseTo(10);
   });
 
   it('inner solves (normalize: false) don\'t apply limit scaling', () => {
     const r = bal([{ id: 'i_bar', itemId: 'bar_titanium', recipeId: 'recipe_bar', hardLimit: 50 }], [], FAC_RECIPES,
       { anchors: { i_bar: 200 }, normalize: false });
-    expect(r['i_bar'].outputRatePerMin).toBeCloseTo(200); // anchor wins, limit ignored
-    expect(r['i_bar'].hardLimitPerMin).toBe(50);
-    expect(r['i_bar'].isLimitBinding).not.toBe(true);
+    expect(at(r, 'i_bar').outputRatePerMin).toBeCloseTo(200); // anchor wins, limit ignored
+    expect(at(r, 'i_bar').hardLimitPerMin).toBe(50);
+    expect(at(r, 'i_bar').isLimitBinding).not.toBe(true);
   });
 
   it('cycle containing a limited node → finite results, no NaN', () => {
@@ -467,7 +481,7 @@ describe('balanceGraph — hard limits', () => {
     const nodes = [{ id: 'x', itemId: 'X', recipeId: 'rCyc', hardLimit: 5 }];
     const edges = [{ source: 'x', target: 'x', targetHandle: 'X' }];
     const r = bal(nodes, edges, [CYCLE_RECIPE]);
-    expect(Number.isFinite(r['x'].outputRatePerMin)).toBe(true);
-    expect(Number.isNaN(r['x'].outputRatePerMin)).toBe(false);
+    expect(Number.isFinite(at(r, 'x').outputRatePerMin)).toBe(true);
+    expect(Number.isNaN(at(r, 'x').outputRatePerMin)).toBe(false);
   });
 });

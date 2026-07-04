@@ -227,11 +227,13 @@ export function balanceGraph(
       // Demand on the producer = the factory's input-port requirement for that handle.
       const r = solveFactory(consumer);
       const idx = consumer.factory!.inputs.findIndex(p => p.handleId === (e.targetHandle ?? null));
-      return idx >= 0 ? r.inputPorts[idx].ratePerMin : 0;
+      return idx >= 0 ? (r.inputPorts[idx]?.ratePerMin ?? 0) : 0;
     }
     const cRecipe = recipeForNode(consumer);
     if (!cRecipe) return 0; // raw consumers have no inputs
-    const ingredientId = e.targetHandle ?? byId.get(e.source)!.itemId;
+    // e.source may reference a node absent from a malformed/imported plan — fall
+    // back to undefined rather than asserting, so the `!ing` guard below catches it.
+    const ingredientId = e.targetHandle ?? byId.get(e.source)?.itemId;
     const ing = cRecipe.inputs.find(i => i.itemId === ingredientId);
     if (!ing) return 0;
     return (ing.quantity / outputQty(cRecipe, consumer.itemId)) * demand(e.target);

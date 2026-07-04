@@ -1,19 +1,33 @@
 import { Modal } from './ui/Modal.tsx';
+import { TextInput } from './ui/TextInput.tsx';
+import { Select } from './ui/Select.tsx';
+import { Button } from './ui/Button.tsx';
 import { usePlanStore, isItemNode } from '../store/planStore.ts';
 import { useUiStore } from '../store/uiStore.ts';
-import recipesJson from '../data/recipes.json';
-import type { Recipe, ResourcePurity, ExtractorVersion, ExtractorMode } from '../engine/types.ts';
-import { calcSupplyRate, DEFAULT_RAW_CONFIG } from '../engine/rawResources.ts';
+import { ALL_RECIPES } from '../data/index.ts';
+import type { ResourcePurity, ExtractorVersion, ExtractorMode } from '../engine/types.ts';
+import { DEFAULT_RAW_CONFIG, rawSupplyInfo } from '../engine/rawResources.ts';
 import { itemById } from '../lib/itemVisual.ts';
-
-const ALL_RECIPES = recipesJson as Recipe[];
 
 const PURITY: { value: ResourcePurity; label: string }[] = [
   { value: 'impure', label: 'Impure' },
   { value: 'normal', label: 'Normal' },
   { value: 'pure', label: 'Pure' },
 ];
+const PURITY_VALUES = PURITY.map(p => p.value);
+
 const VERSIONS: ExtractorVersion[] = ['V1', 'V2'];
+
+const EXTRACTOR_MODES: { value: ExtractorMode; label: string }[] = [
+  { value: 'calculated', label: 'Calculated (purity × version)' },
+  { value: 'custom', label: 'Custom (aggregate rate)' },
+];
+const EXTRACTOR_MODE_VALUES = EXTRACTOR_MODES.map(m => m.value);
+
+/** Narrow a <select>'s raw string value to a known option, falling back if it's ever stale/invalid. */
+function oneOf<T extends string>(values: readonly T[], value: string, fallback: T): T {
+  return (values as readonly string[]).includes(value) ? (value as T) : fallback;
+}
 
 export function NodeConfigDialog() {
   const editingNodeId = usePlanStore(s => s.editingNodeId);
@@ -33,9 +47,7 @@ export function NodeConfigDialog() {
   const rawConfig = data.rawConfig ?? DEFAULT_RAW_CONFIG;
   const balance = data.balance;
 
-  const supplyRate = data.isRaw ? calcSupplyRate(data.itemId, rawConfig) : null;
-  const needed = balance?.outputRatePerMin ?? 0;
-  const surplus = supplyRate !== null ? supplyRate - needed : null;
+  const { supplyRate, needed, surplus, statusClass } = rawSupplyInfo(data, balance);
   const showV2 = item?.type === 'Resource';
 
   return (
@@ -45,20 +57,24 @@ export function NodeConfigDialog() {
           <>
             <div>
               <label className="block text-xs text-ink-dim mb-1">Extractor mode</label>
-              <select
+              <Select
                 value={rawConfig.mode ?? 'calculated'}
-                onChange={e => setNodeRawConfig(node.id, { mode: e.target.value as ExtractorMode })}
-                className="w-full bg-panel-2 border border-line-soft rounded text-sm text-ink px-2 py-1.5 cursor-pointer"
+                onChange={e =>
+                  setNodeRawConfig(node.id, {
+                    mode: oneOf(EXTRACTOR_MODE_VALUES, e.target.value, rawConfig.mode ?? 'calculated'),
+                  })
+                }
               >
-                <option value="calculated">Calculated (purity × version)</option>
-                <option value="custom">Custom (aggregate rate)</option>
-              </select>
+                {EXTRACTOR_MODES.map(m => (
+                  <option key={m.value} value={m.value}>{m.label}</option>
+                ))}
+              </Select>
             </div>
 
             {rawConfig.mode === 'custom' ? (
               <div>
                 <label className="block text-xs text-ink-dim mb-1">Aggregate rate (items/min)</label>
-                <input
+                <TextInput
                   type="number"
                   min={0}
                   value={rawConfig.customRatePerMin ?? ''}
@@ -66,39 +82,40 @@ export function NodeConfigDialog() {
                     const v = e.target.value;
                     setNodeRawConfig(node.id, { customRatePerMin: v === '' ? undefined : Number(v) });
                   }}
-                  className="w-full bg-panel-2 border border-line-soft rounded text-sm text-ink px-2 py-1.5"
                 />
               </div>
             ) : (
               <div className="grid grid-cols-2 gap-2">
                 <div>
                   <label className="block text-xs text-ink-dim mb-1">Purity</label>
-                  <select
+                  <Select
                     value={rawConfig.purity}
-                    onChange={e => setNodeRawConfig(node.id, { purity: e.target.value as ResourcePurity })}
-                    className="w-full bg-panel-2 border border-line-soft rounded text-sm text-ink px-2 py-1.5 cursor-pointer"
+                    onChange={e => setNodeRawConfig(node.id, { purity: oneOf(PURITY_VALUES, e.target.value, rawConfig.purity) })}
                   >
                     {PURITY.map(p => (
                       <option key={p.value} value={p.value}>{p.label}</option>
                     ))}
-                  </select>
+                  </Select>
                 </div>
                 <div>
                   <label className="block text-xs text-ink-dim mb-1">Extractor</label>
-                  <select
+                  <Select
                     value={rawConfig.extractorVersion}
-                    onChange={e => setNodeRawConfig(node.id, { extractorVersion: e.target.value as ExtractorVersion })}
-                    className="w-full bg-panel-2 border border-line-soft rounded text-sm text-ink px-2 py-1.5 cursor-pointer"
+                    onChange={e =>
+                      setNodeRawConfig(node.id, {
+                        extractorVersion: oneOf(VERSIONS, e.target.value, rawConfig.extractorVersion),
+                      })
+                    }
                   >
                     {VERSIONS.filter(v => v === 'V1' || showV2).map(v => (
                       <option key={v} value={v}>{v}</option>
                     ))}
-                  </select>
+                  </Select>
                 </div>
               </div>
             )}
 
-            <div className={`text-xs font-medium ${balance?.isLimitBinding ? 'text-accent' : surplus !== null && surplus >= 0 ? 'text-ok' : 'text-danger'}`}>
+            <div className={`text-xs font-medium ${statusClass}`}>
               {supplyRate?.toFixed(0)}/min supply (physical cap)
               <span className="text-ink-dim font-normal ml-1">
                 ({surplus !== null && surplus >= 0 ? '+' : ''}{surplus?.toFixed(0)} spare vs {needed.toFixed(0)} used)
@@ -135,7 +152,7 @@ export function NodeConfigDialog() {
         {recipe && (
           <div>
             <label className="block text-xs text-ink-dim mb-1">Max output (items/min) — blank = unlimited</label>
-            <input
+            <TextInput
               type="number"
               min={0}
               value={data.hardLimitPerMin ?? ''}
@@ -143,7 +160,6 @@ export function NodeConfigDialog() {
                 const v = Number(e.target.value);
                 setNodeHardLimit(node.id, e.target.value === '' || !v ? null : v);
               }}
-              className="w-full bg-panel-2 border border-line-soft rounded text-sm text-ink px-2 py-1.5"
             />
             {balance?.isLimitBinding && (
               <div className="text-xs text-accent font-medium mt-1">
@@ -153,26 +169,27 @@ export function NodeConfigDialog() {
           </div>
         )}
 
-        <button
+        <Button
+          variant="ghost"
           onClick={() => openNoteDialogCreate(node.id)}
-          className="w-full px-3 py-1.5 text-sm rounded bg-panel-2 text-ink-mid hover:text-ink"
+          className="w-full"
         >
           + Add note
-        </button>
+        </Button>
 
         <div className="flex justify-between gap-2 pt-1">
-          <button
+          <Button
+            variant="danger"
             onClick={() => removeNode(node.id)}
-            className="px-3 py-1.5 text-sm rounded bg-danger/80 text-canvas hover:bg-danger"
           >
             Delete node
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="ghost"
             onClick={closeConfig}
-            className="px-3 py-1.5 text-sm rounded bg-panel-2 text-ink-mid hover:text-ink"
           >
             Done
-          </button>
+          </Button>
         </div>
       </div>
     </Modal>

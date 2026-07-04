@@ -13,6 +13,13 @@ import {
 const reset = () =>
   usePlanStore.setState({ rootGraph: { nodes: [], edges: [] }, viewPath: [], nodes: [], edges: [] });
 
+/** Narrows a Record lookup for test assertions — throws with a clear message if the key is absent. */
+function at<T>(record: Record<string, T>, key: string): T {
+  const value = record[key];
+  if (value === undefined) throw new Error(`Expected an entry for "${key}"`);
+  return value;
+}
+
 const get = () => usePlanStore.getState();
 const factoryAt = (path: string[]): FactoryNodeType => {
   let g = get().rootGraph;
@@ -30,9 +37,11 @@ describe('factory nodes — navigation & ports', () => {
     get().addFactoryNode({ x: 0, y: 0 });
     const fac = get().rootGraph.nodes.filter(isFactoryNode);
     expect(fac).toHaveLength(1);
-    expect(fac[0].data.inputs).toHaveLength(0);
-    expect(fac[0].data.outputs).toHaveLength(0);
-    expect(fac[0].data.inner).toEqual({ nodes: [], edges: [] });
+    const [f] = fac;
+    if (!f) throw new Error('expected a factory node');
+    expect(f.data.inputs).toHaveLength(0);
+    expect(f.data.outputs).toHaveLength(0);
+    expect(f.data.inner).toEqual({ nodes: [], edges: [] });
   });
 
   it('enters and exits a factory, projecting its inner graph', () => {
@@ -81,7 +90,9 @@ describe('factory nodes — navigation & ports', () => {
     const inner = factoryAt([id]).data.inner;
     expect(inner.nodes.filter(n => n.type === 'itemNode')).toHaveLength(1); // ports are NOT persisted
     expect(inner.edges).toHaveLength(1);
-    expect(inner.edges[0].source).toBe(portNodeId('input', portId));
+    const [edge0] = inner.edges;
+    if (!edge0) throw new Error('expected an edge');
+    expect(edge0.source).toBe(portNodeId('input', portId));
   });
 
   it('an unset input port inherits the item it is connected to feed', () => {
@@ -89,7 +100,9 @@ describe('factory nodes — navigation & ports', () => {
     const id = firstFactoryId();
     get().enterFactory(id);
     const portId = get().addInputPort(); // unset
-    expect(factoryAt([id]).data.inputs[0].itemId).toBeNull();
+    const [unsetInput] = factoryAt([id]).data.inputs;
+    if (!unsetInput) throw new Error('expected an input port');
+    expect(unsetInput.itemId).toBeNull();
 
     get().addNode('comp_rotor', 'recipe_comp_rotor', { x: 100, y: 0 });
     const rotorId = factoryAt([id]).data.inner.nodes.find(n => n.type === 'itemNode')!.id;
@@ -102,7 +115,9 @@ describe('factory nodes — navigation & ports', () => {
       targetHandle: 'wire_wolfram',
     });
 
-    expect(factoryAt([id]).data.inputs[0].itemId).toBe('wire_wolfram');
+    const [connectedInput] = factoryAt([id]).data.inputs;
+    if (!connectedInput) throw new Error('expected an input port');
+    expect(connectedInput.itemId).toBe('wire_wolfram');
     expect(factoryAt([id]).data.inner.edges).toHaveLength(1);
   });
 
@@ -123,7 +138,9 @@ describe('factory nodes — navigation & ports', () => {
       targetHandle: null,
     });
 
-    expect(factoryAt([id]).data.outputs[0].itemId).toBe('comp_rotor');
+    const [connectedOutput] = factoryAt([id]).data.outputs;
+    if (!connectedOutput) throw new Error('expected an output port');
+    expect(connectedOutput.itemId).toBe('comp_rotor');
     expect(factoryAt([id]).data.inner.edges).toHaveLength(1);
   });
 
@@ -242,7 +259,9 @@ describe('factory nodes — navigation & ports', () => {
 
     const fac = get().rootGraph.nodes.find(isFactoryNode)!;
     expect(fac.data.outputs).toHaveLength(1);
-    expect(fac.data.outputs[0].itemId).toBe('wire_wolfram');
+    const [seededOutput] = fac.data.outputs;
+    if (!seededOutput) throw new Error('expected an output port');
+    expect(seededOutput.itemId).toBe('wire_wolfram');
     expect(fac.data.inputs).toHaveLength(0);
 
     const edge = get().rootGraph.edges.find(e => e.source === fac.id && e.target === rotorId);
@@ -323,20 +342,20 @@ describe('computePinnedPortPositions', () => {
   it('centers a single port on each side around its anchor', () => {
     const pos = computePinnedPortPositions(['in1'], ['out1'], left, right);
     expect(pos['in1']).toEqual({ x: -500, y: 0 });
-    expect(pos['out1'].y).toBeCloseTo(0);
+    expect(at(pos, 'out1').y).toBeCloseTo(0);
   });
 
   it('right-aligns outputs by subtracting the port width from the anchor', () => {
     const pos = computePinnedPortPositions([], ['out1'], left, right);
-    expect(pos['out1'].x).toBe(500 - 120);
+    expect(at(pos, 'out1').x).toBe(500 - 120);
   });
 
   it('stacks multiple ports symmetrically around the anchor y', () => {
     const pos = computePinnedPortPositions(['a', 'b', 'c'], [], left, right);
-    expect(pos['b'].y).toBeCloseTo(0); // middle of 3 sits on the anchor
-    expect(pos['a'].y).toBeLessThan(pos['b'].y);
-    expect(pos['c'].y).toBeGreaterThan(pos['b'].y);
-    expect(pos['a'].x).toBe(pos['c'].x); // same column, left-aligned
+    expect(at(pos, 'b').y).toBeCloseTo(0); // middle of 3 sits on the anchor
+    expect(at(pos, 'a').y).toBeLessThan(at(pos, 'b').y);
+    expect(at(pos, 'c').y).toBeGreaterThan(at(pos, 'b').y);
+    expect(at(pos, 'a').x).toBe(at(pos, 'c').x); // same column, left-aligned
   });
 
   it('produces no entries for an empty side', () => {

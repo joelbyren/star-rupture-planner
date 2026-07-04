@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { usePlanStore, type ItemNodeType } from '../store/planStore.ts';
-import { buildSnapshot } from './persistence.ts';
+import { usePlanStore, type ItemNodeType, type PlanSnapshot } from '../store/planStore.ts';
+import { buildSnapshot, parseSnapshot } from './persistence.ts';
 
 const reset = () =>
   usePlanStore.setState({ planId: 'test', planName: 'Test', rootGraph: { nodes: [], edges: [] }, viewPath: [], nodes: [], edges: [] });
@@ -62,5 +62,95 @@ describe('persistence — snapshot slimming', () => {
     expect(facSnap.data).not.toHaveProperty('balance');
     // inner graph structure is preserved (empty here, but present and typed).
     expect(facSnap.data).toHaveProperty('inner');
+  });
+});
+
+describe('persistence — parseSnapshot validation', () => {
+  beforeEach(reset);
+
+  it('round-trips a valid snapshot with a nested factory, byte-identical after JSON round-trip', () => {
+    const s = usePlanStore.getState();
+    s.addNode('wire_wolfram', 'recipe_wire_wolfram');
+    s.addFactoryNode();
+    const facId = usePlanStore.getState().nodes.find(n => n.type === 'factoryNode')!.id;
+    s.enterFactory(facId);
+    usePlanStore.getState().addNode('comp_rotor', 'recipe_comp_rotor');
+    usePlanStore.getState().exitTo(0);
+
+    const built = buildSnapshot(usePlanStore.getState());
+    const parsed = parseSnapshot(JSON.stringify(built));
+    expect(parsed).toEqual(built);
+  });
+
+  it('rejects a node missing "data" with a message naming the offending node', () => {
+    const raw = JSON.stringify({
+      planId: 'p1',
+      planName: 'Broken',
+      nodes: [{ id: 'n1', type: 'itemNode', position: { x: 0, y: 0 } }],
+      edges: [],
+    });
+    expect(() => parseSnapshot(raw)).toThrow(/node 0.*data/i);
+  });
+
+  it('rejects a node with an unknown type', () => {
+    const raw = JSON.stringify({
+      planId: 'p1',
+      planName: 'Broken',
+      nodes: [{ id: 'n1', type: 'bogusNode', position: { x: 0, y: 0 }, data: {} }],
+      edges: [],
+    });
+    expect(() => parseSnapshot(raw)).toThrow(/unknown node type 'bogusNode'/);
+  });
+
+  it('rejects a factoryNode missing its inner graph', () => {
+    const raw = JSON.stringify({
+      planId: 'p1',
+      planName: 'Broken',
+      nodes: [
+        {
+          id: 'f1',
+          type: 'factoryNode',
+          position: { x: 0, y: 0 },
+          data: { name: 'Factory', inputs: [], outputs: [] },
+        },
+      ],
+      edges: [],
+    });
+    expect(() => parseSnapshot(raw)).toThrow(/inner graph/);
+  });
+
+  it('rejects an itemNode with a non-finite position', () => {
+    const raw = JSON.stringify({
+      planId: 'p1',
+      planName: 'Broken',
+      nodes: [
+        { id: 'n1', type: 'itemNode', position: { x: 'oops', y: 0 }, data: { itemId: 'wire_wolfram', recipeId: null, isRaw: true } },
+      ],
+      edges: [],
+    });
+    expect(() => parseSnapshot(raw)).toThrow(/position/);
+  });
+
+  it('still loads a legacy-shaped snapshot: optional fields absent, legacy edge.animated flag present', () => {
+    // Mirrors what an older export actually looked like: JSON.stringify already
+    // drops `undefined` optional fields (rawConfig on a non-raw node, hardLimitPerMin,
+    // balance, isEndProduct), and pre-ThemedEdge exports persisted `animated: true`.
+    const raw = JSON.stringify({
+      planId: 'legacy',
+      planName: 'Legacy plan',
+      nodes: [
+        { id: 'n1', type: 'itemNode', position: { x: 0, y: 0 }, data: { itemId: 'wire_wolfram', recipeId: null, isRaw: true } },
+        { id: 'n2', type: 'itemNode', position: { x: 100, y: 0 }, data: { itemId: 'comp_rotor', recipeId: 'recipe_comp_rotor', isRaw: false } },
+      ],
+      edges: [{ id: 'e1', source: 'n1', target: 'n2', sourceHandle: null, targetHandle: 'wire_wolfram', animated: true }],
+    } satisfies PlanSnapshot);
+
+    const parsed = parseSnapshot(raw);
+    expect(parsed.nodes).toHaveLength(2);
+    expect(parsed.edges).toHaveLength(1);
+
+    // And the store accepts it end-to-end without crashing.
+    expect(() => usePlanStore.getState().loadPlan(parsed)).not.toThrow();
+    expect(usePlanStore.getState().rootGraph.nodes).toHaveLength(2);
   });
 });

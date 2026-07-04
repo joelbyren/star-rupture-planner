@@ -1,7 +1,5 @@
-import itemsJson from '../data/items.json';
+import { ITEMS_BY_ID } from '../data/index.ts';
 import type { Item } from '../engine/types.ts';
-
-const ITEMS_BY_ID = new Map((itemsJson as Item[]).map(i => [i.id, i]));
 
 /** Canonical item lookup, shared by every badge/label render. */
 export function itemById(id: string | null | undefined): Item | undefined {
@@ -17,8 +15,9 @@ export function itemById(id: string | null | undefined): Item | undefined {
 export function abbr(item: Pick<Item, 'name' | 'id'>): string {
   const name = (item.name ?? item.id).trim();
   const words = name.split(/[\s-]+/).filter(Boolean);
-  if (words.length >= 2) {
-    return (words[0][0] + words[1][0]).toUpperCase();
+  const [first, second] = words;
+  if (first && second) {
+    return (first.charAt(0) + second.charAt(0)).toUpperCase();
   }
   return name.replace(/[^a-zA-Z0-9]/g, '').slice(0, 2).padEnd(2, '·');
 }

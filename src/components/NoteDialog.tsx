@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Modal } from './ui/Modal.tsx';
+import { Textarea } from './ui/TextInput.tsx';
+import { Button } from './ui/Button.tsx';
 import { usePlanStore, isNoteNode } from '../store/planStore.ts';
 import { useUiStore } from '../store/uiStore.ts';
 
@@ -35,36 +37,29 @@ export function NoteDialog() {
   return (
     <Modal open title={noteDialog.mode === 'create' ? 'Add note' : 'Edit note'} onClose={closeNoteDialog}>
       <div className="space-y-3">
-        <textarea
+        <Textarea
           autoFocus
           value={text}
           onChange={e => setText(e.target.value)}
           rows={4}
           placeholder="Write a note…"
-          className="w-full bg-panel-2 border border-line-soft rounded text-sm text-ink px-2 py-1.5 resize-none"
         />
         <div className="flex justify-between gap-2 pt-1">
           {noteDialog.mode === 'edit' ? (
-            <button
+            <Button
+              variant="danger"
               onClick={() => { removeNode(noteDialog.noteId); closeNoteDialog(); }}
-              className="px-3 py-1.5 text-sm rounded bg-danger/80 text-canvas hover:bg-danger"
             >
               Delete
-            </button>
+            </Button>
           ) : <span />}
           <div className="flex gap-2">
-            <button
-              onClick={closeNoteDialog}
-              className="px-3 py-1.5 text-sm rounded bg-panel-2 text-ink-mid hover:text-ink"
-            >
+            <Button variant="ghost" onClick={closeNoteDialog}>
               Cancel
-            </button>
-            <button
-              onClick={save}
-              className="px-3 py-1.5 text-sm rounded bg-accent text-canvas hover:opacity-90"
-            >
+            </Button>
+            <Button onClick={save}>
               Save
-            </button>
+            </Button>
           </div>
         </div>
       </div>

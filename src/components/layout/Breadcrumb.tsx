@@ -28,8 +28,8 @@ export function Breadcrumb() {
 
   const atRoot = viewPath.length === 0;
   const ancestors = atRoot ? [] : [planName || 'Main', ...labels.slice(0, -1)];
-  const currentName = atRoot ? (planName || 'Main') : labels[labels.length - 1];
-  const currentKey = atRoot ? 'plan-root' : viewPath[viewPath.length - 1];
+  const currentName = atRoot ? (planName || 'Main') : (labels[labels.length - 1] ?? 'Factory');
+  const currentKey = atRoot ? 'plan-root' : (viewPath[viewPath.length - 1] ?? 'plan-root');
   const onRename = atRoot ? renamePlan : renameFactory;
 
   return <BreadcrumbInner ancestors={ancestors} currentKey={currentKey} currentName={currentName}

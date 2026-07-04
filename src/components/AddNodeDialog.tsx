@@ -1,21 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Modal } from './ui/Modal.tsx';
 import { Combobox, type ComboboxOption } from './ui/Combobox.tsx';
+import { Select } from './ui/Select.tsx';
+import { Button } from './ui/Button.tsx';
 import { usePlanStore } from '../store/planStore.ts';
-import recipesJson from '../data/recipes.json';
-import itemsJson from '../data/items.json';
-import type { Recipe, Item } from '../engine/types.ts';
+import { ALL_RECIPES, SORTED_ITEMS } from '../data/index.ts';
+import type { Recipe } from '../engine/types.ts';
 
-const ALL_RECIPES = recipesJson as Recipe[];
-const ALL_ITEMS = itemsJson as Item[];
-
-// De-duplicate items by id (source data has a known duplicate), then sort
-// alphabetically by name rather than leaving them in raw data-file order.
-const ITEM_OPTIONS: ComboboxOption[] = Array.from(
-  new Map(ALL_ITEMS.map(i => [i.id, i])).values(),
-)
-  .map(i => ({ id: i.id, label: i.name, hint: i.type }))
-  .sort((a, b) => a.label.localeCompare(b.label));
+const ITEM_OPTIONS: ComboboxOption[] = SORTED_ITEMS.map(i => ({ id: i.id, label: i.name, hint: i.type }));
 
 // Recipes producing an item, sorted alphabetically (machine → tier → rate)
 // rather than in raw recipe-file order.
@@ -122,10 +114,9 @@ export function AddNodeDialog() {
         {recipes.length > 1 && (
           <div>
             <label className="block text-xs text-ink-dim mb-1">Recipe / version</label>
-            <select
+            <Select
               value={recipeId ?? ''}
               onChange={e => setRecipeId(e.target.value)}
-              className="w-full bg-panel-2 border border-line-soft rounded text-sm text-ink px-2 py-1.5 cursor-pointer"
             >
               {recipes.map(r => (
                 <option key={r.id} value={r.id}>
@@ -133,7 +124,7 @@ export function AddNodeDialog() {
                   {r.buildingTier ? ` ${r.buildingTier}` : ''} — {r.outputRatePerMin}/min
                 </option>
               ))}
-            </select>
+            </Select>
           </div>
         )}
 
@@ -148,13 +139,13 @@ export function AddNodeDialog() {
           >
             Cancel
           </button>
-          <button
+          <Button
             onClick={confirm}
             disabled={!itemId}
-            className="px-3 py-1.5 text-sm rounded bg-accent text-canvas hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
+            className="disabled:opacity-40 disabled:cursor-not-allowed"
           >
             Add
-          </button>
+          </Button>
         </div>
       </div>
     </Modal>

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { TextInput } from './TextInput.tsx';
 
 export interface ComboboxOption {
   id: string;
@@ -62,7 +63,7 @@ export function Combobox({ options, value, onChange, placeholder, autoFocus }: C
 
   return (
     <div className="relative">
-      <input
+      <TextInput
         autoFocus={autoFocus}
         value={query}
         placeholder={placeholder}
@@ -74,7 +75,7 @@ export function Combobox({ options, value, onChange, placeholder, autoFocus }: C
         onFocus={() => setOpen(true)}
         onBlur={() => setTimeout(() => setOpen(false), 120)}
         onKeyDown={onKeyDown}
-        className="w-full bg-panel-2 border border-line-soft rounded text-sm text-ink px-2 py-1.5 outline-none focus:border-accent"
+        className="outline-none focus:border-accent"
       />
       {open && filtered.length > 0 && (
         <ul className="absolute z-10 mt-1 w-full max-h-60 overflow-auto bg-panel-2 border border-line-soft rounded shadow-lg">

@@ -115,6 +115,7 @@ function Flow() {
       const target = event.target as HTMLElement;
       if (!target.classList.contains('react-flow__pane')) return; // dropped on a node → normal connect
       const point = 'changedTouches' in event ? event.changedTouches[0] : event;
+      if (!point) return; // touch ended without a changed-touches entry
       const pos = screenToFlowPosition({ x: point.clientX, y: point.clientY });
       const origin = nodes.find(n => n.id === from.nodeId);
       const handleType = (from.handleType ?? 'source') as 'source' | 'target';

@@ -126,7 +126,7 @@ function extractSlugs(html: string): string[] {
   $('a[href]').each((_, el) => {
     const href = $(el).attr('href') ?? '';
     const m = href.match(/^\/items\/([^/?#]+)/);
-    if (m) slugs.add(decodeURIComponent(m[1]));
+    if (m) slugs.add(decodeURIComponent(m[1]!)); // capture group is mandatory in the pattern
   });
   return [...slugs];
 }
@@ -143,7 +143,7 @@ function extractJsonLdBlocks(html: string): JsonLdBlock[] {
   let m: RegExpExecArray | null;
   while ((m = re.exec(html)) !== null) {
     try {
-      blocks.push(JSON.parse(m[1]) as JsonLdBlock);
+      blocks.push(JSON.parse(m[1]!) as JsonLdBlock); // capture group is mandatory in the pattern
     } catch {
       // malformed JSON-LD — skip
     }
@@ -192,7 +192,7 @@ function extractRecipeFromFaq(blocks: JsonLdBlock[]): { machine: string; rate: n
       const m = text.match(
         /crafted in (?:the )?([A-Za-z][A-Za-z0-9 ]*?) at (\d+(?:\.\d+)?) items? per minute/i,
       );
-      if (m) return { machine: m[1].trim(), rate: parseFloat(m[2]) };
+      if (m) return { machine: m[1]!.trim(), rate: parseFloat(m[2]!) }; // capture groups are mandatory
     }
   }
   return { machine: '', rate: 0 };
@@ -233,7 +233,7 @@ function parseIngredientSection(html: string, label: string): RecipeIngredient[]
     /href="\/items\/([^"?#]+)"[^>]*>[^<]+<\/a><span[^>]*>x(?:<!--[^>]*-->)?(\d+)<\/span>/gi;
   let m: RegExpExecArray | null;
   while ((m = re.exec(section)) !== null) {
-    results.push({ itemId: decodeURIComponent(m[1]), quantity: parseInt(m[2], 10) });
+    results.push({ itemId: decodeURIComponent(m[1]!), quantity: parseInt(m[2]!, 10) }); // capture groups are mandatory
   }
 
   return results;
@@ -249,7 +249,7 @@ function extractOutputQuantity(html: string, slug: string): RecipeIngredient {
   if (startIdx !== -1) {
     const window = html.slice(startIdx, startIdx + 600);
     const m = window.match(/x(?:<!--[^>]*-->)?(\d+)<\/span>/i);
-    if (m) return { itemId: slug, quantity: parseInt(m[1], 10) };
+    if (m) return { itemId: slug, quantity: parseInt(m[1]!, 10) }; // capture group is mandatory
   }
   return { itemId: slug, quantity: 1 };
 }
@@ -261,11 +261,11 @@ function extractOutputQuantity(html: string, slug: string): RecipeIngredient {
 function extractMachineFromHtml(html: string): { machine: string; rate: number } {
   // Match: >MachineName</span></a><span...>N<!-- --> IPM</span>
   const m = html.match(/>([A-Za-z][A-Za-z0-9 ]+?)<\/span><\/a><span[^>]*>(\d+(?:\.\d+)?)(?:<!--[^>]*-->)?\s*IPM<\/span>/i);
-  if (m) return { machine: m[1].trim(), rate: parseFloat(m[2]) };
+  if (m) return { machine: m[1]!.trim(), rate: parseFloat(m[2]!) }; // capture groups are mandatory
 
   // Broader fallback: any "N IPM" span preceded by a plausible machine name
   const m2 = html.match(/([A-Za-z][A-Za-z0-9 ]+?)\s+(\d+(?:\.\d+)?)\s*IPM/i);
-  if (m2) return { machine: m2[1].trim(), rate: parseFloat(m2[2]) };
+  if (m2) return { machine: m2[1]!.trim(), rate: parseFloat(m2[2]!) }; // capture groups are mandatory
 
   return { machine: '', rate: 0 };
 }
@@ -292,7 +292,7 @@ function parseItemPage(
   // Stack size
   let stackSize: number | null = null;
   const stackMatch = fullText.match(/Stack\s*[:\-]?\s*(\d+)/i);
-  if (stackMatch) stackSize = parseInt(stackMatch[1], 10);
+  if (stackMatch) stackSize = parseInt(stackMatch[1]!, 10); // capture group is mandatory
 
   // Confidence (visible badge on the page)
   let confidence: string | null = null;
@@ -303,7 +303,7 @@ function parseItemPage(
   let lastVerified = extractLastVerified(blocks);
   if (!lastVerified) {
     const lvm = fullText.match(/Last\s+Verified\s*[:\-]?\s*(\d{4}-\d{2}-\d{2})/i);
-    if (lvm) lastVerified = lvm[1];
+    if (lvm) lastVerified = lvm[1]!; // capture group is mandatory
   }
 
   // Machine + output rate (JSON-LD first, HTML fallback)

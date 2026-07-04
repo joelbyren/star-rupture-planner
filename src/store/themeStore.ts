@@ -16,7 +16,7 @@ function isThemeName(value: string | null): value is ThemeName {
 function pickInitialTheme(): ThemeName {
   const stored = localStorage.getItem(STORAGE_KEY);
   if (isThemeName(stored)) return stored;
-  return RANDOM_THEMES[Math.floor(Math.random() * RANDOM_THEMES.length)];
+  return RANDOM_THEMES[Math.floor(Math.random() * RANDOM_THEMES.length)] ?? 'blueprint';
 }
 
 function applyTheme(theme: ThemeName) {

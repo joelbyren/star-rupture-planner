@@ -3,15 +3,13 @@
 // Consumes a minimal structural node shape (not the store's AnyNode) so this
 // module stays decoupled from planStore, mirroring balanceGraph.ts's contract.
 
-import type { BuildingTier, MachinePower, Recipe } from './types.ts';
+import type { BuildingTier } from './types.ts';
 import { machineForResource } from './rawResources.ts';
-import powerJson from '../data/power.json';
-import recipesJson from '../data/recipes.json';
+import { POWER, ALL_RECIPES } from '../data/index.ts';
 
-const POWER = powerJson as MachinePower;
 // "Chemicals at" is a known scrape artifact in recipes.json's `machine` field — kept
 // verbatim here since it's the only join key recipes expose for that machine.
-const RECIPE_BY_ID = new Map((recipesJson as Recipe[]).map(r => [r.id, r]));
+const RECIPE_BY_ID = new Map(ALL_RECIPES.map(r => [r.id, r]));
 
 /** Power draw (kW) for one machine at a given tier; unknown machine → 0 (+ dev warning). */
 export function machinePower(machine: string, tier: BuildingTier): number {

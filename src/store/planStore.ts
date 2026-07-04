@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import type { Node, Edge, Connection } from '@xyflow/react';
-import type { RawResourceConfig, FactoryPort, Recipe } from '../engine/types.ts';
+import type { RawResourceConfig, FactoryPort } from '../engine/types.ts';
 import { DEFAULT_RAW_CONFIG, calcSupplyRate } from '../engine/rawResources.ts';
 import {
   balanceTree,
@@ -12,11 +12,9 @@ import {
   type FactoryDef,
   type FactoryPortDef,
 } from '../engine/balanceGraph.ts';
-import recipesJson from '../data/recipes.json';
+import { ALL_RECIPES } from '../data/index.ts';
 import { computeEndProductIds } from '../lib/endProducts.ts';
 import { buildSnapshot, saveLocalSnapshot, loadLocalSnapshot } from '../lib/persistence.ts';
-
-const ALL_RECIPES = recipesJson as Recipe[];
 
 // ------------------------------------------------------------------
 // Node data shapes
@@ -363,7 +361,7 @@ function stripLegacyAnimatedFlag(g: InnerGraph): InnerGraph {
 }
 
 /** The factory node whose inner graph is currently being viewed (null at root). */
-function currentFactory(root: InnerGraph, path: string[]): FactoryNodeType | null {
+export function currentFactory(root: InnerGraph, path: string[]): FactoryNodeType | null {
   if (path.length === 0) return null;
   const parent = graphAt(root, path.slice(0, -1));
   const fac = parent.nodes.find(n => n.id === path[path.length - 1]);
@@ -684,7 +682,10 @@ function layoutNodes(allNodes: AnyNode[], edges: Edge[]): AnyNode[] {
 
   const maxRank = Math.max(...rank.values());
   const layers: string[][] = Array.from({ length: maxRank + 1 }, () => []);
-  for (const n of nodes) layers[rank.get(n.id)!].push(n.id);
+  for (const n of nodes) {
+    const r = rank.get(n.id)!; // set for every node by the computeRank loop above
+    layers[r]!.push(n.id); // r is in [0, maxRank], matching layers' length
+  }
 
   const order = new Map<string, number>();
   layers.forEach(layer => layer.forEach((id, i) => order.set(id, i)));
@@ -759,6 +760,21 @@ export const usePlanStore = create<PlanState>((set, get) => {
     const nextRoot = rebalanceRoot(mapCurrentFactoryData(rootGraph, viewPath, mutate));
     const view = project(nextRoot, viewPath);
     set({ rootGraph: nextRoot, nodes: view.nodes, edges: view.edges, layoutTick: refit ? layoutTick + 1 : layoutTick });
+  }
+
+  /** Patch a single item node's data within the currently-viewed graph, rebalance, re-project. */
+  function updateItemNodeData(id: string, patch: (d: ItemNodeData) => ItemNodeData) {
+    commitViewedGraph(g => ({
+      ...g,
+      nodes: g.nodes.map(n => (isItemNode(n) && n.id === id ? { ...n, data: patch(n.data) } : n)),
+    }));
+  }
+
+  /** Append a port (input or output) to the currently-viewed factory; returns its new id. */
+  function addPort(side: 'inputs' | 'outputs', itemId: string | null | undefined): string {
+    const portId = crypto.randomUUID();
+    commitCurrentFactory(d => ({ ...d, [side]: [...d[side], { id: portId, itemId: itemId ?? null }] }));
+    return portId;
   }
 
   function navigate(nextPath: string[]) {
@@ -949,25 +965,11 @@ export const usePlanStore = create<PlanState>((set, get) => {
     },
 
     setNodeRawConfig(id, patch) {
-      commitViewedGraph(g => ({
-        ...g,
-        nodes: g.nodes.map(n =>
-          isItemNode(n) && n.id === id
-            ? { ...n, data: { ...n.data, rawConfig: { ...(n.data.rawConfig ?? DEFAULT_RAW_CONFIG), ...patch } } }
-            : n,
-        ),
-      }));
+      updateItemNodeData(id, d => ({ ...d, rawConfig: { ...(d.rawConfig ?? DEFAULT_RAW_CONFIG), ...patch } }));
     },
 
     setNodeHardLimit(id, limit) {
-      commitViewedGraph(g => ({
-        ...g,
-        nodes: g.nodes.map(n =>
-          isItemNode(n) && n.id === id
-            ? { ...n, data: { ...n.data, hardLimitPerMin: limit ?? undefined } }
-            : n,
-        ),
-      }));
+      updateItemNodeData(id, d => ({ ...d, hardLimitPerMin: limit ?? undefined }));
     },
 
     connectNodes(connection) {
@@ -1022,14 +1024,10 @@ export const usePlanStore = create<PlanState>((set, get) => {
     },
 
     addInputPort(itemId) {
-      const portId = crypto.randomUUID();
-      commitCurrentFactory(d => ({ ...d, inputs: [...d.inputs, { id: portId, itemId: itemId ?? null }] }));
-      return portId;
+      return addPort('inputs', itemId);
     },
     addOutputPort(itemId) {
-      const portId = crypto.randomUUID();
-      commitCurrentFactory(d => ({ ...d, outputs: [...d.outputs, { id: portId, itemId: itemId ?? null }] }));
-      return portId;
+      return addPort('outputs', itemId);
     },
     setPortItem(portId, itemId) {
       commitCurrentFactory(d => {
@@ -1067,6 +1065,7 @@ export const usePlanStore = create<PlanState>((set, get) => {
       const { rootGraph, viewPath, layoutTick } = get();
       if (viewPath.length === 0) return;
       const facId = viewPath[viewPath.length - 1];
+      if (!facId) return;
       const parentPath = viewPath.slice(0, -1);
       const nextParent = removeFromGraph(graphAt(rootGraph, parentPath), facId);
       const nextRoot = rebalanceRoot(setGraphAt(rootGraph, parentPath, nextParent));

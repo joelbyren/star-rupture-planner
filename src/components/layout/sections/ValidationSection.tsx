@@ -1,11 +1,9 @@
 import { useMemo, useState } from 'react';
 import { usePlanStore, findValidationIssues } from '../../../store/planStore.ts';
-import itemsJson from '../../../data/items.json';
-import type { Item } from '../../../engine/types.ts';
+import { ITEMS_BY_ID } from '../../../data/index.ts';
 import { SidebarSection } from './SidebarSection.tsx';
 
-const ITEM_NAMES = new Map((itemsJson as Item[]).map(i => [i.id, i.name]));
-const itemName = (id: string) => ITEM_NAMES.get(id) ?? id;
+const itemName = (id: string) => ITEMS_BY_ID.get(id)?.name ?? id;
 
 export function ValidationSection() {
   const nodes = usePlanStore(s => s.nodes);

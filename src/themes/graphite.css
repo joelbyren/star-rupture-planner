@@ -1,7 +1,7 @@
 /* Graphite — editorial minimalism. Warm near-black, hairline rules, serif
-   headlines, quiet curved edges, one ember accent on the target. Ported from
-   design-mockups/graphite.html: colors, node/edge look and a grid-less
-   wash+grain backdrop — the app's own information layout is kept intact. */
+   headlines, quiet curved edges, one ember accent on the target. Colors,
+   node/edge look and a grid-less wash+grain backdrop — the app's own
+   information layout is kept intact. */
 [data-theme='graphite'] {
   --sr-canvas: #111110;
   --sr-panel: #171716;

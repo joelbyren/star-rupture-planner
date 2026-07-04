@@ -1,4 +1,13 @@
-import type { AnyNode, InnerGraph, PlanSnapshot } from '../store/planStore.ts';
+import type { Edge } from '@xyflow/react';
+import type { FactoryPort } from '../engine/types.ts';
+import type {
+  AnyNode,
+  FactoryNodeType,
+  InnerGraph,
+  ItemNodeType,
+  NoteNodeType,
+  PlanSnapshot,
+} from '../store/planStore.ts';
 
 /**
  * Drop everything import regenerates anyway, recursing into factory inner graphs:
@@ -12,21 +21,37 @@ import type { AnyNode, InnerGraph, PlanSnapshot } from '../store/planStore.ts';
  * per-node inputs (itemId/recipeId/isRaw/rawConfig/hardLimitPerMin, factory
  * name/inputs/outputs/inner, note text).
  */
+function slimItemNode(node: ItemNodeType): ItemNodeType {
+  const { selected: _selected, dragging: _dragging, data, ...rest } = node;
+  const { balance: _balance, isEndProduct: _isEndProduct, ...restData } = data;
+  return { ...rest, data: restData };
+}
+
+function slimFactoryNode(node: FactoryNodeType): FactoryNodeType {
+  const { selected: _selected, dragging: _dragging, data, ...rest } = node;
+  const { balance: _balance, inner, ...restData } = data;
+  return { ...rest, data: { ...restData, inner: { nodes: inner.nodes.map(slimNode), edges: inner.edges } } };
+}
+
+function slimNoteNode(node: NoteNodeType): NoteNodeType {
+  const { selected: _selected, dragging: _dragging, ...rest } = node;
+  return rest;
+}
+
 function slimNode(node: AnyNode): AnyNode {
-  const clone: Record<string, unknown> = { ...node };
-  delete clone.selected;
-  delete clone.dragging;
-
-  const data: Record<string, unknown> = { ...(clone.data as Record<string, unknown>) };
-  delete data.balance;
-  delete data.isEndProduct;
-
-  if (clone.type === 'factoryNode') {
-    const inner = data.inner as InnerGraph;
-    data.inner = { nodes: inner.nodes.map(slimNode), edges: inner.edges };
+  switch (node.type) {
+    case 'itemNode':
+      return slimItemNode(node);
+    case 'factoryNode':
+      return slimFactoryNode(node);
+    case 'noteNode':
+      return slimNoteNode(node);
+    default: {
+      // Exhaustiveness guard: a new AnyNode variant must be handled above.
+      const unreachable: never = node;
+      throw new Error(`slimNode: unhandled node type '${(unreachable as AnyNode).type}'`);
+    }
   }
-  clone.data = data;
-  return clone as unknown as AnyNode;
 }
 
 export function buildSnapshot(store: { planId: string; planName: string; rootGraph: { nodes: PlanSnapshot['nodes']; edges: PlanSnapshot['edges'] } }): PlanSnapshot {
@@ -180,6 +205,106 @@ export async function exportSnapshot(snapshot: PlanSnapshot): Promise<void> {
   URL.revokeObjectURL(url);
 }
 
+// ------------------------------------------------------------------
+// Structural validation — hand-edited or stale exports must be rejected with a
+// clear message rather than crashing downstream in rebalanceRoot/buildFactoryDef
+// or React Flow itself. Deliberately permissive about fields the app already
+// tolerates being absent (e.g. `rawConfig`, `hardLimitPerMin`, `balance`,
+// `isEndProduct` — all optional in the corresponding *Data interfaces, and
+// `balance`/`isEndProduct` are recomputed on every load anyway).
+// ------------------------------------------------------------------
+
+/** Throws a plain (unprefixed) validation message; callers add the "Invalid plan file:" prefix. */
+function invalid(message: string): never {
+  throw new Error(message);
+}
+
+function isRecord(v: unknown): v is Record<string, unknown> {
+  return typeof v === 'object' && v !== null && !Array.isArray(v);
+}
+
+function isFiniteXY(v: unknown): v is { x: number; y: number } {
+  return (
+    isRecord(v) &&
+    typeof v.x === 'number' && Number.isFinite(v.x) &&
+    typeof v.y === 'number' && Number.isFinite(v.y)
+  );
+}
+
+function validatePort(port: unknown, where: string): FactoryPort {
+  if (!isRecord(port)) invalid(`${where} is not an object`);
+  const id = port.id;
+  if (typeof id !== 'string') invalid(`${where} is missing 'id'`);
+  const itemId = port.itemId;
+  if (itemId !== null && typeof itemId !== 'string') invalid(`${where} has an invalid 'itemId'`);
+  return { id, itemId };
+}
+
+function validateEdge(edge: unknown, where: string): Edge {
+  if (!isRecord(edge)) invalid(`${where} is not an object`);
+  if (typeof edge.id !== 'string') invalid(`${where} is missing 'id'`);
+  if (typeof edge.source !== 'string') invalid(`${where} is missing 'source'`);
+  if (typeof edge.target !== 'string') invalid(`${where} is missing 'target'`);
+  if (edge.sourceHandle != null && typeof edge.sourceHandle !== 'string') {
+    invalid(`${where} has an invalid 'sourceHandle'`);
+  }
+  if (edge.targetHandle != null && typeof edge.targetHandle !== 'string') {
+    invalid(`${where} has an invalid 'targetHandle'`);
+  }
+  return edge as Edge;
+}
+
+function validateInnerGraph(graph: unknown, where: string): InnerGraph {
+  if (!isRecord(graph)) invalid(`${where} is not an object`);
+  if (!Array.isArray(graph.nodes)) invalid(`${where} is missing 'nodes'`);
+  if (!Array.isArray(graph.edges)) invalid(`${where} is missing 'edges'`);
+  return {
+    nodes: graph.nodes.map((n, i) => validateNode(n, `${where} node ${i}`)),
+    edges: graph.edges.map((e, i) => validateEdge(e, `${where} edge ${i}`)),
+  };
+}
+
+/**
+ * Validate one node (recursing into factory inner graphs) and return it typed
+ * as AnyNode. Only fields the app actually requires (non-optional in the
+ * corresponding *Data interface, plus the React Flow essentials id/position/
+ * data) are enforced — everything else round-trips untouched.
+ */
+function validateNode(node: unknown, where: string): AnyNode {
+  if (!isRecord(node)) invalid(`${where} is not an object`);
+  if (typeof node.id !== 'string') invalid(`${where} is missing 'id'`);
+  const label = `${where} (id '${node.id}')`;
+  if (!isFiniteXY(node.position)) invalid(`${label} has an invalid 'position'`);
+  if (!isRecord(node.data)) invalid(`${label} is missing 'data'`);
+  const data = node.data;
+
+  switch (node.type) {
+    case 'itemNode': {
+      if (typeof data.itemId !== 'string') invalid(`${label} is missing 'data.itemId'`);
+      if (data.recipeId !== null && typeof data.recipeId !== 'string') {
+        invalid(`${label} has an invalid 'data.recipeId'`);
+      }
+      if (typeof data.isRaw !== 'boolean') invalid(`${label} is missing 'data.isRaw'`);
+      return node as ItemNodeType;
+    }
+    case 'factoryNode': {
+      if (typeof data.name !== 'string') invalid(`${label} is missing 'data.name'`);
+      if (!Array.isArray(data.inputs)) invalid(`${label} is missing 'data.inputs'`);
+      if (!Array.isArray(data.outputs)) invalid(`${label} is missing 'data.outputs'`);
+      data.inputs.forEach((p, i) => validatePort(p, `${label} input port ${i}`));
+      data.outputs.forEach((p, i) => validatePort(p, `${label} output port ${i}`));
+      const inner = validateInnerGraph(data.inner, `${label} inner graph`);
+      return { ...node, data: { ...data, inner } } as FactoryNodeType;
+    }
+    case 'noteNode': {
+      if (typeof data.text !== 'string') invalid(`${label} is missing 'data.text'`);
+      return node as NoteNodeType;
+    }
+    default:
+      return invalid(`${label} has an unknown node type '${String(node.type)}'`);
+  }
+}
+
 export function parseSnapshot(text: string): PlanSnapshot {
   let raw: unknown;
   try {
@@ -187,17 +312,22 @@ export function parseSnapshot(text: string): PlanSnapshot {
   } catch {
     throw new Error('This file is not valid JSON.');
   }
-  if (typeof raw !== 'object' || raw === null) {
+  if (!isRecord(raw)) {
     throw new Error('This file does not contain a plan.');
   }
-  const s = raw as Record<string, unknown>;
-  if (typeof s.planId !== 'string' || typeof s.planName !== 'string') {
+  if (typeof raw.planId !== 'string' || typeof raw.planName !== 'string') {
     throw new Error('Missing plan name or id — this does not look like an exported plan.');
   }
-  if (!Array.isArray(s.nodes) || !Array.isArray(s.edges)) {
+  if (!Array.isArray(raw.nodes) || !Array.isArray(raw.edges)) {
     throw new Error('Plan is missing its nodes or edges.');
   }
-  return raw as PlanSnapshot;
+  try {
+    const nodes = raw.nodes.map((n, i) => validateNode(n, `node ${i}`));
+    const edges = raw.edges.map((e, i) => validateEdge(e, `edge ${i}`));
+    return { planId: raw.planId, planName: raw.planName, nodes, edges };
+  } catch (err) {
+    throw new Error(`Invalid plan file: ${err instanceof Error ? err.message : 'unknown validation error'}`);
+  }
 }
 
 /** Opens a file picker and hands the parsed snapshot (or an error message) back to the caller. */
@@ -216,6 +346,7 @@ export async function importSnapshotFromFile(
         types: FS_PICKER_TYPES,
         multiple: false,
       });
+      if (!handle) return; // picker returned no selection
       void saveLastFileHandle(handle);
       file = await handle.getFile();
     } catch (err) {

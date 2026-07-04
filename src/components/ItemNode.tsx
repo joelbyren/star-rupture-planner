@@ -2,17 +2,14 @@ import { useState } from 'react';
 import { Handle, Position } from '@xyflow/react';
 import type { NodeProps } from '@xyflow/react';
 import type { ItemNodeType } from '../store/planStore.ts';
-import recipesJson from '../data/recipes.json';
-import type { Recipe } from '../engine/types.ts';
-import { calcSupplyRate, DEFAULT_RAW_CONFIG, machineForResource } from '../engine/rawResources.ts';
+import { ALL_RECIPES } from '../data/index.ts';
+import { DEFAULT_RAW_CONFIG, machineForResource, rawSupplyInfo } from '../engine/rawResources.ts';
 import { itemById } from '../lib/itemVisual.ts';
 import { useThemeStore } from '../store/themeStore.ts';
 import { useIsNodeDimmed } from '../lib/useNeighbors.ts';
 import { useHandleRowTops } from '../lib/useHandleRowTops.ts';
 import { TargetMark } from './NodeChrome.tsx';
 import { ItemBadge } from './ui/ItemBadge.tsx';
-
-const ALL_RECIPES = recipesJson as Recipe[];
 
 export function ItemNode({ id, data }: NodeProps<ItemNodeType>) {
   const theme = useThemeStore(s => s.theme);
@@ -23,9 +20,7 @@ export function ItemNode({ id, data }: NodeProps<ItemNodeType>) {
   const inputs = balance?.inputs ?? recipe?.inputs.map(i => ({ itemId: i.itemId, neededPerMin: 0 })) ?? [];
 
   const rawConfig = data.isRaw ? data.rawConfig ?? DEFAULT_RAW_CONFIG : null;
-  const supplyRate = rawConfig ? calcSupplyRate(data.itemId, rawConfig) : null;
-  const needed = balance?.outputRatePerMin ?? 0;
-  const surplus = supplyRate !== null ? supplyRate - needed : null;
+  const { supplyRate, needed, surplus, statusClass } = rawSupplyInfo(data, balance);
 
   // Measure input-row centers so the left handles line up with their labels.
   const { refs: rowRefs, tops: handleTops } = useHandleRowTops(id, [inputs.length, data.itemId, theme]);
@@ -90,9 +85,7 @@ export function ItemNode({ id, data }: NodeProps<ItemNodeType>) {
           ) : (
             rawConfig && (
               <div
-                className={`text-[10px] leading-tight font-medium mt-0.5 ${
-                  balance?.isLimitBinding ? 'text-accent' : surplus !== null && surplus >= 0 ? 'text-ok' : 'text-danger'
-                }`}
+                className={`text-[10px] leading-tight font-medium mt-0.5 ${statusClass}`}
               >
                 {supplyRate?.toFixed(0)}/min ({surplus !== null && surplus >= 0 ? '+' : ''}{surplus?.toFixed(0)})
               </div>

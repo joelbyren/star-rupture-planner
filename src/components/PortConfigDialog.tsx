@@ -1,14 +1,11 @@
 import { useMemo } from 'react';
 import { Modal } from './ui/Modal.tsx';
 import { Combobox, type ComboboxOption } from './ui/Combobox.tsx';
-import { usePlanStore, graphAt, isFactoryNode } from '../store/planStore.ts';
-import itemsJson from '../data/items.json';
-import type { Item, FactoryPort } from '../engine/types.ts';
+import { Button } from './ui/Button.tsx';
+import { usePlanStore, currentFactory } from '../store/planStore.ts';
+import { SORTED_ITEMS } from '../data/index.ts';
 
-const ALL_ITEMS = itemsJson as Item[];
-const ITEM_OPTIONS: ComboboxOption[] = Array.from(new Map(ALL_ITEMS.map(i => [i.id, i])).values())
-  .map(i => ({ id: i.id, label: i.name, hint: i.type }))
-  .sort((a, b) => a.label.localeCompare(b.label));
+const ITEM_OPTIONS: ComboboxOption[] = SORTED_ITEMS.map(i => ({ id: i.id, label: i.name, hint: i.type }));
 
 export function PortConfigDialog() {
   const portDialogPortId = usePlanStore(s => s.portDialogPortId);
@@ -20,13 +17,12 @@ export function PortConfigDialog() {
 
   // Resolve the port within the factory whose inner graph is currently open.
   const found = useMemo(() => {
-    if (!portDialogPortId || viewPath.length === 0) return null;
-    const parent = graphAt(rootGraph, viewPath.slice(0, -1));
-    const fac = parent.nodes.find(n => n.id === viewPath[viewPath.length - 1]);
-    if (!fac || !isFactoryNode(fac)) return null;
-    const input = fac.data.inputs.find((p: FactoryPort) => p.id === portDialogPortId);
+    if (!portDialogPortId) return null;
+    const fac = currentFactory(rootGraph, viewPath);
+    if (!fac) return null;
+    const input = fac.data.inputs.find(p => p.id === portDialogPortId);
     if (input) return { port: input, side: 'input' as const };
-    const output = fac.data.outputs.find((p: FactoryPort) => p.id === portDialogPortId);
+    const output = fac.data.outputs.find(p => p.id === portDialogPortId);
     if (output) return { port: output, side: 'output' as const };
     return null;
   }, [portDialogPortId, rootGraph, viewPath]);
@@ -50,27 +46,18 @@ export function PortConfigDialog() {
         </div>
 
         <div className="flex justify-between gap-2 pt-1">
-          <button
-            onClick={() => removePort(port.id)}
-            className="px-3 py-1.5 text-sm rounded bg-danger/80 text-canvas hover:bg-danger"
-          >
+          <Button variant="danger" onClick={() => removePort(port.id)}>
             Delete port
-          </button>
+          </Button>
           <div className="flex gap-2">
             {port.itemId !== null && (
-              <button
-                onClick={() => setPortItem(port.id, null)}
-                className="px-3 py-1.5 text-sm rounded bg-panel-2 text-ink-mid hover:text-ink"
-              >
+              <Button variant="ghost" onClick={() => setPortItem(port.id, null)}>
                 Set to ?
-              </button>
+              </Button>
             )}
-            <button
-              onClick={closePortDialog}
-              className="px-3 py-1.5 text-sm rounded bg-accent text-canvas hover:opacity-90"
-            >
+            <Button onClick={closePortDialog}>
               Done
-            </button>
+            </Button>
           </div>
         </div>
       </div>
