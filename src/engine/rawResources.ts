@@ -28,7 +28,7 @@ const DEFAULT_BASE_RATE = 120;
 const PURITY_MULT: Record<string, number> = { impure: 0.5, normal: 1.0, pure: 2.0 };
 const VERSION_MULT: Record<string, number> = { V1: 1.0, V2: 2.0 };
 
-export function baseRateForItem(itemId: string): number {
+function baseRateForItem(itemId: string): number {
   return BASE_RATES[itemId] ?? DEFAULT_BASE_RATE;
 }
 

@@ -1,14 +1,10 @@
 import { Handle, Position } from '@xyflow/react';
 import type { NodeProps } from '@xyflow/react';
 import type { PortNodeType } from '../store/planStore.ts';
-import { usePlanStore } from '../store/planStore.ts';
-import itemsJson from '../data/items.json';
-import type { Item } from '../engine/types.ts';
-import { abbr, colorForType } from '../lib/itemVisual.ts';
+import { PORT_W, usePlanStore } from '../store/planStore.ts';
+import { itemById } from '../lib/itemVisual.ts';
 import { useIsNodeDimmed } from '../lib/useNeighbors.ts';
-
-const ALL_ITEMS = itemsJson as Item[];
-const itemById = (id: string | null) => (id ? ALL_ITEMS.find(i => i.id === id) : undefined);
+import { ItemBadge } from './ui/ItemBadge.tsx';
 
 /**
  * A factory's input/output port, pinned on the inner canvas. An input port is a
@@ -23,7 +19,8 @@ export function PortNode({ id, data }: NodeProps<PortNodeType>) {
 
   return (
     <div
-      className={`sr-node relative rounded-md w-[120px] cursor-pointer hover:border-accent ${dimmed ? 'sr-node--dimmed' : ''}`}
+      className={`sr-node relative rounded-md cursor-pointer hover:border-accent ${dimmed ? 'sr-node--dimmed' : ''}`}
+      style={{ width: PORT_W }}
       onClick={() => openPortDialog(data.portId)}
       title="Click to set item or delete"
     >
@@ -36,9 +33,7 @@ export function PortNode({ id, data }: NodeProps<PortNodeType>) {
           {isInput ? 'Input' : 'Output'}
         </div>
         <div className="flex items-center gap-1.5 mt-0.5">
-          <span className={`sr-badge ${data.itemId ? colorForType(item?.type) : 'sr-t-unset'}`}>
-            {data.itemId ? (item ? abbr(item) : '??') : '?'}
-          </span>
+          <ItemBadge itemId={data.itemId} />
           <span className="text-[10px] text-ink truncate">
             {item?.name ?? (data.itemId ? data.itemId : 'Unset')}
           </span>

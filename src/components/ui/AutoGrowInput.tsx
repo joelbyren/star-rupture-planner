@@ -7,7 +7,6 @@ interface AutoGrowInputProps {
   onCancel: () => void;
   title?: string;
   className?: string;
-  minWidthCh?: number;
 }
 
 /**
@@ -18,7 +17,7 @@ interface AutoGrowInputProps {
  * uniformly across every theme's font (monospace or proportional).
  */
 export function AutoGrowInput({
-  id, name, value, onChange, onCommit, onCancel, title, className, minWidthCh = 4,
+  id, name, value, onChange, onCommit, onCancel, title, className,
 }: AutoGrowInputProps) {
   return (
     <input
@@ -34,7 +33,7 @@ export function AutoGrowInput({
       }}
       title={title}
       className={`field-sizing-content ${className ?? ''}`}
-      style={{ minWidth: `${minWidthCh}ch` }}
+      style={{ minWidth: '4ch' }}
     />
   );
 }

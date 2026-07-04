@@ -179,7 +179,7 @@ export function isItemNode(n: { type?: string }): n is ItemNodeType {
 export function isFactoryNode(n: { type?: string }): n is FactoryNodeType {
   return n.type === 'factoryNode';
 }
-export function isPortNode(n: { type?: string }): boolean {
+export function isPortNode(n: { type?: string }): n is PortNodeType {
   return n.type === 'inputPort' || n.type === 'outputPort';
 }
 export function isNoteNode(n: { type?: string }): n is NoteNodeType {
@@ -232,7 +232,7 @@ function sortParentsFirst(nodes: AnyNode[]): AnyNode[] {
 const PORT_X_LEFT = -360;
 const PORT_X_RIGHT = 360;
 const PORT_ROW_H = 90;
-/** Matches the rendered width (w-[120px]) in PortNode.tsx. */
+/** Rendered width of a port node — PortNode.tsx imports this so geometry and DOM stay in sync. */
 export const PORT_W = 120;
 
 /** Stable synthesized port-node id (and outer handle id) for a port. */
@@ -295,18 +295,18 @@ function synthesizePorts(data: FactoryNodeData): PortNodeType[] {
 }
 
 function stripPortNodes(nodes: ViewNode[]): AnyNode[] {
-  return nodes.filter(n => !isPortNode(n)) as AnyNode[];
+  return nodes.filter((n): n is AnyNode => !isPortNode(n));
 }
 
 // ------------------------------------------------------------------
 // Path read / write-back over the nested graph tree
 // ------------------------------------------------------------------
 
-function graphAt(root: InnerGraph, path: string[]): InnerGraph {
+export function graphAt(root: InnerGraph, path: string[]): InnerGraph {
   let g = root;
   for (const id of path) {
-    const fac = g.nodes.find(n => n.id === id && isFactoryNode(n)) as FactoryNodeType | undefined;
-    if (!fac) return g; // broken path — best effort
+    const fac = g.nodes.find(n => n.id === id);
+    if (!fac || !isFactoryNode(fac)) return g; // broken path — best effort
     g = fac.data.inner;
   }
   return g;
@@ -322,6 +322,27 @@ function setGraphAt(root: InnerGraph, path: string[], next: InnerGraph): InnerGr
         ? { ...n, data: { ...n.data, inner: setGraphAt(n.data.inner, rest, next) } }
         : n,
     ),
+  };
+}
+
+/** Rewrite the data of the factory node at the end of `viewPath`, inside its parent graph. */
+function mapCurrentFactoryData(
+  root: InnerGraph,
+  viewPath: string[],
+  fn: (d: FactoryNodeData) => FactoryNodeData,
+): InnerGraph {
+  const facId = viewPath[viewPath.length - 1];
+  const parentPath = viewPath.slice(0, -1);
+  const parent = graphAt(root, parentPath);
+  const nodes = parent.nodes.map(n => (n.id === facId && isFactoryNode(n) ? { ...n, data: fn(n.data) } : n));
+  return setGraphAt(root, parentPath, { ...parent, nodes });
+}
+
+/** Drop a node (and any notes attached to it) plus every edge touching it. */
+function removeFromGraph(g: InnerGraph, id: string): InnerGraph {
+  return {
+    nodes: g.nodes.filter(n => n.id !== id && n.parentId !== id),
+    edges: g.edges.filter(e => e.source !== id && e.target !== id),
   };
 }
 
@@ -345,8 +366,8 @@ function stripLegacyAnimatedFlag(g: InnerGraph): InnerGraph {
 function currentFactory(root: InnerGraph, path: string[]): FactoryNodeType | null {
   if (path.length === 0) return null;
   const parent = graphAt(root, path.slice(0, -1));
-  const fac = parent.nodes.find(n => n.id === path[path.length - 1] && isFactoryNode(n));
-  return (fac as FactoryNodeType) ?? null;
+  const fac = parent.nodes.find(n => n.id === path[path.length - 1]);
+  return fac && isFactoryNode(fac) ? fac : null;
 }
 
 /** The balance of the factory whose inner graph is currently being viewed (null at root). */
@@ -433,9 +454,12 @@ function writeBalance(g: InnerGraph, balance: Record<string, AnyBalanceResult>):
     edges: g.edges,
     nodes: g.nodes.map(n => {
       const r = balance[n.id];
-      if (isItemNode(n)) return { ...n, data: { ...n.data, balance: r as BalanceResult | undefined } };
+      if (isItemNode(n)) {
+        const br = r && !('isFactory' in r) ? r : undefined;
+        return { ...n, data: { ...n.data, balance: br } };
+      }
       if (isFactoryNode(n)) {
-        const fr = r as FactoryBalanceResult | undefined;
+        const fr = r && 'isFactory' in r ? r : undefined;
         return {
           ...n,
           data: { ...n.data, balance: fr, inner: writeBalance(n.data.inner, fr?.inner ?? {}) },
@@ -462,22 +486,20 @@ function rebalanceRoot(g: InnerGraph): InnerGraph {
 
 /** The item a source handle emits. */
 function sourceItemId(node: ViewNode, sourceHandle: string | null | undefined): string | null {
-  if (node.type === 'itemNode') return (node as ItemNodeType).data.itemId;
-  if (node.type === 'inputPort') return (node as PortNodeType).data.itemId; // inner input port is a SOURCE
-  if (node.type === 'factoryNode') {
-    const fac = node as FactoryNodeType;
-    return fac.data.outputs.find(p => portNodeId('output', p.id) === sourceHandle)?.itemId ?? null;
+  if (isItemNode(node)) return node.data.itemId;
+  if (node.type === 'inputPort') return node.data.itemId; // inner input port is a SOURCE
+  if (isFactoryNode(node)) {
+    return node.data.outputs.find(p => portNodeId('output', p.id) === sourceHandle)?.itemId ?? null;
   }
   return null;
 }
 
 /** The item a target handle accepts. */
 function targetItemId(node: ViewNode, targetHandle: string | null | undefined): string | null {
-  if (node.type === 'itemNode') return targetHandle ?? null; // handle id == ingredient itemId
-  if (node.type === 'outputPort') return (node as PortNodeType).data.itemId; // inner output port is a SINK
-  if (node.type === 'factoryNode') {
-    const fac = node as FactoryNodeType;
-    return fac.data.inputs.find(p => portNodeId('input', p.id) === targetHandle)?.itemId ?? null;
+  if (isItemNode(node)) return targetHandle ?? null; // handle id == ingredient itemId
+  if (node.type === 'outputPort') return node.data.itemId; // inner output port is a SINK
+  if (isFactoryNode(node)) {
+    return node.data.inputs.find(p => portNodeId('input', p.id) === targetHandle)?.itemId ?? null;
   }
   return null;
 }
@@ -548,6 +570,15 @@ function topZ(nodes: AnyNode[]): number {
   return nodes.reduce((max, n) => Math.max(max, n.zIndex ?? 0), 0);
 }
 
+/** Staggered default position + top stacking z for a node added to the viewed graph. */
+function spawnGeometry(viewed: InnerGraph, position?: { x: number; y: number }) {
+  const count = viewed.nodes.length;
+  return {
+    position: position ?? { x: 40 + count * 28, y: 40 + count * 28 },
+    zIndex: topZ(viewed.nodes) + 1,
+  };
+}
+
 /** Set a port's item by id across a factory's input/output ports. */
 function applyPortItem(d: FactoryNodeData, portId: string, itemId: string | null): FactoryNodeData {
   const apply = (ports: FactoryPort[]) => ports.map(p => (p.id === portId ? { ...p, itemId } : p));
@@ -569,13 +600,13 @@ function portInheritFromEdge(
 ): { portId: string; itemId: string } | null {
   const s = nodes.find(n => n.id === source);
   const t = nodes.find(n => n.id === target);
-  if (s && s.type === 'inputPort' && (s as PortNodeType).data.itemId == null) {
+  if (s?.type === 'inputPort' && s.data.itemId == null) {
     const item = t ? targetItemId(t, targetHandle) : null;
-    if (item != null) return { portId: (s as PortNodeType).data.portId, itemId: item };
+    if (item != null) return { portId: s.data.portId, itemId: item };
   }
-  if (t && t.type === 'outputPort' && (t as PortNodeType).data.itemId == null) {
+  if (t?.type === 'outputPort' && t.data.itemId == null) {
     const item = s ? sourceItemId(s, sourceHandle) : null;
-    if (item != null) return { portId: (t as PortNodeType).data.portId, itemId: item };
+    if (item != null) return { portId: t.data.portId, itemId: item };
   }
   return null;
 }
@@ -686,6 +717,15 @@ function layoutNodes(allNodes: AnyNode[], edges: Edge[]): AnyNode[] {
 
 const EMPTY: InnerGraph = { nodes: [], edges: [] };
 
+/** Add-dialog reset, shared by everything that closes it (add, cancel, new plan). */
+const CLOSED_ADD_DIALOG = {
+  addDialogOpen: false,
+  addDialogPos: null,
+  addDialogPrefillItemId: null,
+  addDialogFilterInputItemId: null,
+  pendingConnect: null,
+} satisfies Partial<PlanState>;
+
 /** A blank plan, or the auto-saved one restored from localStorage. Runs once at store creation. */
 function hydrateInitial(): Pick<PlanState, 'planId' | 'planName' | 'rootGraph' | 'nodes' | 'edges'> {
   const snapshot = loadLocalSnapshot();
@@ -716,13 +756,7 @@ export const usePlanStore = create<PlanState>((set, get) => {
   function commitCurrentFactory(mutate: (d: FactoryNodeData) => FactoryNodeData, refit = true) {
     const { rootGraph, viewPath, layoutTick } = get();
     if (viewPath.length === 0) return;
-    const facId = viewPath[viewPath.length - 1];
-    const parentPath = viewPath.slice(0, -1);
-    const parent = graphAt(rootGraph, parentPath);
-    const nodes = parent.nodes.map(n =>
-      n.id === facId && isFactoryNode(n) ? { ...n, data: mutate(n.data) } : n,
-    );
-    const nextRoot = rebalanceRoot(setGraphAt(rootGraph, parentPath, { ...parent, nodes }));
+    const nextRoot = rebalanceRoot(mapCurrentFactoryData(rootGraph, viewPath, mutate));
     const view = project(nextRoot, viewPath);
     set({ rootGraph: nextRoot, nodes: view.nodes, edges: view.edges, layoutTick: refit ? layoutTick + 1 : layoutTick });
   }
@@ -740,6 +774,15 @@ export const usePlanStore = create<PlanState>((set, get) => {
     });
   }
 
+  /** Append a node (plus its optional auto-connect edge) to the viewed graph and close the add dialog. */
+  function appendNodeAndCloseDialog(node: AnyNode, pendingEdge: Edge | null) {
+    commitViewedGraph(g => ({
+      nodes: [...g.nodes, node],
+      edges: pendingEdge ? [...g.edges.filter(e => e.id !== pendingEdge.id), pendingEdge] : g.edges,
+    }));
+    set(CLOSED_ADD_DIALOG);
+  }
+
   const initial = hydrateInitial();
 
   return {
@@ -750,11 +793,7 @@ export const usePlanStore = create<PlanState>((set, get) => {
     nodes: initial.nodes,
     edges: initial.edges,
 
-    addDialogOpen: false,
-    addDialogPos: null,
-    addDialogPrefillItemId: null,
-    addDialogFilterInputItemId: null,
-    pendingConnect: null,
+    ...CLOSED_ADD_DIALOG,
     editingNodeId: null,
     portDialogPortId: null,
     layoutTick: 0,
@@ -765,7 +804,7 @@ export const usePlanStore = create<PlanState>((set, get) => {
       // measured dimensions). Re-synthesizing port nodes would lose measurements and
       // cause an infinite render loop.
       const { rootGraph, viewPath } = get();
-      const real = stripPortNodes(incoming).map(n => (isNoteNode(n) ? clampNotePosition(n) : n)) as AnyNode[];
+      const real = stripPortNodes(incoming).map(n => (isNoteNode(n) ? clampNotePosition(n) : n));
       const g = graphAt(rootGraph, viewPath);
       const nextRoot = setGraphAt(rootGraph, viewPath, { ...g, nodes: real });
       const clamped = incoming.map(n => (isNoteNode(n) ? clampNotePosition(n) : n));
@@ -816,11 +855,7 @@ export const usePlanStore = create<PlanState>((set, get) => {
         layoutTick: get().layoutTick + 1,
         editingNodeId: null,
         portDialogPortId: null,
-        addDialogOpen: false,
-        addDialogPos: null,
-        addDialogPrefillItemId: null,
-        addDialogFilterInputItemId: null,
-        pendingConnect: null,
+        ...CLOSED_ADD_DIALOG,
       });
     },
 
@@ -829,28 +864,16 @@ export const usePlanStore = create<PlanState>((set, get) => {
       const view = project(rootGraph, viewPath);
       const viewed = graphAt(rootGraph, viewPath);
       const isRaw = recipeId === null;
-      const count = viewed.nodes.length;
       const node: ItemNodeType = {
         id: crypto.randomUUID(),
         type: 'itemNode',
-        position: position ?? { x: 40 + count * 28, y: 40 + count * 28 },
-        zIndex: topZ(viewed.nodes) + 1,
+        ...spawnGeometry(viewed, position),
         data: { itemId, recipeId, isRaw, rawConfig: isRaw ? DEFAULT_RAW_CONFIG : undefined },
       };
       const pendingEdge = pendingConnect
         ? buildPendingEdge([...view.nodes, node], node.id, pendingConnect)
         : null;
-      commitViewedGraph(g => ({
-        nodes: [...g.nodes, node],
-        edges: pendingEdge ? [...g.edges.filter(e => e.id !== pendingEdge.id), pendingEdge] : g.edges,
-      }));
-      set({
-        addDialogOpen: false,
-        addDialogPos: null,
-        addDialogPrefillItemId: null,
-        addDialogFilterInputItemId: null,
-        pendingConnect: null,
-      });
+      appendNodeAndCloseDialog(node, pendingEdge);
     },
 
     addFactoryNode(position) {
@@ -877,12 +900,10 @@ export const usePlanStore = create<PlanState>((set, get) => {
         }
       }
 
-      const count = viewed.nodes.length;
       const node: FactoryNodeType = {
         id: crypto.randomUUID(),
         type: 'factoryNode',
-        position: position ?? { x: 40 + count * 28, y: 40 + count * 28 },
-        zIndex: topZ(viewed.nodes) + 1,
+        ...spawnGeometry(viewed, position),
         data: { name: 'Factory', inputs, outputs, inner: { nodes: [], edges: [] } },
       };
 
@@ -896,24 +917,11 @@ export const usePlanStore = create<PlanState>((set, get) => {
           : buildEdge(all, node.id, pendingConnect.fromNodeId, portNodeId('output', seed.portId), pendingConnect.fromHandleId);
       }
 
-      commitViewedGraph(g => ({
-        nodes: [...g.nodes, node],
-        edges: pendingEdge ? [...g.edges.filter(e => e.id !== pendingEdge.id), pendingEdge] : g.edges,
-      }));
-      set({
-        addDialogOpen: false,
-        addDialogPos: null,
-        addDialogPrefillItemId: null,
-        addDialogFilterInputItemId: null,
-        pendingConnect: null,
-      });
+      appendNodeAndCloseDialog(node, pendingEdge);
     },
 
     removeNode(id) {
-      commitViewedGraph(g => ({
-        nodes: g.nodes.filter(n => n.id !== id && n.parentId !== id),
-        edges: g.edges.filter(e => e.source !== id && e.target !== id),
-      }));
+      commitViewedGraph(g => removeFromGraph(g, id));
       set({ editingNodeId: null });
     },
 
@@ -985,15 +993,7 @@ export const usePlanStore = create<PlanState>((set, get) => {
       //    Ports live on the factory node (in the parent graph), not in the inner graph.
       const inherit = portInheritFromEdge(view.nodes, source, target, sourceHandle, targetHandle);
       if (inherit && viewPath.length > 0) {
-        const facId = viewPath[viewPath.length - 1];
-        const parentPath = viewPath.slice(0, -1);
-        const parent = graphAt(nextRoot, parentPath);
-        const nodes = parent.nodes.map(n =>
-          n.id === facId && isFactoryNode(n)
-            ? { ...n, data: applyPortItem(n.data, inherit.portId, inherit.itemId) }
-            : n,
-        );
-        nextRoot = setGraphAt(nextRoot, parentPath, { ...parent, nodes });
+        nextRoot = mapCurrentFactoryData(nextRoot, viewPath, d => applyPortItem(d, inherit.portId, inherit.itemId));
       }
 
       nextRoot = rebalanceRoot(nextRoot);
@@ -1068,11 +1068,7 @@ export const usePlanStore = create<PlanState>((set, get) => {
       if (viewPath.length === 0) return;
       const facId = viewPath[viewPath.length - 1];
       const parentPath = viewPath.slice(0, -1);
-      const parent = graphAt(rootGraph, parentPath);
-      const nextParent: InnerGraph = {
-        nodes: parent.nodes.filter(n => n.id !== facId),
-        edges: parent.edges.filter(e => e.source !== facId && e.target !== facId),
-      };
+      const nextParent = removeFromGraph(graphAt(rootGraph, parentPath), facId);
       const nextRoot = rebalanceRoot(setGraphAt(rootGraph, parentPath, nextParent));
       const view = project(nextRoot, parentPath);
       set({
@@ -1096,13 +1092,7 @@ export const usePlanStore = create<PlanState>((set, get) => {
       });
     },
     closeAddDialog() {
-      set({
-        addDialogOpen: false,
-        addDialogPos: null,
-        addDialogPrefillItemId: null,
-        addDialogFilterInputItemId: null,
-        pendingConnect: null,
-      });
+      set(CLOSED_ADD_DIALOG);
     },
     openConfig(id) { set({ editingNodeId: id }); },
     closeConfig() { set({ editingNodeId: null }); },

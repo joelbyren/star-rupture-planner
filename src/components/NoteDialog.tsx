@@ -22,7 +22,7 @@ export function NoteDialog() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [noteDialog]);
 
-  if (!noteDialog) return <Modal open={false} onClose={closeNoteDialog}><span /></Modal>;
+  if (!noteDialog) return null;
 
   const save = () => {
     const trimmed = text.trim();

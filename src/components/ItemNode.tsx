@@ -1,22 +1,18 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { Handle, Position, useUpdateNodeInternals } from '@xyflow/react';
+import { useState } from 'react';
+import { Handle, Position } from '@xyflow/react';
 import type { NodeProps } from '@xyflow/react';
 import type { ItemNodeType } from '../store/planStore.ts';
 import recipesJson from '../data/recipes.json';
-import itemsJson from '../data/items.json';
-import type { Recipe, Item } from '../engine/types.ts';
+import type { Recipe } from '../engine/types.ts';
 import { calcSupplyRate, DEFAULT_RAW_CONFIG, machineForResource } from '../engine/rawResources.ts';
-import { abbr, colorForType } from '../lib/itemVisual.ts';
+import { itemById } from '../lib/itemVisual.ts';
 import { useThemeStore } from '../store/themeStore.ts';
 import { useIsNodeDimmed } from '../lib/useNeighbors.ts';
+import { useHandleRowTops } from '../lib/useHandleRowTops.ts';
 import { TargetMark } from './NodeChrome.tsx';
+import { ItemBadge } from './ui/ItemBadge.tsx';
 
 const ALL_RECIPES = recipesJson as Recipe[];
-const ALL_ITEMS = itemsJson as Item[];
-
-function itemById(id: string): Item | undefined {
-  return ALL_ITEMS.find(i => i.id === id);
-}
 
 export function ItemNode({ id, data }: NodeProps<ItemNodeType>) {
   const theme = useThemeStore(s => s.theme);
@@ -32,22 +28,7 @@ export function ItemNode({ id, data }: NodeProps<ItemNodeType>) {
   const surplus = supplyRate !== null ? supplyRate - needed : null;
 
   // Measure input-row centers so the left handles line up with their labels.
-  const rowRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const [handleTops, setHandleTops] = useState<number[]>([]);
-  const updateNodeInternals = useUpdateNodeInternals();
-  useLayoutEffect(() => {
-    setHandleTops(rowRefs.current.map(el => (el ? el.offsetTop + el.offsetHeight / 2 : 0)));
-    // Row heights/spacing vary per theme (fonts, letter-spacing, header sizing),
-    // so a theme switch must re-measure — otherwise handles stay pinned to
-    // whichever theme's layout was active when the node last mounted/changed.
-  }, [inputs.length, data.itemId, theme]);
-  // React Flow caches handle bounding boxes for edge routing and only refreshes
-  // them via its own ResizeObserver on the node's outer box — a same-size
-  // reshuffle of handle positions (e.g. the row re-measure above) needs an
-  // explicit nudge or edges keep pointing at the stale spot.
-  useEffect(() => {
-    updateNodeInternals(id);
-  }, [handleTops, updateNodeInternals, id]);
+  const { refs: rowRefs, tops: handleTops } = useHandleRowTops(id, [inputs.length, data.itemId, theme]);
 
   const [showTip, setShowTip] = useState(false);
   const limitBinding = !!balance?.isLimitBinding;
@@ -130,9 +111,7 @@ export function ItemNode({ id, data }: NodeProps<ItemNodeType>) {
                     className="flex items-center gap-1 leading-none"
                     title={`${ing?.name ?? inp.itemId} — ${inp.neededPerMin.toFixed(1)}/min`}
                   >
-                    <span className={`sr-badge ${colorForType(ing?.type)}`}>
-                      {ing ? abbr(ing) : '??'}
-                    </span>
+                    <ItemBadge itemId={inp.itemId} />
                     <span className="text-[9px] text-ink-dim truncate">{inp.neededPerMin.toFixed(1)}</span>
                   </div>
                 );

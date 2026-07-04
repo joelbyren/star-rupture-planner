@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { Modal } from './ui/Modal.tsx';
 import { Combobox, type ComboboxOption } from './ui/Combobox.tsx';
-import { usePlanStore, isFactoryNode, type FactoryNodeType } from '../store/planStore.ts';
+import { usePlanStore, graphAt, isFactoryNode } from '../store/planStore.ts';
 import itemsJson from '../data/items.json';
 import type { Item, FactoryPort } from '../engine/types.ts';
 
@@ -21,16 +21,9 @@ export function PortConfigDialog() {
   // Resolve the port within the factory whose inner graph is currently open.
   const found = useMemo(() => {
     if (!portDialogPortId || viewPath.length === 0) return null;
-    let graph = rootGraph;
-    for (const id of viewPath.slice(0, -1)) {
-      const f = graph.nodes.find(n => n.id === id && isFactoryNode(n)) as FactoryNodeType | undefined;
-      if (!f) return null;
-      graph = f.data.inner;
-    }
-    const fac = graph.nodes.find(n => n.id === viewPath[viewPath.length - 1] && isFactoryNode(n)) as
-      | FactoryNodeType
-      | undefined;
-    if (!fac) return null;
+    const parent = graphAt(rootGraph, viewPath.slice(0, -1));
+    const fac = parent.nodes.find(n => n.id === viewPath[viewPath.length - 1]);
+    if (!fac || !isFactoryNode(fac)) return null;
     const input = fac.data.inputs.find((p: FactoryPort) => p.id === portDialogPortId);
     if (input) return { port: input, side: 'input' as const };
     const output = fac.data.outputs.find((p: FactoryPort) => p.id === portDialogPortId);
@@ -38,13 +31,12 @@ export function PortConfigDialog() {
     return null;
   }, [portDialogPortId, rootGraph, viewPath]);
 
-  const open = !!found;
-  if (!found) return <Modal open={false} onClose={closePortDialog}><span /></Modal>;
+  if (!found) return null;
 
   const { port, side } = found;
 
   return (
-    <Modal open={open} title={`${side === 'input' ? 'Input' : 'Output'} port`} onClose={closePortDialog}>
+    <Modal open title={`${side === 'input' ? 'Input' : 'Output'} port`} onClose={closePortDialog}>
       <div className="space-y-3">
         <div>
           <label className="block text-xs text-ink-dim mb-1">Item {port.itemId === null && <span className="text-ink-dim">(unset — "?")</span>}</label>

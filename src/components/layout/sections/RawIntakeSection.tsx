@@ -1,12 +1,9 @@
 import { useMemo } from 'react';
 import { usePlanStore } from '../../../store/planStore.ts';
 import { selectScopedNodes, aggregateRawIntake } from '../../../lib/scopedTotals.ts';
-import { abbr, colorForType } from '../../../lib/itemVisual.ts';
-import itemsJson from '../../../data/items.json';
-import type { Item } from '../../../engine/types.ts';
+import { itemById } from '../../../lib/itemVisual.ts';
 import { SidebarSection } from './SidebarSection.tsx';
-
-const ITEMS_BY_ID = new Map((itemsJson as Item[]).map(i => [i.id, i]));
+import { ItemBadge } from '../../ui/ItemBadge.tsx';
 
 export function RawIntakeSection() {
   const rootGraph = usePlanStore(s => s.rootGraph);
@@ -24,12 +21,10 @@ export function RawIntakeSection() {
       ) : (
         <ul className="space-y-1">
           {rows.map(row => {
-            const item = ITEMS_BY_ID.get(row.itemId);
+            const item = itemById(row.itemId);
             return (
               <li key={row.itemId} className="flex items-center gap-2 text-xs">
-                <span className={`sr-badge ${colorForType(item?.type)}`}>
-                  {item ? abbr(item) : '??'}
-                </span>
+                <ItemBadge itemId={row.itemId} />
                 <span className="flex-1 text-ink-mid truncate">{item?.name ?? row.itemId}</span>
                 <span className="text-ink tabular-nums">{row.ratePerMin.toFixed(1)}/min</span>
               </li>

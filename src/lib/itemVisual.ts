@@ -1,4 +1,12 @@
+import itemsJson from '../data/items.json';
 import type { Item } from '../engine/types.ts';
+
+const ITEMS_BY_ID = new Map((itemsJson as Item[]).map(i => [i.id, i]));
+
+/** Canonical item lookup, shared by every badge/label render. */
+export function itemById(id: string | null | undefined): Item | undefined {
+  return id ? ITEMS_BY_ID.get(id) : undefined;
+}
 
 /**
  * Two-letter badge for an item. No clean item icons exist on the scraped
@@ -16,7 +24,7 @@ export function abbr(item: Pick<Item, 'name' | 'id'>): string {
 }
 
 /** Semantic badge class per item type; colors are defined per-theme (see themes/*.css). */
-export const TYPE_CLASSES: Record<string, string> = {
+const TYPE_CLASSES: Record<string, string> = {
   Resource: 'sr-t-resource',
   Component: 'sr-t-component',
   Fluid: 'sr-t-fluid',

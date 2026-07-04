@@ -1,4 +1,4 @@
-import { isFactoryNode, isItemNode, type AnyNode, type InnerGraph } from '../store/planStore.ts';
+import { graphAt, isFactoryNode, isItemNode, type AnyNode, type InnerGraph } from '../store/planStore.ts';
 
 /**
  * The node list a sidebar summary should total over: root nodes at the plan
@@ -7,13 +7,7 @@ import { isFactoryNode, isItemNode, type AnyNode, type InnerGraph } from '../sto
  * the starting point.
  */
 export function selectScopedNodes(rootGraph: InnerGraph, viewPath: string[]): AnyNode[] {
-  let g = rootGraph;
-  for (const id of viewPath) {
-    const fac = g.nodes.find(n => n.id === id && isFactoryNode(n));
-    if (!fac || !isFactoryNode(fac)) return g.nodes;
-    g = fac.data.inner;
-  }
-  return g.nodes;
+  return graphAt(rootGraph, viewPath).nodes;
 }
 
 export interface RawIntakeRow {

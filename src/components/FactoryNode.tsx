@@ -1,53 +1,25 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { Handle, Position, useUpdateNodeInternals } from '@xyflow/react';
+import { Handle, Position } from '@xyflow/react';
 import type { NodeProps } from '@xyflow/react';
-import type { FactoryNodeType, FactoryNodeData } from '../store/planStore.ts';
+import type { FactoryNodeType } from '../store/planStore.ts';
 import { portNodeId } from '../store/planStore.ts';
-import itemsJson from '../data/items.json';
-import type { Item } from '../engine/types.ts';
-import { abbr, colorForType } from '../lib/itemVisual.ts';
+import { itemById } from '../lib/itemVisual.ts';
 import { useIsNodeDimmed } from '../lib/useNeighbors.ts';
+import { useHandleRowTops } from '../lib/useHandleRowTops.ts';
 import { useThemeStore } from '../store/themeStore.ts';
-
-const ALL_ITEMS = itemsJson as Item[];
-const itemById = (id: string | null) => (id ? ALL_ITEMS.find(i => i.id === id) : undefined);
+import { ItemBadge } from './ui/ItemBadge.tsx';
 
 function PortBadge({ itemId }: { itemId: string | null }) {
-  const item = itemById(itemId);
-  return (
-    <span
-      className={`sr-badge ${itemId ? colorForType(item?.type) : 'sr-t-unset'}`}
-      title={item?.name ?? (itemId ?? 'Unset')}
-    >
-      {itemId ? (item ? abbr(item) : '??') : '?'}
-    </span>
-  );
+  return <ItemBadge itemId={itemId} title={itemById(itemId)?.name ?? itemId ?? 'Unset'} />;
 }
 
 export function FactoryNode({ id, data }: NodeProps<FactoryNodeType>) {
-  const { inputs, outputs } = data as FactoryNodeData;
+  const { inputs, outputs } = data;
   const dimmed = useIsNodeDimmed(id);
   const theme = useThemeStore(s => s.theme);
 
-  const inRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const outRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const [inTops, setInTops] = useState<number[]>([]);
-  const [outTops, setOutTops] = useState<number[]>([]);
-  const updateNodeInternals = useUpdateNodeInternals();
-  useLayoutEffect(() => {
-    setInTops(inRefs.current.map(el => (el ? el.offsetTop + el.offsetHeight / 2 : 0)));
-    setOutTops(outRefs.current.map(el => (el ? el.offsetTop + el.offsetHeight / 2 : 0)));
-    // Row heights/spacing vary per theme (fonts, letter-spacing, header sizing),
-    // so a theme switch must re-measure — otherwise handles stay pinned to
-    // whichever theme's layout was active when the node last mounted/changed.
-  }, [inputs.length, outputs.length, theme]);
-  // React Flow caches handle bounding boxes for edge routing and only refreshes
-  // them via its own ResizeObserver on the node's outer box — a same-size
-  // reshuffle of handle positions (e.g. the row re-measure above) needs an
-  // explicit nudge or edges keep pointing at the stale spot.
-  useEffect(() => {
-    updateNodeInternals(id);
-  }, [inTops, outTops, updateNodeInternals, id]);
+  // Measure port-row centers so the side handles line up with their badges.
+  const { refs: inRefs, tops: inTops } = useHandleRowTops(id, [inputs.length, theme]);
+  const { refs: outRefs, tops: outTops } = useHandleRowTops(id, [outputs.length, theme]);
 
   return (
     <div className={`sr-node sr-node--factory relative rounded-md w-[170px] ${dimmed ? 'sr-node--dimmed' : ''}`}>

@@ -1,13 +1,12 @@
 import { Modal } from './ui/Modal.tsx';
-import { usePlanStore, type ItemNodeType } from '../store/planStore.ts';
+import { usePlanStore, isItemNode } from '../store/planStore.ts';
 import { useUiStore } from '../store/uiStore.ts';
 import recipesJson from '../data/recipes.json';
-import itemsJson from '../data/items.json';
-import type { Recipe, Item, ResourcePurity, ExtractorVersion, ExtractorMode } from '../engine/types.ts';
+import type { Recipe, ResourcePurity, ExtractorVersion, ExtractorMode } from '../engine/types.ts';
 import { calcSupplyRate, DEFAULT_RAW_CONFIG } from '../engine/rawResources.ts';
+import { itemById } from '../lib/itemVisual.ts';
 
 const ALL_RECIPES = recipesJson as Recipe[];
-const ALL_ITEMS = itemsJson as Item[];
 
 const PURITY: { value: ResourcePurity; label: string }[] = [
   { value: 'impure', label: 'Impure' },
@@ -15,10 +14,6 @@ const PURITY: { value: ResourcePurity; label: string }[] = [
   { value: 'pure', label: 'Pure' },
 ];
 const VERSIONS: ExtractorVersion[] = ['V1', 'V2'];
-
-function itemById(id: string) {
-  return ALL_ITEMS.find(i => i.id === id);
-}
 
 export function NodeConfigDialog() {
   const editingNodeId = usePlanStore(s => s.editingNodeId);
@@ -29,11 +24,8 @@ export function NodeConfigDialog() {
   const setNodeHardLimit = usePlanStore(s => s.setNodeHardLimit);
   const openNoteDialogCreate = useUiStore(s => s.openNoteDialogCreate);
 
-  const node = nodes.find(n => n.id === editingNodeId && n.type === 'itemNode') as
-    | ItemNodeType
-    | undefined;
-  const open = !!node;
-  if (!node) return <Modal open={false} onClose={closeConfig}><span /></Modal>;
+  const node = nodes.find(n => n.id === editingNodeId);
+  if (!node || !isItemNode(node)) return null;
 
   const data = node.data;
   const item = itemById(data.itemId);
@@ -47,7 +39,7 @@ export function NodeConfigDialog() {
   const showV2 = item?.type === 'Resource';
 
   return (
-    <Modal open={open} title={item?.name ?? data.itemId} onClose={closeConfig}>
+    <Modal open title={item?.name ?? data.itemId} onClose={closeConfig}>
       <div className="space-y-3">
         {data.isRaw && (
           <>
