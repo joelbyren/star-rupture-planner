@@ -1,14 +1,17 @@
 # StarRupture Planner
 
-A factory-planning web app for the game StarRupture, in the style of Satisfactory planner tools.
+A factory-planning web app for the game StarRupture, in the style of Satisfactory planner tools. Built with React 19, TypeScript, Vite, Tailwind v4, Zustand, and `@xyflow/react`; deployed to Cloudflare Workers.
 
 ## Quick start
 
 ```bash
 npm install
-npm run dev      # dev server at http://localhost:5173
-npm test         # run engine tests
-npm run build    # production build
+npm run dev       # dev server at http://localhost:5173
+npm test          # run engine/store/lib tests (Vitest)
+npm run lint       # oxlint
+npm run build      # tsc -b && vite build
+npm run preview    # production build, served via `wrangler dev`
+npm run deploy     # production build, deployed via `wrangler deploy`
 ```
 
 ## Project layout
@@ -16,73 +19,106 @@ npm run build    # production build
 ```
 src/
 ├── data/
-│   ├── items.json        # All game items (id + name)
-│   └── recipes.json      # All recipes (inputs, outputs, building tier)
+│   ├── index.ts        # Typed entry point — parses/casts the JSON below once, exports ALL_ITEMS/ALL_RECIPES/POWER/ITEMS_BY_ID
+│   ├── items.json       # All game items (id, name, type, stackSize)
+│   ├── recipes.json     # All recipes (machine, output rate, per-craft input/output quantities)
+│   └── power.json        # Power draw (kW) per machine name, by building tier
 ├── engine/
 │   ├── types.ts          # Pure TypeScript types — no UI deps
-│   ├── calculate.ts      # Deterministic expansion engine
-│   └── calculate.test.ts # Vitest tests for the engine
+│   ├── balanceGraph.ts    # Balances a user-built node/edge graph into building counts + rates
+│   ├── rawResources.ts    # Extractor supply-rate math (purity × version) + supply/demand status
+│   ├── power.ts           # Sums machine power draw over a (possibly nested) node list
+│   └── *.test.ts          # Vitest tests — exercise only the engine, no rendering
 ├── store/
-│   └── planStore.ts      # Zustand store — domain model + React Flow canvas state
+│   ├── planStore.ts        # Zustand store: graph document, canvas projection, all mutations
+│   ├── uiStore.ts           # Transient UI state (sidebar, hovered node, note dialog)
+│   └── themeStore.ts        # Selected theme, persisted to localStorage
 ├── components/
-│   ├── FactoryNode.tsx   # Custom React Flow node
-│   ├── SidePanel.tsx     # Target picker + chain summary
-│   └── PersistenceBar.tsx # Export / Import / New plan buttons
-├── lib/
-│   └── persistence.ts    # localStorage autosave + JSON import/export
-└── App.tsx               # Root layout + React Flow canvas
+│   ├── ItemNode.tsx, FactoryNode.tsx, PortNode.tsx, NoteNode.tsx  # Custom React Flow nodes
+│   ├── AddNodeDialog.tsx, NodeConfigDialog.tsx, PortConfigDialog.tsx, NoteDialog.tsx  # Modals
+│   ├── layout/               # TopBar, Breadcrumb, ThemeSwitcher, Sidebar + its sections
+│   └── ui/                   # Primitives: Button, TextInput, Select, Combobox, Modal, ItemBadge, ...
+├── edges/                    # ThemedEdge dispatches to a per-theme edge renderer (Blueprint/Holo/Terminal/Graphite)
+├── themes/                   # One CSS file per theme + shared tokens.css
+├── lib/                      # persistence.ts, itemVisual.ts, scopedTotals.ts, endProducts.ts, edgeRates.ts, hooks
+└── App.tsx                   # Root layout + React Flow canvas wiring
+
+scripts/
+└── scrape-recipes.ts    # cheerio scraper that generates src/data/items.json + recipes.json from starruptureplanner.com
 ```
 
 ## How the engine stays decoupled
 
-`src/engine/` is a strict no-UI zone:
+`src/engine/` is a strict no-UI zone: zero imports from React, Zustand, `@xyflow/react`, or any component file (verified — grep the folder if in doubt). Its modules take plain data in and return plain data out:
 
-- **Zero imports** from React, Zustand, `@xyflow/react`, or any component file.
-- `calculate.ts` takes plain `Recipe[]` and a target `{itemId, ratePerMin}` and returns a plain `NodeResult` tree.
-- Tests in `calculate.test.ts` run with Vitest and exercise only the engine — no rendering.
+- `balanceGraph.ts` — `balanceTree(nodes, edges, recipes)` walks the graph the user actually built (not a recipe auto-expansion), anchoring each end product (a node with no outgoing edge) at one building, propagating demand upstream, then scaling the whole solution by a single factor — either to make the bottleneck node exactly 1 building, or, if any node has a hard limit, to hit the most restrictive limit exactly. Factories (sub-factories) are solved recursively: their inner graph is demand-driven from the parent's port rates, and their input-port requirements feed back out.
+- `rawResources.ts` — extractor supply rate (`purity × extractorVersion` or a custom aggregate rate) and supply/demand status.
+- `power.ts` — recursive power-draw sum, keyed off each recipe's `machine` name and building tier.
 
-The Zustand store in `src/store/planStore.ts` owns the bridge: it calls the engine, then transforms the `NodeResult` tree into React Flow `nodes` and `edges`. React components read from the store; they never call the engine directly.
+The Zustand store (`src/store/planStore.ts`) owns the bridge: it holds the authoritative graph, projects the currently-viewed factory (or root) into React Flow `nodes`/`edges`, and calls `balanceTree` after every structural change to attach `data.balance` to each node. React components read `data.balance` off node props; they never call the engine directly.
 
 ```
-recipes.json ──▶ engine/calculate.ts ──▶ planStore.ts ──▶ React Flow canvas
-                  (pure functions)       (Zustand)          (UI)
+recipes.json ──▶ engine/balanceGraph.ts ──▶ planStore.ts ──▶ React Flow canvas
+                  (pure functions)            (Zustand)          (UI)
 ```
 
 ## How to add a recipe
 
-1. Open `src/data/recipes.json`.
-2. Add a new entry following the schema:
+Recipe and item data is normally regenerated by `npx tsx scripts/scrape-recipes.ts` (add `--refresh` to bypass its local cache), which scrapes starruptureplanner.com and writes both JSON files. To add or hand-edit a recipe directly:
+
+1. Open `src/data/recipes.json` and add an entry matching the current schema:
 
 ```json
 {
-  "id": "my-recipe-id",
-  "itemId": "output-item-id",
-  "buildingTier": "V1",
-  "inputs":  [{ "itemId": "some-item", "ratePerMin": 30 }],
-  "outputs": [{ "itemId": "output-item-id", "ratePerMin": 20 }]
+  "id": "recipe_my_item",
+  "outputItemId": "my_item",
+  "machine": "Fabricator",
+  "buildingTier": null,
+  "outputRatePerMin": 60,
+  "outputs": [{ "itemId": "my_item", "quantity": 2 }],
+  "inputs": [{ "itemId": "some_input", "quantity": 1 }],
+  "confidence": "High Confidence",
+  "lastVerified": "2026-01-09",
+  "sourceUrl": "https://starruptureplanner.com/items/my_item"
 }
 ```
 
-3. If the output item is new, add it to `src/data/items.json`:
+`outputRatePerMin` is the rate the building produces `outputs[].quantity` units per cycle; the engine derives each input's required rate as `(input.quantity / output.quantity) × outputRatePerMin`. `buildingTier` is currently always `null` — the scraped source doesn't expose V1/V2 recipe variants (see the `TODO` in `src/engine/types.ts`).
+
+2. If the output item is new, add it to `src/data/items.json`:
 
 ```json
-{ "id": "output-item-id", "name": "My Item" }
+{ "id": "my_item", "name": "My Item", "type": "Component", "stackSize": 100 }
 ```
 
-4. Restart the dev server — the item appears in the Target Item dropdown and the engine picks up the recipe automatically. No code changes needed.
+3. If `machine` is new, add its power draw to `src/data/power.json`:
 
-**V1 / V2 variants:** if you add a second recipe with the same `itemId` but `"buildingTier": "V2"`, the factory node for that item will show a dropdown letting the user switch tiers. Switching immediately recomputes the whole chain.
+```json
+"Fabricator": { "V1": 10, "V2": 10 }
+```
+
+4. Restart the dev server — the item appears in the Add Node dialog and the engine picks it up automatically. No code changes needed.
 
 ## Persistence
 
-- **Autosave** — the current plan is written to `localStorage` on every change (debounced) and restored on startup, so a page reload resumes where you left off. No buttons to remember.
-- **Export JSON** — downloads the current plan as a `.json` file. Use this to back it up or share plans between users or machines.
-- **Import JSON** — imports a previously exported `.json` file and restores the full plan.
-- **New plan** — clears the current (auto-saved) plan and starts a blank one.
+- **Autosave** — the current plan is written to `localStorage` on every change and restored on startup, so a page reload resumes where you left off. No buttons to remember.
+- **Export JSON** — writes the plan to a `.json` file (via the File System Access picker in Chromium, falling back to a plain download elsewhere). Re-exporting/importing remembers the last-used folder.
+- **Import JSON** — reads a `.json` file back in. The file is structurally validated first (required fields per node type, valid positions/edges, recursing into factory inner graphs); a malformed or hand-edited file is rejected with a specific error message (via `alert`) instead of crashing the app.
+- **New plan** — clears the current (auto-saved) plan and starts a blank one, after a confirmation prompt.
 
-The export format is the `PlanSnapshot` type defined in `src/store/planStore.ts`.
+The export/import format is the `PlanSnapshot` type in `src/store/planStore.ts`; derived fields (`balance`, `isEndProduct`, React Flow's `selected`/`dragging`) are stripped before saving and recomputed on load.
 
-## Architecture notes
+## Features
 
-- **SubFactory** — the type and store shape for sub-factories is scaffolded in `src/engine/types.ts`. A sub-factory is its own graph document; in a parent graph it appears as a single node with declared I/O handles. The UI is not yet wired up.
-- **LP optimiser** — a TODO comment in `src/engine/calculate.ts` marks where a `javascript-lp-solver` pass would slot in to minimise resource usage or building count across the full graph. The `NodeResult` shape already supports it.
+- **Nested factories** — a Factory node has its own declared input/output ports and an inner graph; double-click to step inside via the breadcrumb, build out its contents, and step back out. Its output-port demand comes from the parent graph; its solved input-port requirements flow back out to size upstream producers. The breadcrumb (plan name, then each ancestor factory) is also where the plan and factory names are renamed inline.
+- **Item/recipe nodes with live balancing** — every recipe and raw-extractor node shows its computed rate, building count, and (if set) hard output limit, recalculated on every graph edit.
+- **Raw-resource extractors** — configurable purity (impure/normal/pure) and extractor version (V1/V2), or a custom aggregate rate, with a supply-vs-demand status readout.
+- **Hard output limits** — cap any production node's output rate; the network scales to respect the tightest limit across the whole graph (up or down).
+- **End-product targets** — any non-raw node with no outgoing connection is automatically treated as an end product and anchored at one building; the rest of the chain scales relative to it.
+- **Ports & port-rate readout** — factories expose typed (or unset "?") input/output ports; the sidebar shows live per-port rates while a factory is open.
+- **Sticky notes** — attach a short scribble note to any node, draggable within a bounded radius of its parent.
+- **Power totals** — sidebar shows total kW for the currently-viewed scope, recursing into nested factories.
+- **Raw intake totals** — aggregated raw-resource consumption for the currently-viewed scope.
+- **Validation** — flags unconnected raw outputs and recipe inputs with no feeding edge.
+- **Persistence** — per-browser autosave plus JSON export/import (see above).
+- **Themes** — Blueprint, Holotable, and Terminal (randomly assigned on first run) plus an opt-in Graphite theme, each with matching custom edge rendering.
