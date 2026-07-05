@@ -15,6 +15,11 @@ import {
 import { ALL_RECIPES } from '../data/index.ts';
 import { computeEndProductIds } from '../lib/endProducts.ts';
 import { buildSnapshot, saveLocalSnapshot, loadLocalSnapshot } from '../lib/persistence.ts';
+import { defaultRawConfig } from '../lib/tierSettings.ts';
+import { LAYOUT_COL_W, LAYOUT_ROW_H } from '../lib/layoutConstants.ts';
+import { buildPrereqPlan, PREREQ_STEP_DELAY_MS, type PrereqStep } from '../lib/prereqTree.ts';
+import { useSettingsStore } from './settingsStore.ts';
+import { useUiStore } from './uiStore.ts';
 
 // ------------------------------------------------------------------
 // Node data shapes
@@ -124,6 +129,12 @@ export interface PlanState {
 
   // Builder actions (operate on the currently-viewed graph)
   addNode: (itemId: string, recipeId: string | null, position?: { x: number; y: number }) => void;
+  /**
+   * Add a node plus its entire upstream production chain back to raw resources,
+   * one node at a time (animated). Creates a self-contained sub-tree — existing
+   * nodes are never reused or moved.
+   */
+  addPrerequisiteTree: (itemId: string, recipeId: string | null, position?: { x: number; y: number }) => void;
   addFactoryNode: (position?: { x: number; y: number }) => void;
   removeNode: (id: string) => void;
   setNodeRawConfig: (id: string, patch: Partial<RawResourceConfig>) => void;
@@ -646,8 +657,6 @@ export function findValidationIssues(nodes: ViewNode[], edges: Edge[]): Validati
 // Layered auto-layout (producer→consumer; raw on the left, products on the right)
 // ------------------------------------------------------------------
 
-const LAYOUT_COL_W = 240;
-const LAYOUT_ROW_H = 120;
 
 function layoutNodes(allNodes: AnyNode[], edges: Edge[]): AnyNode[] {
   if (allNodes.length === 0) return allNodes;
@@ -790,13 +799,64 @@ export const usePlanStore = create<PlanState>((set, get) => {
     });
   }
 
-  /** Append a node (plus its optional auto-connect edge) to the viewed graph and close the add dialog. */
-  function appendNodeAndCloseDialog(node: AnyNode, pendingEdge: Edge | null) {
+  /** Append a node and its new edges to the viewed graph in one commit. */
+  function appendNodeWithEdges(node: AnyNode, newEdges: Edge[]) {
     commitViewedGraph(g => ({
       nodes: [...g.nodes, node],
-      edges: pendingEdge ? [...g.edges.filter(e => e.id !== pendingEdge.id), pendingEdge] : g.edges,
+      edges: [...g.edges.filter(e => !newEdges.some(ne => ne.id === e.id)), ...newEdges],
     }));
+  }
+
+  /** Append a node (plus its optional auto-connect edge) to the viewed graph and close the add dialog. */
+  function appendNodeAndCloseDialog(node: AnyNode, pendingEdge: Edge | null) {
+    appendNodeWithEdges(node, pendingEdge ? [pendingEdge] : []);
     set(CLOSED_ADD_DIALOG);
+  }
+
+  /**
+   * Create the pre-planned prerequisite steps one at a time (consumers first,
+   * root at step 0), wiring each new producer into the consumers created before
+   * it. Lives on the store — no component owns the timer, so re-renders can't
+   * interrupt it. The uiStore busy flag keeps the graph/chrome locked meanwhile.
+   */
+  async function runPrereqSteps(steps: PrereqStep[], pendingConnect: PendingConnect | null) {
+    useUiStore.getState().startPrereqRun(steps.length);
+    const createdIds = new Map<string, string>();
+    try {
+      for (const [i, step] of steps.entries()) {
+        const { rootGraph, viewPath } = get();
+        const view = project(rootGraph, viewPath);
+        const viewed = graphAt(rootGraph, viewPath);
+        const node: ItemNodeType = {
+          id: crypto.randomUUID(),
+          type: 'itemNode',
+          position: step.position,
+          zIndex: topZ(viewed.nodes) + 1,
+          data: { itemId: step.itemId, recipeId: step.recipeId, isRaw: step.isRaw, rawConfig: step.rawConfig },
+        };
+        createdIds.set(step.itemId, node.id);
+
+        const all = [...view.nodes, node];
+        const edges: Edge[] = [];
+        // The root step carries the sub-tree's only external edge: the drag-create origin.
+        if (i === 0 && pendingConnect) {
+          const pendingEdge = buildPendingEdge(all, node.id, pendingConnect);
+          if (pendingEdge) edges.push(pendingEdge);
+        }
+        for (const consumerItemId of step.consumers) {
+          const target = createdIds.get(consumerItemId);
+          if (!target) continue; // cyclic data fallback: consumer not created yet
+          const edge = buildEdge(all, node.id, target, undefined, step.itemId);
+          if (edge) edges.push(edge);
+        }
+
+        appendNodeWithEdges(node, edges);
+        useUiStore.getState().advancePrereqRun();
+        if (i < steps.length - 1) await new Promise(r => setTimeout(r, PREREQ_STEP_DELAY_MS));
+      }
+    } finally {
+      useUiStore.getState().endPrereqRun();
+    }
   }
 
   const initial = hydrateInitial();
@@ -884,12 +944,30 @@ export const usePlanStore = create<PlanState>((set, get) => {
         id: crypto.randomUUID(),
         type: 'itemNode',
         ...spawnGeometry(viewed, position),
-        data: { itemId, recipeId, isRaw, rawConfig: isRaw ? DEFAULT_RAW_CONFIG : undefined },
+        data: {
+          itemId,
+          recipeId,
+          isRaw,
+          rawConfig: isRaw ? defaultRawConfig(itemId, useSettingsStore.getState().machineTiers) : undefined,
+        },
       };
       const pendingEdge = pendingConnect
         ? buildPendingEdge([...view.nodes, node], node.id, pendingConnect)
         : null;
       appendNodeAndCloseDialog(node, pendingEdge);
+    },
+
+    addPrerequisiteTree(itemId, recipeId, position) {
+      const { pendingConnect, rootGraph, viewPath } = get();
+      const anchor = spawnGeometry(graphAt(rootGraph, viewPath), position).position;
+      const steps = buildPrereqPlan({
+        rootItemId: itemId,
+        rootRecipeId: recipeId,
+        anchor,
+        prefs: useSettingsStore.getState().machineTiers,
+      });
+      set(CLOSED_ADD_DIALOG); // clears pendingConnect — captured above for the root edge
+      void runPrereqSteps(steps, pendingConnect);
     },
 
     addFactoryNode(position) {

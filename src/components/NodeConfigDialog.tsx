@@ -4,9 +4,10 @@ import { Select } from './ui/Select.tsx';
 import { Button } from './ui/Button.tsx';
 import { usePlanStore, isItemNode } from '../store/planStore.ts';
 import { useUiStore } from '../store/uiStore.ts';
+import { useSettingsStore, tierPrefFor } from '../store/settingsStore.ts';
 import { ALL_RECIPES } from '../data/index.ts';
 import type { ResourcePurity, ExtractorVersion, ExtractorMode } from '../engine/types.ts';
-import { DEFAULT_RAW_CONFIG, rawSupplyInfo } from '../engine/rawResources.ts';
+import { DEFAULT_RAW_CONFIG, machineForResource, rawSupplyInfo } from '../engine/rawResources.ts';
 import { itemById } from '../lib/itemVisual.ts';
 
 const PURITY: { value: ResourcePurity; label: string }[] = [
@@ -37,6 +38,7 @@ export function NodeConfigDialog() {
   const setNodeRawConfig = usePlanStore(s => s.setNodeRawConfig);
   const setNodeHardLimit = usePlanStore(s => s.setNodeHardLimit);
   const openNoteDialogCreate = useUiStore(s => s.openNoteDialogCreate);
+  const machineTiers = useSettingsStore(s => s.machineTiers);
 
   const node = nodes.find(n => n.id === editingNodeId);
   if (!node || !isItemNode(node)) return null;
@@ -49,6 +51,12 @@ export function NodeConfigDialog() {
 
   const { supplyRate, needed, surplus, statusClass } = rawSupplyInfo(data, balance);
   const showV2 = item?.type === 'Resource';
+  // Under "Only V1" the version dropdown disappears — but only while the node is
+  // actually V1. A legacy/imported V2 node keeps it so it can be inspected or
+  // downgraded (settings never mutate existing nodes).
+  const hideVersion =
+    tierPrefFor(machineTiers, machineForResource(data.itemId)) === 'only-v1' &&
+    rawConfig.extractorVersion === 'V1';
 
   return (
     <Modal open title={item?.name ?? data.itemId} onClose={closeConfig}>
@@ -85,7 +93,7 @@ export function NodeConfigDialog() {
                 />
               </div>
             ) : (
-              <div className="grid grid-cols-2 gap-2">
+              <div className={`grid gap-2 ${hideVersion ? 'grid-cols-1' : 'grid-cols-2'}`}>
                 <div>
                   <label className="block text-xs text-ink-dim mb-1">Purity</label>
                   <Select
@@ -97,21 +105,23 @@ export function NodeConfigDialog() {
                     ))}
                   </Select>
                 </div>
-                <div>
-                  <label className="block text-xs text-ink-dim mb-1">Extractor</label>
-                  <Select
-                    value={rawConfig.extractorVersion}
-                    onChange={e =>
-                      setNodeRawConfig(node.id, {
-                        extractorVersion: oneOf(VERSIONS, e.target.value, rawConfig.extractorVersion),
-                      })
-                    }
-                  >
-                    {VERSIONS.filter(v => v === 'V1' || showV2).map(v => (
-                      <option key={v} value={v}>{v}</option>
-                    ))}
-                  </Select>
-                </div>
+                {!hideVersion && (
+                  <div>
+                    <label className="block text-xs text-ink-dim mb-1">Extractor</label>
+                    <Select
+                      value={rawConfig.extractorVersion}
+                      onChange={e =>
+                        setNodeRawConfig(node.id, {
+                          extractorVersion: oneOf(VERSIONS, e.target.value, rawConfig.extractorVersion),
+                        })
+                      }
+                    >
+                      {VERSIONS.filter(v => v === 'V1' || showV2).map(v => (
+                        <option key={v} value={v}>{v}</option>
+                      ))}
+                    </Select>
+                  </div>
+                )}
               </div>
             )}
 

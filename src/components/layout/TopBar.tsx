@@ -1,9 +1,12 @@
 import { version } from '../../../package.json';
+import { useUiStore } from '../../store/uiStore.ts';
 import { MenuGlyph } from './MenuGlyph.tsx';
 import { Breadcrumb } from './Breadcrumb.tsx';
+import { PrereqProgress } from './PrereqProgress.tsx';
 import { ThemeSwitcher } from './ThemeSwitcher.tsx';
 
 export function TopBar() {
+  const busy = useUiStore(s => s.prereqRun !== null);
   return (
     <div className="sr-topbar relative flex items-center gap-3 px-3 py-1.5 border-b border-line-soft bg-panel">
       <MenuGlyph />
@@ -14,7 +17,7 @@ export function TopBar() {
       </div>
 
       <div className="flex-1 flex justify-center min-w-0">
-        <Breadcrumb />
+        {busy ? <PrereqProgress /> : <Breadcrumb />}
       </div>
 
       <div className="flex items-center gap-3">

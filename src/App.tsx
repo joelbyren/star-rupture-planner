@@ -55,6 +55,9 @@ function Flow() {
   const theme = useThemeStore(s => s.theme);
   const setHoveredNode = useUiStore(s => s.setHoveredNode);
   const openNoteDialogEdit = useUiStore(s => s.openNoteDialogEdit);
+  // A running prerequisite build locks the graph down: no drags, connects,
+  // deletes, or dialogs until it finishes. Pan/zoom stays available.
+  const busy = useUiStore(s => s.prereqRun !== null);
   const { screenToFlowPosition, fitView } = useReactFlow();
   const connectFrom = useRef<OnConnectStartParams | null>(null);
   // Whether onConnect fired during the current drag. React Flow can complete a
@@ -92,6 +95,7 @@ function Flow() {
   }, [connectNodes]);
 
   const onConnectStart = useCallback((_: unknown, params: OnConnectStartParams) => {
+    if (busy) return;
     connectFrom.current = params;
     didConnect.current = false;
     // Handles are hidden until hovered/connecting (see .react-flow__handle in
@@ -99,7 +103,7 @@ function Flow() {
     // user can see where a connection can land. Toggled imperatively rather
     // than via React state so it doesn't re-render the whole flow per drag.
     wrapperRef.current?.classList.add('sr-connecting');
-  }, []);
+  }, [busy]);
 
   // Drag off a handle and release on empty canvas → open the add dialog there,
   // pre-filled (when dragged off an input) and auto-connected to the origin handle.
@@ -110,6 +114,7 @@ function Flow() {
       const connected = didConnect.current;
       connectFrom.current = null;
       didConnect.current = false;
+      if (busy) return;
       if (!from || !from.nodeId) return;
       if (connected) return; // a real connection was made (incl. proximity snap) → no add dialog
       const target = event.target as HTMLElement;
@@ -134,26 +139,28 @@ function Flow() {
         },
       });
     },
-    [screenToFlowPosition, openAddDialog, nodes],
+    [screenToFlowPosition, openAddDialog, nodes, busy],
   );
 
   const onWrapperDoubleClick = useCallback(
     (event: React.MouseEvent) => {
+      if (busy) return;
       const target = event.target as HTMLElement;
       if (!target.classList.contains('react-flow__pane')) return;
       const pos = screenToFlowPosition({ x: event.clientX, y: event.clientY });
       openAddDialog({ pos });
     },
-    [screenToFlowPosition, openAddDialog],
+    [screenToFlowPosition, openAddDialog, busy],
   );
 
   const onNodeDoubleClick = useCallback(
     (_: React.MouseEvent, node: ViewNode) => {
+      if (busy) return;
       if (node.type === 'factoryNode') enterFactory(node.id);
       else if (node.type === 'itemNode') openConfig(node.id);
       else if (node.type === 'noteNode') openNoteDialogEdit(node.id);
     },
-    [enterFactory, openConfig, openNoteDialogEdit],
+    [enterFactory, openConfig, openNoteDialogEdit, busy],
   );
 
   const onNodeMouseEnter = useCallback(
@@ -181,6 +188,10 @@ function Flow() {
         onNodeDoubleClick={onNodeDoubleClick}
         onNodeMouseEnter={onNodeMouseEnter}
         onNodeMouseLeave={onNodeMouseLeave}
+        nodesDraggable={!busy}
+        nodesConnectable={!busy}
+        elementsSelectable={!busy}
+        deleteKeyCode={busy ? null : undefined}
         zoomOnDoubleClick={false}
         fitView
       >

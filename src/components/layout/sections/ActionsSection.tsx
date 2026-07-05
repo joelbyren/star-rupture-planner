@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { usePlanStore } from '../../../store/planStore.ts';
 import { Modal } from '../../ui/Modal.tsx';
+import { SettingsDialog } from '../../SettingsDialog.tsx';
 import { SidebarSection, SidebarButton } from './SidebarSection.tsx';
 
 export function ActionsSection() {
@@ -11,12 +12,14 @@ export function ActionsSection() {
   const addOutputPort = usePlanStore(s => s.addOutputPort);
   const removeCurrentFactory = usePlanStore(s => s.removeCurrentFactory);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   const insideFactory = viewPath.length > 0;
 
   return (
     <SidebarSection title="Actions">
       <div className="flex flex-col gap-1.5">
+        <SidebarButton onClick={() => setSettingsOpen(true)}>Settings</SidebarButton>
         <SidebarButton onClick={() => openAddDialog()}>+ Add node</SidebarButton>
         <SidebarButton onClick={() => autoLayout()}>Auto layout</SidebarButton>
         {insideFactory && (
@@ -28,6 +31,8 @@ export function ActionsSection() {
           </>
         )}
       </div>
+
+      <SettingsDialog open={settingsOpen} onClose={() => setSettingsOpen(false)} />
 
       <Modal open={confirmDelete} title="Delete factory?" onClose={() => setConfirmDelete(false)}>
         <div className="space-y-4">

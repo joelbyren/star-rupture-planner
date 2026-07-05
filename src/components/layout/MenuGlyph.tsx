@@ -6,12 +6,20 @@ export function MenuGlyph() {
   const theme = useThemeStore(s => s.theme);
   const sidebarOpen = useUiStore(s => s.sidebarOpen);
   const toggleSidebar = useUiStore(s => s.toggleSidebar);
+  // Sidebar is force-hidden during a prerequisite build; block reopening until done.
+  const busy = useUiStore(s => s.prereqRun !== null);
 
   const label = sidebarOpen ? 'Hide sidebar' : 'Show sidebar';
+  const shared = {
+    onClick: toggleSidebar,
+    disabled: busy,
+    title: label,
+    'aria-label': label,
+  } as const;
 
   if (theme === 'terminal') {
     return (
-      <button onClick={toggleSidebar} title={label} aria-label={label} className="term-glyph">
+      <button {...shared} className="term-glyph disabled:opacity-40 disabled:cursor-not-allowed">
         SRP&#9612;
       </button>
     );
@@ -19,7 +27,7 @@ export function MenuGlyph() {
 
   if (theme === 'holotable') {
     return (
-      <button onClick={toggleSidebar} title={label} aria-label={label} className="holo-glyph">
+      <button {...shared} className="holo-glyph disabled:opacity-40 disabled:cursor-not-allowed">
         <span className="holo-glyph-dot" />
       </button>
     );
@@ -27,7 +35,7 @@ export function MenuGlyph() {
 
   if (theme === 'graphite') {
     return (
-      <button onClick={toggleSidebar} title={label} aria-label={label} className="gr-glyph">
+      <button {...shared} className="gr-glyph disabled:opacity-40 disabled:cursor-not-allowed">
         <span />
         <span />
         <span />
@@ -36,7 +44,7 @@ export function MenuGlyph() {
   }
 
   return (
-    <button onClick={toggleSidebar} title={label} aria-label={label} className="bp-glyph">
+    <button {...shared} className="bp-glyph disabled:opacity-40 disabled:cursor-not-allowed">
       <span className="bp-glyph-inner" />
       <span className="bp-glyph-dot" />
     </button>
