@@ -55,6 +55,27 @@ describe('planStore — manual builder', () => {
     expect(usePlanStore.getState().nodes).toHaveLength(1);
     expect(usePlanStore.getState().edges).toHaveLength(0);
   });
+
+  it('removeElements drops several nodes, their attached notes and the listed edges in one commit', () => {
+    const s = usePlanStore.getState();
+    s.addNode('comp_rotor', 'recipe_comp_rotor');
+    s.addNode('wire_wolfram', 'recipe_wire_wolfram');
+    s.addNode('rod_titanium', 'recipe_rod_titanium');
+    s.connectNodes({ source: idFor('wire_wolfram'), target: idFor('comp_rotor'), sourceHandle: null, targetHandle: 'wire_wolfram' });
+    s.connectNodes({ source: idFor('rod_titanium'), target: idFor('comp_rotor'), sourceHandle: null, targetHandle: 'rod_titanium' });
+    s.addNote(idFor('wire_wolfram'), 'a note');
+    const rodEdge = usePlanStore.getState().edges.find(e => e.source === idFor('rod_titanium'))!;
+
+    // Delete the wire node (taking its note and edge with it) plus the rod→rotor edge explicitly.
+    s.removeElements([idFor('wire_wolfram')], [rodEdge.id]);
+
+    const state = usePlanStore.getState();
+    expect(state.nodes.map(n => n.type).sort()).toEqual(['itemNode', 'itemNode']);
+    expect(state.nodes.some(isNoteNode)).toBe(false);
+    expect(state.edges).toHaveLength(0);
+    // Rotor is unfed again → back to its standalone balance.
+    expect(balanceFor('comp_rotor').buildingCountExact).toBeCloseTo(1);
+  });
 });
 
 describe('planStore — hard limits', () => {

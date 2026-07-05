@@ -137,6 +137,8 @@ export interface PlanState {
   addPrerequisiteTree: (itemId: string, recipeId: string | null, position?: { x: number; y: number }) => void;
   addFactoryNode: (position?: { x: number; y: number }) => void;
   removeNode: (id: string) => void;
+  /** Delete a whole selection in one commit: the nodes (with attached notes and touching edges) plus the listed edges. */
+  removeElements: (nodeIds: string[], edgeIds: string[]) => void;
   setNodeRawConfig: (id: string, patch: Partial<RawResourceConfig>) => void;
   setNodeHardLimit: (id: string, limit: number | null) => void;
   connectNodes: (connection: Connection) => void;
@@ -347,12 +349,22 @@ function mapCurrentFactoryData(
   return setGraphAt(root, parentPath, { ...parent, nodes });
 }
 
+/**
+ * Drop a set of nodes (and any notes attached to them) plus every edge touching
+ * a dropped node, plus the explicitly listed edges.
+ */
+function removeManyFromGraph(g: InnerGraph, nodeIds: ReadonlySet<string>, edgeIds: ReadonlySet<string>): InnerGraph {
+  return {
+    nodes: g.nodes.filter(n => !nodeIds.has(n.id) && !(n.parentId && nodeIds.has(n.parentId))),
+    edges: g.edges.filter(e => !nodeIds.has(e.source) && !nodeIds.has(e.target) && !edgeIds.has(e.id)),
+  };
+}
+
+const NO_IDS: ReadonlySet<string> = new Set();
+
 /** Drop a node (and any notes attached to it) plus every edge touching it. */
 function removeFromGraph(g: InnerGraph, id: string): InnerGraph {
-  return {
-    nodes: g.nodes.filter(n => n.id !== id && n.parentId !== id),
-    edges: g.edges.filter(e => e.source !== id && e.target !== id),
-  };
+  return removeManyFromGraph(g, new Set([id]), NO_IDS);
 }
 
 /**
@@ -1017,6 +1029,15 @@ export const usePlanStore = create<PlanState>((set, get) => {
     removeNode(id) {
       commitViewedGraph(g => removeFromGraph(g, id));
       set({ editingNodeId: null });
+    },
+
+    removeElements(nodeIds, edgeIds) {
+      if (nodeIds.length === 0 && edgeIds.length === 0) return;
+      const dropNodes = new Set(nodeIds);
+      const dropEdges = new Set(edgeIds);
+      commitViewedGraph(g => removeManyFromGraph(g, dropNodes, dropEdges));
+      // Only close the config dialog if the node being edited was deleted.
+      set(state => (state.editingNodeId && dropNodes.has(state.editingNodeId) ? { editingNodeId: null } : {}));
     },
 
     addNote(parentId, text) {

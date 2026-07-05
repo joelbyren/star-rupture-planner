@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ReactFlow,
   ReactFlowProvider,
@@ -6,6 +6,7 @@ import {
   Controls,
   MiniMap,
   useReactFlow,
+  type Edge,
   type NodeChange,
   type EdgeChange,
   type NodeTypes,
@@ -28,6 +29,7 @@ import { AddNodeDialog } from './components/AddNodeDialog.tsx';
 import { NodeConfigDialog } from './components/NodeConfigDialog.tsx';
 import { PortConfigDialog } from './components/PortConfigDialog.tsx';
 import { NoteDialog } from './components/NoteDialog.tsx';
+import { DeleteSelectionDialog, type PendingDelete } from './components/DeleteSelectionDialog.tsx';
 import { usePlanStore, handleItemId, isPortNode } from './store/planStore.ts';
 import type { ViewNode } from './store/planStore.ts';
 import { usePinnedPorts } from './lib/usePinnedPorts.ts';
@@ -60,6 +62,8 @@ function Flow() {
   const busy = useUiStore(s => s.prereqRun !== null);
   const { screenToFlowPosition, fitView } = useReactFlow();
   const connectFrom = useRef<OnConnectStartParams | null>(null);
+  // Selection queued for deletion (via the Delete/Backspace key) awaiting confirmation.
+  const [pendingDelete, setPendingDelete] = useState<PendingDelete | null>(null);
   // Whether onConnect fired during the current drag. React Flow can complete a
   // connection by snapping to a nearby handle even when the pointer is released
   // over the pane — in that case we must NOT also open the add-node dialog.
@@ -163,6 +167,21 @@ function Flow() {
     [enterFactory, openConfig, openNoteDialogEdit, busy],
   );
 
+  // Intercept React Flow's delete (Delete/Backspace on a selection). Edge-only
+  // deletions pass straight through — an edge is re-created in seconds. Anything
+  // involving nodes is queued behind a confirmation dialog instead, and the
+  // actual removal runs through the store so notes/edges/balance stay consistent.
+  const onBeforeDelete = useCallback(
+    async ({ nodes: delNodes, edges: delEdges }: { nodes: ViewNode[]; edges: Edge[] }) => {
+      if (busy) return false;
+      const nodeIds = delNodes.filter(n => !isPortNode(n)).map(n => n.id);
+      if (nodeIds.length === 0) return delEdges.length > 0;
+      setPendingDelete({ nodeIds, edgeIds: delEdges.map(e => e.id) });
+      return false;
+    },
+    [busy],
+  );
+
   const onNodeMouseEnter = useCallback(
     (_: React.MouseEvent, node: ViewNode) => setHoveredNode(node.id),
     [setHoveredNode],
@@ -188,10 +207,11 @@ function Flow() {
         onNodeDoubleClick={onNodeDoubleClick}
         onNodeMouseEnter={onNodeMouseEnter}
         onNodeMouseLeave={onNodeMouseLeave}
+        onBeforeDelete={onBeforeDelete}
         nodesDraggable={!busy}
         nodesConnectable={!busy}
         elementsSelectable={!busy}
-        deleteKeyCode={busy ? null : undefined}
+        deleteKeyCode={busy ? null : ['Delete', 'Backspace']}
         zoomOnDoubleClick={false}
         fitView
       >
@@ -209,6 +229,7 @@ function Flow() {
         <Controls />
         <MiniMap nodeColor="var(--sr-accent)" maskColor="var(--sr-panel)" />
       </ReactFlow>
+      <DeleteSelectionDialog pending={pendingDelete} onClose={() => setPendingDelete(null)} />
       {!hasContent && (
         <div className="sr-empty" aria-hidden="true">
           <div className="sr-empty-title">No nodes yet</div>

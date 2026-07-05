@@ -3,7 +3,7 @@ import type { ThemedEdgeRenderProps } from './ThemedEdge.tsx';
 
 /** Blueprint: soft-white bezier, drafted chevron arrowhead, source stub-dot, hover-revealed rate label. */
 export function BlueprintEdge({
-  sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, rate, isHot, isDimmed,
+  sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, rate, isHot, isDimmed, selected,
 }: ThemedEdgeRenderProps) {
   const [path, labelX, labelY] = getBezierPath({ sourceX, sourceY, sourcePosition, targetX, targetY, targetPosition });
 
@@ -11,6 +11,7 @@ export function BlueprintEdge({
 
   return (
     <g className={cls}>
+      {selected && <path className="sr-edge-selection" d={path} />}
       <path className="bp-edge-wire" d={path} pathLength={1} markerEnd="url(#bp-arrow)" />
       <path d={path} className="react-flow__edge-interaction" fill="none" strokeWidth={16} stroke="transparent" />
       <circle className="bp-edge-dot" cx={sourceX} cy={sourceY} r={2} />

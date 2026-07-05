@@ -8,7 +8,7 @@ import type { ThemedEdgeRenderProps } from './ThemedEdge.tsx';
  * label and brightening are handled in CSS via the shared hot/dim classes.
  */
 export function GraphiteEdge({
-  sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, target, rate, isHot, isDimmed,
+  sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, target, rate, isHot, isDimmed, selected,
 }: ThemedEdgeRenderProps) {
   const isToTarget = usePlanStore(s => {
     const t = s.nodes.find(n => n.id === target);
@@ -26,6 +26,7 @@ export function GraphiteEdge({
 
   return (
     <g className={cls}>
+      {selected && <path className="sr-edge-selection" d={path} />}
       <path className="gr-edge-wire" d={path} />
       <path d={path} className="react-flow__edge-interaction" fill="none" strokeWidth={16} stroke="transparent" />
       <circle className="gr-edge-tip" cx={sourceX} cy={sourceY} r={2} />

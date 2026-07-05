@@ -3,7 +3,7 @@ import type { ThemedEdgeRenderProps } from './ThemedEdge.tsx';
 
 /** Holotable: static cyan base + a marching-dash flow overlay, speed scaled by throughput. */
 export function HoloEdge({
-  sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, rate, isHot, isDimmed,
+  sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, rate, isHot, isDimmed, selected,
 }: ThemedEdgeRenderProps) {
   const [path, labelX, labelY] = getBezierPath({ sourceX, sourceY, sourcePosition, targetX, targetY, targetPosition });
 
@@ -14,6 +14,7 @@ export function HoloEdge({
 
   return (
     <g className={cls}>
+      {selected && <path className="sr-edge-selection" d={path} />}
       <path className="holo-edge-base" d={path} />
       <path className="holo-edge-flow" d={path} style={{ animationDuration: `${duration.toFixed(2)}s` }} />
       <path d={path} className="react-flow__edge-interaction" fill="none" strokeWidth={16} stroke="transparent" />

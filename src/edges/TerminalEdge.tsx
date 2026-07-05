@@ -2,7 +2,7 @@ import type { ThemedEdgeRenderProps } from './ThemedEdge.tsx';
 
 /** Terminal: orthogonal Manhattan trace, per-source lane stagger, marching-ants overlay, pad rects at endpoints. */
 export function TerminalEdge({
-  sourceX, sourceY, targetX, targetY, rate, isHot, isDimmed, lane, laneIndex,
+  sourceX, sourceY, targetX, targetY, rate, isHot, isDimmed, lane, laneIndex, selected,
 }: ThemedEdgeRenderProps) {
   const gap = targetX - sourceX;
   const midX = gap > 24
@@ -16,6 +16,7 @@ export function TerminalEdge({
 
   return (
     <g className={cls}>
+      {selected && <path className="sr-edge-selection" d={d} />}
       <path className="term-edge-base" d={d} />
       <path className="term-edge-flow" d={d} />
       <path d={d} className="react-flow__edge-interaction" fill="none" strokeWidth={16} stroke="transparent" />
