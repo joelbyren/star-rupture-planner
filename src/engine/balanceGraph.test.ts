@@ -485,3 +485,123 @@ describe('balanceGraph — hard limits', () => {
     expect(Number.isNaN(at(r, 'x').outputRatePerMin)).toBe(false);
   });
 });
+
+describe('balanceGraph — disconnected components', () => {
+  const A: Recipe = {
+    id: 'rA', outputItemId: 'A', machine: 'M', buildingTier: null, outputRatePerMin: 10,
+    outputs: [{ itemId: 'A', quantity: 1 }], inputs: [{ itemId: 'B', quantity: 1 }],
+    confidence: null, lastVerified: null, sourceUrl: '',
+  };
+  const B: Recipe = {
+    id: 'rB', outputItemId: 'B', machine: 'M', buildingTier: null, outputRatePerMin: 2,
+    outputs: [{ itemId: 'B', quantity: 1 }], inputs: [], confidence: null, lastVerified: null, sourceUrl: '',
+  };
+
+  it('two disconnected limited chains scale independently (the reported bug)', () => {
+    const nodes = [
+      { id: 'a1', itemId: 'A', recipeId: 'rA' },
+      { id: 'b1', itemId: 'B', recipeId: 'rB', hardLimit: 120 },
+      { id: 'a2', itemId: 'A', recipeId: 'rA' },
+      { id: 'b2', itemId: 'B', recipeId: 'rB', hardLimit: 10 },
+    ];
+    const edges = [
+      { source: 'b1', target: 'a1', targetHandle: 'B' },
+      { source: 'b2', target: 'a2', targetHandle: 'B' },
+    ];
+    const r = bal(nodes, edges, [A, B]);
+    expect(at(r, 'b1').outputRatePerMin).toBeCloseTo(120);
+    expect(at(r, 'b2').outputRatePerMin).toBeCloseTo(10);
+    expect(at(r, 'b1').isLimitBinding).toBe(true);
+    expect(at(r, 'b2').isLimitBinding).toBe(true);
+    expect(at(r, 'a1').outputRatePerMin).toBeCloseTo(120);
+    expect(at(r, 'a2').outputRatePerMin).toBeCloseTo(10);
+  });
+
+  it('limited chain + unlimited chain: each balances against its own constraint', () => {
+    const nodes = [
+      { id: 'n_rotor', itemId: 'comp_rotor', recipeId: 'recipe_comp_rotor' },
+      { id: 'n_wire', itemId: 'wire_wolfram', recipeId: 'recipe_wire_wolfram' },
+      { id: 'n_rod', itemId: 'rod_titanium', recipeId: 'recipe_rod_titanium' },
+      { id: 'n_ore', itemId: 'ore_wolfram', recipeId: null, hardLimit: 10 },
+      { id: 'a', itemId: 'A', recipeId: 'rA' },
+      { id: 'b', itemId: 'B', recipeId: 'rB' },
+    ];
+    const edges = [
+      { source: 'n_wire', target: 'n_rotor', targetHandle: 'wire_wolfram' },
+      { source: 'n_rod', target: 'n_rotor', targetHandle: 'rod_titanium' },
+      { source: 'n_ore', target: 'n_wire', targetHandle: 'ingot_wolfram' },
+      { source: 'b', target: 'a', targetHandle: 'B' },
+    ];
+    const r = bal(nodes, edges, [...RECIPES, A, B]);
+    expect(at(r, 'n_ore').outputRatePerMin).toBeCloseTo(10);
+    expect(at(r, 'n_ore').isLimitBinding).toBe(true);
+    expect(at(r, 'b').buildingCountExact).toBeCloseTo(1);
+    expect(at(r, 'a').buildingCountExact).toBeCloseTo(0.2);
+  });
+
+  it('isolated recipe node keeps 1 building regardless of another component\'s limit', () => {
+    const nodes = [
+      { id: 'a', itemId: 'A', recipeId: 'rA' },
+      { id: 'b', itemId: 'B', recipeId: 'rB', hardLimit: 1 },
+      { id: 'c', itemId: 'B', recipeId: 'rB' },
+    ];
+    const edges = [{ source: 'b', target: 'a', targetHandle: 'B' }];
+    const r = bal(nodes, edges, [A, B]);
+    expect(at(r, 'c').buildingCountExact).toBeCloseTo(1);
+    expect(at(r, 'c').outputRatePerMin).toBeCloseTo(2);
+  });
+
+  it('factory inner limit stays scoped to its component', () => {
+    const F = {
+      id: 'F', itemId: '', recipeId: null, kind: 'factory' as const,
+      factory: {
+        inputs: [{ portId: 'PIN', itemId: 'ingot_titanium', handleId: 'port-in-PIN', innerNodeId: 'port-in-PIN' }],
+        outputs: [{ portId: 'POUT', itemId: 'bar_titanium', handleId: 'port-out-POUT', innerNodeId: 'i_bar' }],
+        inner: {
+          nodes: [
+            { id: 'i_bar', itemId: 'bar_titanium', recipeId: 'recipe_bar', hardLimit: 10 },
+            { id: 'port-in-PIN', itemId: 'ingot_titanium', recipeId: null },
+          ],
+          edges: [
+            { source: 'port-in-PIN', target: 'i_bar', targetHandle: 'ingot_titanium' },
+            { source: 'i_bar', target: 'port-out-POUT', sourceHandle: 'port-out-POUT', targetHandle: 'bar_titanium' },
+          ],
+        },
+      },
+    };
+    const nodes = [
+      { id: 'n_asm', itemId: 'asm', recipeId: 'recipe_asm' },
+      F,
+      { id: 'a', itemId: 'A', recipeId: 'rA' },
+      { id: 'b', itemId: 'B', recipeId: 'rB' },
+    ];
+    const edges = [
+      { source: 'F', target: 'n_asm', sourceHandle: 'port-out-POUT', targetHandle: 'bar_titanium' },
+      { source: 'b', target: 'a', targetHandle: 'B' },
+    ];
+    const r = balanceTree(nodes, edges, [...FAC_RECIPES, A, B]);
+    expect((at(r, 'n_asm') as BalanceResult).buildingCountExact).toBeCloseTo(0.5);
+    const fr = at(r, 'F') as FactoryBalanceResult;
+    expect((at(fr.inner, 'i_bar') as BalanceResult).outputRatePerMin).toBeCloseTo(10);
+    expect((at(r, 'b') as BalanceResult).buildingCountExact).toBeCloseTo(1);
+    expect((at(r, 'a') as BalanceResult).buildingCountExact).toBeCloseTo(0.2);
+  });
+
+  it('two unlimited disconnected chains each normalize to their own bottleneck', () => {
+    const nodes = [
+      { id: 'a', itemId: 'A', recipeId: 'rA' },
+      { id: 'b', itemId: 'B', recipeId: 'rB' },
+      { id: 'n_rotor', itemId: 'comp_rotor', recipeId: 'recipe_comp_rotor' },
+      { id: 'n_wire', itemId: 'wire_wolfram', recipeId: 'recipe_wire_wolfram' },
+      { id: 'n_rod', itemId: 'rod_titanium', recipeId: 'recipe_rod_titanium' },
+    ];
+    const edges = [
+      { source: 'b', target: 'a', targetHandle: 'B' },
+      { source: 'n_wire', target: 'n_rotor', targetHandle: 'wire_wolfram' },
+      { source: 'n_rod', target: 'n_rotor', targetHandle: 'rod_titanium' },
+    ];
+    const r = bal(nodes, edges, [...RECIPES, A, B]);
+    expect(at(r, 'b').buildingCountExact).toBeCloseTo(1);
+    expect(at(r, 'n_rotor').buildingCountExact).toBeCloseTo(1);
+  });
+});

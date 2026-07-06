@@ -6,12 +6,12 @@
 //   Pass 1 — anchor each end product (a node nothing consumes) at 1 building.
 //   Pass 2 — propagate demand upstream along edges, summing across consumers,
 //            yielding a fractional building count for every node.
-//   Pass 3 — scale the whole relative solution by a single factor: if any node
-//            carries a hard limit (max items/min), scale so the most restrictive
-//            limit is hit exactly (may scale UP or DOWN); otherwise normalize to
-//            the bottleneck, dividing every building count by the largest one (K)
-//            so the most-demanded node becomes exactly 1 and all others scale
-//            relative to it.
+//   Pass 3 — scale each weakly-connected component of the graph by its own
+//            factor: if any node in the component carries a hard limit, scale
+//            so the component's most restrictive limit is hit exactly (may
+//            scale UP or DOWN); otherwise bottleneck-normalize the component
+//            so its most-demanded node becomes exactly 1 building. Disconnected
+//            trees on the canvas therefore balance independently.
 //
 // Factories (sub-factories) extend this: a factory is a container node with
 // input/output ports and an inner graph. Its OUTPUT-port demand is set by the
@@ -20,8 +20,8 @@
 // and its INPUT-port requirements flow back out to size the parent's upstream
 // producers. The whole factory result is then scaled by the parent's normalize
 // factor (linear), so it stays consistent with the rest of the parent graph.
-// Hard limits on inner factory nodes constrain that same global scale factor,
-// since factoryCache stores the pre-scaling (scale 1) inner solve.
+// Hard limits on inner factory nodes constrain the scale of the factory node's
+// component, since factoryCache stores the pre-scaling (scale 1) inner solve.
 //
 //   inputRatePerBuilding = (input.quantity / output.quantity) × outputRatePerMin
 //   buildingCount        = requiredRate / outputRatePerMin
@@ -89,7 +89,7 @@ export interface BalanceResult {
   isRaw: boolean;
   /** Echo of the node's effective hard limit, for display. Not itself scaled. */
   hardLimitPerMin?: number;
-  /** True iff this limit is (one of) the binding constraint(s) on the global scale. */
+  /** True iff this limit is (one of) the binding constraint(s) on its component's scale. */
   isLimitBinding?: boolean;
 }
 
@@ -143,6 +143,48 @@ function scaleResult(r: AnyBalanceResult, k: number): AnyBalanceResult {
     outputRatePerMin: r.outputRatePerMin * k,
     inputs: r.inputs.map(i => ({ ...i, neededPerMin: i.neededPerMin * k })),
   };
+}
+
+/**
+ * Partition nodes into weakly-connected components of the top-level graph.
+ * Edges whose endpoints are not both present are ignored (same guard as the
+ * outEdges construction). Isolated nodes get their own component. Factory
+ * nodes are single vertices; their inner nodes are not part of this graph.
+ */
+function computeComponents(
+  nodes: BalanceNodeInput[],
+  edges: BalanceEdge[],
+): Map<string, number> {
+  const ids = new Set(nodes.map(n => n.id));
+  const adj = new Map<string, string[]>();
+  const link = (a: string, b: string) => {
+    const list = adj.get(a);
+    if (list) list.push(b);
+    else adj.set(a, [b]);
+  };
+  for (const e of edges) {
+    if (!ids.has(e.source) || !ids.has(e.target)) continue;
+    link(e.source, e.target);
+    link(e.target, e.source);
+  }
+  const componentOf = new Map<string, number>();
+  let nextId = 0;
+  for (const n of nodes) {
+    if (componentOf.has(n.id)) continue;
+    const compId = nextId++;
+    const stack = [n.id]; // iterative DFS — no recursion-depth risk
+    componentOf.set(n.id, compId);
+    while (stack.length > 0) {
+      const cur = stack.pop()!;
+      for (const nb of adj.get(cur) ?? []) {
+        if (!componentOf.has(nb)) {
+          componentOf.set(nb, compId);
+          stack.push(nb);
+        }
+      }
+    }
+  }
+  return componentOf;
 }
 
 export function balanceGraph(
@@ -270,53 +312,72 @@ export function balanceGraph(
     else demand(n.id);
   }
 
-  // Pass 3: scale the relative solution by a single global factor.
-  let scale = 1;
+  // Pass 3: scale each weakly-connected component by its own factor.
+  let componentOf: Map<string, number> | null = null;
+  const componentScale = new Map<number, number>();
   if (normalize) {
-    // Hard limits: cap the global scale so no limited node exceeds its max.
-    const ratios: number[] = [];
-    const visitFactory = (def: FactoryDef, fr: FactoryBalanceResult) => {
+    componentOf = computeComponents(nodes, edges);
+
+    // Hard limits: cap each component's scale so no limited node exceeds its max.
+    const ratiosByComp = new Map<number, number[]>();
+    const pushRatio = (comp: number, ratio: number) => {
+      const list = ratiosByComp.get(comp);
+      if (list) list.push(ratio);
+      else ratiosByComp.set(comp, [ratio]);
+    };
+    // A factory's inner limits belong to the factory node's outer component.
+    const visitFactory = (comp: number, def: FactoryDef, fr: FactoryBalanceResult) => {
       for (const m of def.inner.nodes) {
         const r = fr.inner[m.id];
         if (!r) continue;
-        if ('isFactory' in r) { if (m.factory) visitFactory(m.factory, r); continue; }
+        if ('isFactory' in r) { if (m.factory) visitFactory(comp, m.factory, r); continue; }
         if (m.hardLimit != null && m.hardLimit > 0 && r.outputRatePerMin > 0)
-          ratios.push(m.hardLimit / r.outputRatePerMin);
+          pushRatio(comp, m.hardLimit / r.outputRatePerMin);
       }
     };
     for (const n of nodes) {
+      const comp = componentOf.get(n.id)!;
       if (kindOf(n) === 'factory') {
         const fr = factoryCache.get(n.id);
-        if (fr && n.factory) visitFactory(n.factory, fr);
+        if (fr && n.factory) visitFactory(comp, n.factory, fr);
         continue;
       }
       const rel = demand(n.id); // memoized above — free
-      if (n.hardLimit != null && n.hardLimit > 0 && rel > 0) ratios.push(n.hardLimit / rel);
+      if (n.hardLimit != null && n.hardLimit > 0 && rel > 0) pushRatio(comp, n.hardLimit / rel);
     }
 
-    if (ratios.length > 0) {
-      scale = Math.min(...ratios); // may be > 1: scale UP to the max
-    } else {
-      // No limits: normalize to the bottleneck (largest building count among recipe nodes).
-      let maxBuildings = 0;
-      for (const n of nodes) {
-        const recipe = recipeForNode(n);
-        if (!recipe) continue;
-        const bc = demand(n.id) / recipe.outputRatePerMin;
-        if (bc > maxBuildings) maxBuildings = bc;
+    // No limits in a component: normalize it to its own bottleneck.
+    const maxBuildingsByComp = new Map<number, number>();
+    for (const n of nodes) {
+      const recipe = recipeForNode(n);
+      if (!recipe) continue;
+      const comp = componentOf.get(n.id)!;
+      const bc = demand(n.id) / recipe.outputRatePerMin;
+      if (bc > (maxBuildingsByComp.get(comp) ?? 0)) maxBuildingsByComp.set(comp, bc);
+    }
+
+    for (const comp of new Set(componentOf.values())) {
+      const ratios = ratiosByComp.get(comp);
+      if (ratios && ratios.length > 0) {
+        componentScale.set(comp, Math.min(...ratios)); // may be > 1: scale UP to the max
+      } else {
+        const mb = maxBuildingsByComp.get(comp) ?? 0;
+        componentScale.set(comp, mb > 0 ? 1 / mb : 1);
       }
-      scale = maxBuildings > 0 ? 1 / maxBuildings : 1;
     }
   }
+
+  const scaleFor = (id: string): number =>
+    componentOf ? (componentScale.get(componentOf.get(id)!) ?? 1) : 1;
 
   const out: Record<string, AnyBalanceResult> = {};
   for (const n of nodes) {
     if (kindOf(n) === 'factory') {
-      out[n.id] = scaleResult(factoryCache.get(n.id)!, scale);
+      out[n.id] = scaleResult(factoryCache.get(n.id)!, scaleFor(n.id));
       continue;
     }
     const recipe = recipeForNode(n);
-    const scaledDemand = demand(n.id) * scale;
+    const scaledDemand = demand(n.id) * scaleFor(n.id);
 
     if (!recipe) {
       out[n.id] = {
