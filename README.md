@@ -22,7 +22,7 @@ src/
 │   ├── index.ts        # Typed entry point — parses/casts the JSON below once, exports ALL_ITEMS/ALL_RECIPES/POWER/ITEMS_BY_ID
 │   ├── items.json       # All game items (id, name, type, stackSize)
 │   ├── recipes.json     # All recipes (machine, output rate, per-craft input/output quantities)
-│   └── power.json        # Power draw (kW) per machine name, by building tier
+│   └── power.json        # Power draw (MW) per machine name, by building tier
 ├── engine/
 │   ├── types.ts          # Pure TypeScript types — no UI deps
 │   ├── balanceGraph.ts    # Balances a user-built node/edge graph into building counts + rates
@@ -117,7 +117,7 @@ The export/import format is the `PlanSnapshot` type in `src/store/planStore.ts`;
 - **End-product targets** — any non-raw node with no outgoing connection is automatically treated as an end product and anchored at one building; the rest of the chain scales relative to it.
 - **Ports & port-rate readout** — factories expose typed (or unset "?") input/output ports; the sidebar shows live per-port rates while a factory is open.
 - **Sticky notes** — attach a short scribble note to any node, draggable within a bounded radius of its parent.
-- **Power totals** — sidebar shows total kW for the currently-viewed scope, recursing into nested factories.
+- **Power totals** — sidebar shows total MW for the currently-viewed scope, recursing into nested factories.
 - **Raw intake totals** — aggregated raw-resource consumption for the currently-viewed scope.
 - **Validation** — flags unconnected raw outputs and recipe inputs with no feeding edge.
 - **Persistence** — per-browser autosave plus JSON export/import (see above).

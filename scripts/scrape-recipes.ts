@@ -97,7 +97,7 @@ interface SourceBuilding {
   url: string;
   categoryId?: string;
   recipes: SourceRecipe[];
-  /** kW; negative = consumption, positive = generation. */
+  /** MW; negative = consumption, positive = generation. */
   power: number;
 }
 

@@ -17,17 +17,17 @@ describe('machinePower', () => {
 describe('graphPower', () => {
   it('production node: buildingCount × machinePower', () => {
     const nodes: PowerNode[] = [{ kind: 'production', recipeId: 'recipe_crafter_titanium-sheet', buildingCount: 3 }];
-    expect(graphPower(nodes)).toBe(30); // 3 Fabricators × 10 kW
+    expect(graphPower(nodes)).toBe(30); // 3 Fabricators × 10 MW
   });
 
   it('raw node counts as exactly one extractor regardless of custom rate', () => {
     const nodes: PowerNode[] = [{ kind: 'raw', itemId: 'helium-ore', extractorVersion: 'V2' }];
-    expect(graphPower(nodes)).toBe(15); // 1 Helium-3 Extractor × 15 kW (no V2 building → V1 value)
+    expect(graphPower(nodes)).toBe(15); // 1 Helium-3 Extractor × 15 MW (no V2 building → V1 value)
   });
 
   it('raw node defaults to V1 when extractorVersion is absent', () => {
     const nodes: PowerNode[] = [{ kind: 'raw', itemId: 'titanium-ore' }];
-    expect(graphPower(nodes)).toBe(5); // 1 Ore Excavator V1 × 5 kW
+    expect(graphPower(nodes)).toBe(5); // 1 Ore Excavator V1 × 5 MW
   });
 
   it('recurses into nested factories', () => {

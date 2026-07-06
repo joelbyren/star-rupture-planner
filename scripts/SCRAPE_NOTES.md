@@ -28,7 +28,7 @@ is left unresolved, so a silent format change fails loudly.
 - **Recipe id** = `recipe_{buildingId}_{recipeId}` (unique across tier variants).
 - **Rate**: source recipes give `duration` in seconds per craft;
   `outputRatePerMin = output.quantity × 60 / duration`.
-- **Power** (`power.json`): source `power` is kW, negative = consumption.
+- **Power** (`power.json`): source `power` is MW, negative = consumption.
   We store the positive draw per machine, `{V1, V2}`; machines without a v.2
   building mirror V1 into V2. Generators/logistics buildings are not emitted —
   the engine only looks up crafting machines and extractors.

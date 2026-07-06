@@ -9,7 +9,7 @@ import { POWER, ALL_RECIPES } from '../data/index.ts';
 
 const RECIPE_BY_ID = new Map(ALL_RECIPES.map(r => [r.id, r]));
 
-/** Power draw (kW) for one machine at a given tier; unknown machine → 0 (+ dev warning). */
+/** Power draw (MW) for one machine at a given tier; unknown machine → 0 (+ dev warning). */
 export function machinePower(machine: string, tier: BuildingTier): number {
   const entry = POWER[machine];
   if (!entry) {
@@ -34,7 +34,7 @@ export interface PowerNode {
   inner?: PowerNode[];
 }
 
-/** Total power (kW) for a list of nodes, recursing into nested factories. */
+/** Total power (MW) for a list of nodes, recursing into nested factories. */
 export function graphPower(nodes: PowerNode[]): number {
   let total = 0;
   for (const n of nodes) {

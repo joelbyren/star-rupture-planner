@@ -8,6 +8,7 @@ import { useSettingsStore, tierPrefFor } from '../store/settingsStore.ts';
 import { ALL_RECIPES } from '../data/index.ts';
 import type { ResourcePurity, ExtractorVersion, ExtractorMode } from '../engine/types.ts';
 import { DEFAULT_RAW_CONFIG, hasV2Extractor, machineForResource, rawSupplyInfo } from '../engine/rawResources.ts';
+import { machinePower } from '../engine/power.ts';
 import { itemById } from '../lib/itemVisual.ts';
 
 const PURITY: { value: ResourcePurity; label: string }[] = [
@@ -153,6 +154,11 @@ export function NodeConfigDialog() {
             {balance && (
               <div className="text-ink-dim">
                 Buildings: <span className="text-accent">{balance.buildingCountExact.toFixed(2)}</span>
+                <span className="ml-4">
+                  Power: <span className="text-accent">
+                    {(machinePower(recipe.machine, recipe.buildingTier ?? 'V1') * balance.buildingCount).toFixed(0)}
+                  </span> MW
+                </span>
               </div>
             )}
             <div className="text-ink-dim italic pt-1">To change the recipe, delete this node and add a new one.</div>

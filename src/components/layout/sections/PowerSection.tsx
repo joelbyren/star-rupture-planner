@@ -9,7 +9,7 @@ export function PowerSection() {
   const rootGraph = usePlanStore(s => s.rootGraph);
   const viewPath = usePlanStore(s => s.viewPath);
 
-  const totalKw = useMemo(() => {
+  const totalMw = useMemo(() => {
     const scoped = selectScopedNodes(rootGraph, viewPath);
     return graphPower(toPowerNodes(scoped));
   }, [rootGraph, viewPath]);
@@ -17,7 +17,7 @@ export function PowerSection() {
   return (
     <SidebarSection title="Power">
       <p className="text-xs text-ink-mid">
-        Total: <span className="text-ink tabular-nums">{totalKw.toFixed(0)} kW</span>
+        Total: <span className="text-ink tabular-nums">{totalMw.toFixed(0)} MW</span>
       </p>
     </SidebarSection>
   );
