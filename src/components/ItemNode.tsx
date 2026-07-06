@@ -23,7 +23,7 @@ export function ItemNode({ id, data }: NodeProps<ItemNodeType>) {
   const { supplyRate, needed, surplus, statusClass } = rawSupplyInfo(data, balance);
 
   // Measure input-row centers so the left handles line up with their labels.
-  const { refs: rowRefs, tops: handleTops } = useHandleRowTops(id, [inputs.length, data.itemId, theme]);
+  const { refs: rowRefs, tops: handleTops } = useHandleRowTops(id, [inputs.map(i => i.itemId).join(','), data.itemId, theme]);
 
   const [showTip, setShowTip] = useState(false);
   const limitBinding = !!balance?.isLimitBinding;

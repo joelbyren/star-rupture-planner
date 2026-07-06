@@ -1,15 +1,18 @@
+import { useState } from 'react';
 import { Modal } from './ui/Modal.tsx';
 import { TextInput } from './ui/TextInput.tsx';
 import { Select } from './ui/Select.tsx';
 import { Button } from './ui/Button.tsx';
-import { usePlanStore, isItemNode } from '../store/planStore.ts';
+import { ItemBadge } from './ui/ItemBadge.tsx';
+import { usePlanStore, isItemNode, computeRecipeChangePreview, type ItemNodeType } from '../store/planStore.ts';
 import { useUiStore } from '../store/uiStore.ts';
 import { useSettingsStore, tierPrefFor } from '../store/settingsStore.ts';
 import { ALL_RECIPES } from '../data/index.ts';
-import type { ResourcePurity, ExtractorVersion, ExtractorMode } from '../engine/types.ts';
+import type { ResourcePurity, ExtractorVersion, ExtractorMode, Recipe } from '../engine/types.ts';
 import { DEFAULT_RAW_CONFIG, hasV2Extractor, machineForResource, rawSupplyInfo } from '../engine/rawResources.ts';
 import { machinePower } from '../engine/power.ts';
 import { itemById } from '../lib/itemVisual.ts';
+import { recipesProducing } from '../lib/tierSettings.ts';
 
 const PURITY: { value: ResourcePurity; label: string }[] = [
   { value: 'impure', label: 'Impure' },
@@ -34,15 +37,29 @@ function oneOf<T extends string>(values: readonly T[], value: string, fallback: 
 export function NodeConfigDialog() {
   const editingNodeId = usePlanStore(s => s.editingNodeId);
   const nodes = usePlanStore(s => s.nodes);
+  const node = nodes.find(n => n.id === editingNodeId);
+  if (!node || !isItemNode(node)) return null;
+  // Keyed so local state (e.g. a pending recipe switch) resets between nodes.
+  return <NodeConfigDialogBody key={node.id} node={node} />;
+}
+
+function variantLabel(variant: Recipe, current: Recipe | undefined): string {
+  const tier = variant.buildingTier ?? 'V1';
+  return variant.machine === current?.machine
+    ? `Switch recipe to ${tier}`
+    : `Switch recipe to ${variant.machine} ${tier}`;
+}
+
+function NodeConfigDialogBody({ node }: { node: ItemNodeType }) {
   const closeConfig = usePlanStore(s => s.closeConfig);
   const removeNode = usePlanStore(s => s.removeNode);
   const setNodeRawConfig = usePlanStore(s => s.setNodeRawConfig);
   const setNodeHardLimit = usePlanStore(s => s.setNodeHardLimit);
+  const setNodeRecipe = usePlanStore(s => s.setNodeRecipe);
+  const edges = usePlanStore(s => s.edges);
   const openNoteDialogCreate = useUiStore(s => s.openNoteDialogCreate);
   const machineTiers = useSettingsStore(s => s.machineTiers);
-
-  const node = nodes.find(n => n.id === editingNodeId);
-  if (!node || !isItemNode(node)) return null;
+  const [pendingRecipeId, setPendingRecipeId] = useState<string | null>(null);
 
   const data = node.data;
   const item = itemById(data.itemId);
@@ -58,6 +75,18 @@ export function NodeConfigDialog() {
   const hideVersion =
     tierPrefFor(machineTiers, machineForResource(data.itemId)) === 'only-v1' &&
     rawConfig.extractorVersion === 'V1';
+
+  // Every other recipe variant that produces this item. Shown regardless of the
+  // "only V1" machine setting — that preference gates defaults for new nodes,
+  // not an explicit user action on an existing one.
+  const variants = data.isRaw ? [] : recipesProducing(data.itemId).filter(r => r.id !== data.recipeId);
+  const pendingRecipe = pendingRecipeId ? ALL_RECIPES.find(r => r.id === pendingRecipeId) : undefined;
+  const preview = pendingRecipe ? computeRecipeChangePreview(node.id, edges, pendingRecipe) : null;
+
+  function confirmSwitch() {
+    if (pendingRecipeId) setNodeRecipe(node.id, pendingRecipeId);
+    setPendingRecipeId(null);
+  }
 
   return (
     <Modal open title={item?.name ?? data.itemId} onClose={closeConfig}>
@@ -161,7 +190,6 @@ export function NodeConfigDialog() {
                 </span>
               </div>
             )}
-            <div className="text-ink-dim italic pt-1">To change the recipe, delete this node and add a new one.</div>
           </div>
         )}
 
@@ -182,6 +210,78 @@ export function NodeConfigDialog() {
                 This limit is the binding constraint on the network.
               </div>
             )}
+          </div>
+        )}
+
+        {recipe && !pendingRecipe && variants.length > 0 && (
+          <div className="space-y-1.5">
+            {variants.map(v => (
+              <Button
+                key={v.id}
+                variant="ghost"
+                className="w-full"
+                onClick={() => setPendingRecipeId(v.id)}
+              >
+                {variantLabel(v, recipe)}
+              </Button>
+            ))}
+          </div>
+        )}
+
+        {pendingRecipe && preview && (
+          <div className="text-xs bg-panel-2 rounded p-2 space-y-2 border border-line-soft">
+            <div className="font-medium text-ink">
+              Switch to {pendingRecipe.machine}
+              {pendingRecipe.buildingTier ? ` ${pendingRecipe.buildingTier}` : ''}?
+            </div>
+
+            {preview.kept.length > 0 && (
+              <div>
+                <div className="text-ink-dim mb-0.5">Connections kept</div>
+                <div className="space-y-0.5">
+                  {preview.kept.map(k => (
+                    <div key={k.itemId} className="flex items-center gap-1.5">
+                      <ItemBadge itemId={k.itemId} />
+                      <span>{itemById(k.itemId)?.name ?? k.itemId}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {preview.dropped.length > 0 && (
+              <div>
+                <div className="text-danger mb-0.5">Will be disconnected</div>
+                <div className="space-y-0.5">
+                  {preview.dropped.map(d => (
+                    <div key={d.itemId} className="flex items-center gap-1.5 text-danger">
+                      <ItemBadge itemId={d.itemId} />
+                      <span>{itemById(d.itemId)?.name ?? d.itemId}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {preview.unfed.length > 0 && (
+              <div>
+                <div className="text-ink-dim mb-0.5">New inputs (unconnected)</div>
+                <div className="space-y-0.5">
+                  {preview.unfed.map(itemId => (
+                    <div key={itemId} className="flex items-center gap-1.5">
+                      <ItemBadge itemId={itemId} />
+                      <span>{itemById(itemId)?.name ?? itemId}</span>
+                    </div>
+                  ))}
+                </div>
+                <div className="text-ink-dim italic mt-1">Validation will flag these as unconnected.</div>
+              </div>
+            )}
+
+            <div className="flex justify-end gap-2 pt-1">
+              <Button variant="ghost" onClick={() => setPendingRecipeId(null)}>Cancel</Button>
+              <Button onClick={confirmSwitch}>Confirm switch</Button>
+            </div>
           </div>
         )}
 

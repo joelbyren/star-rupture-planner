@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import type { Node, Edge, Connection } from '@xyflow/react';
-import type { RawResourceConfig, FactoryPort } from '../engine/types.ts';
+import type { RawResourceConfig, FactoryPort, Recipe } from '../engine/types.ts';
 import { DEFAULT_RAW_CONFIG, calcSupplyRate } from '../engine/rawResources.ts';
 import {
   balanceTree,
@@ -141,6 +141,8 @@ export interface PlanState {
   removeElements: (nodeIds: string[], edgeIds: string[]) => void;
   setNodeRawConfig: (id: string, patch: Partial<RawResourceConfig>) => void;
   setNodeHardLimit: (id: string, limit: number | null) => void;
+  /** Swap a production node's recipe; incoming edges feeding ingredients the new recipe lacks are dropped. */
+  setNodeRecipe: (id: string, recipeId: string) => void;
   connectNodes: (connection: Connection) => void;
   autoLayout: () => void;
   addNote: (parentId: string, text: string) => void;
@@ -666,6 +668,34 @@ export function findValidationIssues(nodes: ViewNode[], edges: Edge[]): Validati
 }
 
 // ------------------------------------------------------------------
+// Recipe-change preview: which incoming connections survive a recipe swap.
+// Mirrors the keep-rule in setNodeRecipe exactly — keep in sync.
+// ------------------------------------------------------------------
+
+export interface RecipeChangePreview {
+  /** Inputs of the new recipe whose existing producer edge survives. */
+  kept: { itemId: string; producerNodeId: string }[];
+  /** Currently-connected inputs the new recipe no longer has — edges will be removed. */
+  dropped: { itemId: string; producerNodeId: string }[];
+  /** New-recipe inputs that will have no producer (validation will flag these). */
+  unfed: string[];
+}
+
+export function computeRecipeChangePreview(nodeId: string, edges: Edge[], newRecipe: Recipe): RecipeChangePreview {
+  const incoming = edges.filter(e => e.target === nodeId && e.targetHandle != null);
+  const inputIds = new Set(newRecipe.inputs.map(i => i.itemId));
+  const kept: RecipeChangePreview['kept'] = [];
+  const dropped: RecipeChangePreview['dropped'] = [];
+  for (const e of incoming) {
+    const entry = { itemId: e.targetHandle as string, producerNodeId: e.source };
+    (inputIds.has(entry.itemId) ? kept : dropped).push(entry);
+  }
+  const fed = new Set(incoming.map(e => e.targetHandle));
+  const unfed = newRecipe.inputs.map(i => i.itemId).filter(itemId => !fed.has(itemId));
+  return { kept, dropped, unfed };
+}
+
+// ------------------------------------------------------------------
 // Layered auto-layout (producer→consumer; raw on the left, products on the right)
 // ------------------------------------------------------------------
 
@@ -1069,6 +1099,23 @@ export const usePlanStore = create<PlanState>((set, get) => {
 
     setNodeHardLimit(id, limit) {
       updateItemNodeData(id, d => ({ ...d, hardLimitPerMin: limit ?? undefined }));
+    },
+
+    setNodeRecipe(id, recipeId) {
+      const recipe = ALL_RECIPES.find(r => r.id === recipeId);
+      commitViewedGraph(g => {
+        const node = g.nodes.find(n => n.id === id);
+        if (!node || !isItemNode(node) || node.data.isRaw) return g;
+        if (!recipe || recipe.outputItemId !== node.data.itemId) return g; // must still produce this item
+        if (node.data.recipeId === recipeId) return g;
+        const inputIds = new Set(recipe.inputs.map(i => i.itemId));
+        return {
+          nodes: g.nodes.map(n =>
+            n.id === id && isItemNode(n) ? { ...n, data: { ...n.data, recipeId } } : n),
+          edges: g.edges.filter(
+            e => e.target !== id || (e.targetHandle != null && inputIds.has(e.targetHandle))),
+        };
+      });
     },
 
     connectNodes(connection) {

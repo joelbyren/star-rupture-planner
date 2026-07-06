@@ -1,5 +1,16 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { usePlanStore, isNoteNode, NOTE_MAX_DISTANCE, type ItemNodeType, type NoteNodeType } from './planStore.ts';
+import {
+  usePlanStore,
+  isNoteNode,
+  isFactoryNode,
+  NOTE_MAX_DISTANCE,
+  findValidationIssues,
+  computeRecipeChangePreview,
+  type ItemNodeType,
+  type NoteNodeType,
+  type FactoryNodeType,
+} from './planStore.ts';
+import { ALL_RECIPES } from '../data/index.ts';
 
 const reset = () =>
   usePlanStore.setState({ rootGraph: { nodes: [], edges: [] }, viewPath: [], nodes: [], edges: [] });
@@ -229,5 +240,188 @@ describe('planStore — notes', () => {
 
     const note = usePlanStore.getState().nodes.find(isNoteNode) as NoteNodeType | undefined;
     expect(note?.data.text).toBe('keep this');
+  });
+});
+
+describe('planStore — setNodeRecipe', () => {
+  beforeEach(reset);
+
+  const CERAMICS_V1 = 'recipe_furnace_ceramics'; // inputs: calcite-sheets, wolfram-powder
+  const CERAMICS_V2 = 'recipe_furnace-tier2_ceramics-v2'; // inputs: calcite-sheets, helium-ore, wolfram-powder
+  const GLASS_V1 = 'recipe_furnace_glass'; // inputs: helium-ore, calcium-powder
+  const GLASS_V2 = 'recipe_furnace-tier2_glass-v2'; // inputs: pressurized-helium, calcite-sheets, goethite-ingot
+  const COIL_V1 = 'recipe_furnace_coil'; // inputs: tube, wolfram-wire, ceramics
+
+  it('keeps matching connections and drops none when the new recipe is a superset', () => {
+    const s = usePlanStore.getState();
+    s.addNode('ceramics', CERAMICS_V1);
+    s.addNode('calcite-sheets', null);
+    s.addNode('wolfram-powder', null);
+    s.connectNodes({ source: idFor('calcite-sheets'), target: idFor('ceramics'), sourceHandle: null, targetHandle: 'calcite-sheets' });
+    s.connectNodes({ source: idFor('wolfram-powder'), target: idFor('ceramics'), sourceHandle: null, targetHandle: 'wolfram-powder' });
+    const edgesBefore = [...usePlanStore.getState().edges].sort((a, b) => a.id.localeCompare(b.id));
+
+    s.setNodeRecipe(idFor('ceramics'), CERAMICS_V2);
+
+    const state = usePlanStore.getState();
+    expect((state.nodes.find(n => n.id === idFor('ceramics')) as ItemNodeType).data.recipeId).toBe(CERAMICS_V2);
+    const edgesAfter = [...state.edges].sort((a, b) => a.id.localeCompare(b.id));
+    expect(edgesAfter).toEqual(edgesBefore);
+    expect(findValidationIssues(state.nodes, state.edges)).toEqual([
+      { nodeId: idFor('ceramics'), consumerItemId: 'ceramics', itemId: 'helium-ore' },
+    ]);
+    // Ceramics has no consumer of its own, so the raw-fed component scales UP to
+    // the calcite-sheets/wolfram-powder supply cap (120/min each at normal
+    // purity/V1): 120 / (1*120/4) = 4 buildings at the V2 rate of 120/min each.
+    expect(balanceFor('ceramics').buildingCountExact).toBeCloseTo(4);
+    expect(balanceFor('ceramics').outputRatePerMin).toBeCloseTo(480);
+  });
+
+  it('drops every connection when the new recipe shares no inputs with the old one', () => {
+    const s = usePlanStore.getState();
+    s.addNode('glass', GLASS_V1);
+    s.addNode('helium-ore', null);
+    s.addNode('calcium-powder', null);
+    s.connectNodes({ source: idFor('helium-ore'), target: idFor('glass'), sourceHandle: null, targetHandle: 'helium-ore' });
+    s.connectNodes({ source: idFor('calcium-powder'), target: idFor('glass'), sourceHandle: null, targetHandle: 'calcium-powder' });
+    expect(usePlanStore.getState().edges).toHaveLength(2);
+
+    s.setNodeRecipe(idFor('glass'), GLASS_V2);
+
+    const state = usePlanStore.getState();
+    expect(state.edges).toHaveLength(0);
+    expect(state.nodes).toHaveLength(3); // producer nodes are left in place, just disconnected
+    const glassIssues = findValidationIssues(state.nodes, state.edges).filter(i => i.consumerItemId === 'glass');
+    expect(glassIssues.map(i => i.itemId).sort()).toEqual(['calcite-sheets', 'goethite-ingot', 'pressurized-helium']);
+  });
+
+  it('downgrading V2 to V1 drops only the connection for the input that no longer exists', () => {
+    const s = usePlanStore.getState();
+    s.addNode('ceramics', CERAMICS_V2);
+    s.addNode('calcite-sheets', null);
+    s.addNode('wolfram-powder', null);
+    s.addNode('helium-ore', null);
+    s.connectNodes({ source: idFor('calcite-sheets'), target: idFor('ceramics'), sourceHandle: null, targetHandle: 'calcite-sheets' });
+    s.connectNodes({ source: idFor('wolfram-powder'), target: idFor('ceramics'), sourceHandle: null, targetHandle: 'wolfram-powder' });
+    s.connectNodes({ source: idFor('helium-ore'), target: idFor('ceramics'), sourceHandle: null, targetHandle: 'helium-ore' });
+
+    s.setNodeRecipe(idFor('ceramics'), CERAMICS_V1);
+
+    const state = usePlanStore.getState();
+    expect(state.edges).toHaveLength(2);
+    expect(state.edges.some(e => e.targetHandle === 'helium-ore')).toBe(false);
+  });
+
+  it('preserves the outgoing edge to a downstream consumer and rebalances it', () => {
+    const s = usePlanStore.getState();
+    // No raw producers feeding ceramics here, deliberately: connecting raw nodes
+    // makes the demo network's raw-supply auto-scaling kick in (extractors run
+    // at full capacity when nothing else constrains them), which would make the
+    // building-count math below depend on unrelated supply-rate constants.
+    // Coil is the sole (unconnected) consumer, so ceramics' demand is fixed by
+    // coil alone and independent of which ceramics recipe is active.
+    s.addNode('ceramics', CERAMICS_V1);
+    s.addNode('coil', COIL_V1);
+    s.connectNodes({ source: idFor('ceramics'), target: idFor('coil'), sourceHandle: null, targetHandle: 'ceramics' });
+    const buildingsBefore = balanceFor('ceramics').buildingCountExact;
+
+    s.setNodeRecipe(idFor('ceramics'), CERAMICS_V2);
+
+    const state = usePlanStore.getState();
+    expect(state.edges.some(e => e.source === idFor('ceramics') && e.target === idFor('coil'))).toBe(true);
+    // Same ceramics demand from coil, but V2 produces twice as much per building.
+    expect(balanceFor('ceramics').buildingCountExact).toBeCloseTo(buildingsBefore / 2);
+  });
+
+  it('is a no-op for a raw node, an unknown recipe id, a recipe for a different item, or the same recipe id', () => {
+    const s = usePlanStore.getState();
+    s.addNode('ceramics', CERAMICS_V1);
+    s.addNode('wolfram-bar', null);
+    const before = JSON.stringify(usePlanStore.getState().nodes);
+
+    s.setNodeRecipe(idFor('wolfram-bar'), CERAMICS_V1); // raw node
+    s.setNodeRecipe(idFor('ceramics'), 'recipe_does_not_exist');
+    s.setNodeRecipe(idFor('ceramics'), 'recipe_crafter_rotor'); // produces a different item
+    s.setNodeRecipe(idFor('ceramics'), CERAMICS_V1); // no-op, already the current recipe
+
+    expect(JSON.stringify(usePlanStore.getState().nodes)).toBe(before);
+  });
+
+  it('preserves hardLimitPerMin across a recipe switch', () => {
+    const s = usePlanStore.getState();
+    s.addNode('ceramics', CERAMICS_V1);
+    s.setNodeHardLimit(idFor('ceramics'), 30);
+
+    s.setNodeRecipe(idFor('ceramics'), CERAMICS_V2);
+
+    expect((usePlanStore.getState().nodes.find(n => n.id === idFor('ceramics')) as ItemNodeType).data.hardLimitPerMin).toBe(30);
+  });
+
+  it('operates on a node inside a factory without touching the root graph', () => {
+    const s = usePlanStore.getState();
+    s.addFactoryNode({ x: 0, y: 0 });
+    const factoryId = (usePlanStore.getState().nodes.find(isFactoryNode) as FactoryNodeType).id;
+    s.enterFactory(factoryId);
+    s.addNode('ceramics', CERAMICS_V1);
+    s.addNode('calcite-sheets', null);
+    s.addNode('wolfram-powder', null);
+    s.connectNodes({ source: idFor('calcite-sheets'), target: idFor('ceramics'), sourceHandle: null, targetHandle: 'calcite-sheets' });
+    s.connectNodes({ source: idFor('wolfram-powder'), target: idFor('ceramics'), sourceHandle: null, targetHandle: 'wolfram-powder' });
+
+    s.setNodeRecipe(idFor('ceramics'), CERAMICS_V2);
+
+    const state = usePlanStore.getState();
+    expect((state.nodes.find(n => n.id === idFor('ceramics')) as ItemNodeType).data.recipeId).toBe(CERAMICS_V2);
+    expect(state.edges).toHaveLength(2);
+    expect(state.rootGraph.nodes.filter(isFactoryNode)).toHaveLength(1);
+    expect(state.rootGraph.nodes).toHaveLength(1); // ceramics/producers live inside the factory's inner graph
+  });
+});
+
+describe('computeRecipeChangePreview', () => {
+  beforeEach(reset);
+
+  it('splits incoming edges into kept/dropped and lists unfed new inputs', () => {
+    const s = usePlanStore.getState();
+    s.addNode('ceramics', 'recipe_furnace_ceramics');
+    s.addNode('calcite-sheets', null);
+    s.addNode('wolfram-powder', null);
+    s.connectNodes({ source: idFor('calcite-sheets'), target: idFor('ceramics'), sourceHandle: null, targetHandle: 'calcite-sheets' });
+    s.connectNodes({ source: idFor('wolfram-powder'), target: idFor('ceramics'), sourceHandle: null, targetHandle: 'wolfram-powder' });
+
+    const v2 = ALL_RECIPES.find(r => r.id === 'recipe_furnace-tier2_ceramics-v2')!;
+    const preview = computeRecipeChangePreview(idFor('ceramics'), usePlanStore.getState().edges, v2);
+
+    expect(preview.kept.map(k => k.itemId).sort()).toEqual(['calcite-sheets', 'wolfram-powder']);
+    expect(preview.dropped).toEqual([]);
+    expect(preview.unfed).toEqual(['helium-ore']);
+  });
+
+  it('reports everything dropped and unfed when no inputs overlap', () => {
+    const s = usePlanStore.getState();
+    s.addNode('glass', 'recipe_furnace_glass');
+    s.addNode('helium-ore', null);
+    s.addNode('calcium-powder', null);
+    s.connectNodes({ source: idFor('helium-ore'), target: idFor('glass'), sourceHandle: null, targetHandle: 'helium-ore' });
+    s.connectNodes({ source: idFor('calcium-powder'), target: idFor('glass'), sourceHandle: null, targetHandle: 'calcium-powder' });
+
+    const v2 = ALL_RECIPES.find(r => r.id === 'recipe_furnace-tier2_glass-v2')!;
+    const preview = computeRecipeChangePreview(idFor('glass'), usePlanStore.getState().edges, v2);
+
+    expect(preview.kept).toEqual([]);
+    expect(preview.dropped).toHaveLength(2);
+    expect(preview.unfed.sort()).toEqual(['calcite-sheets', 'goethite-ingot', 'pressurized-helium']);
+  });
+
+  it('treats a node with no incoming edges as fully unfed', () => {
+    const s = usePlanStore.getState();
+    s.addNode('ceramics', 'recipe_furnace_ceramics');
+    const v2 = ALL_RECIPES.find(r => r.id === 'recipe_furnace-tier2_ceramics-v2')!;
+
+    const preview = computeRecipeChangePreview(idFor('ceramics'), usePlanStore.getState().edges, v2);
+
+    expect(preview.kept).toEqual([]);
+    expect(preview.dropped).toEqual([]);
+    expect(preview.unfed.sort()).toEqual(['calcite-sheets', 'helium-ore', 'wolfram-powder']);
   });
 });
