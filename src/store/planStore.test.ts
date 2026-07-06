@@ -1,8 +1,10 @@
 import { describe, it, expect, beforeEach } from 'vitest';
+import type { Edge } from '@xyflow/react';
 import {
   usePlanStore,
   isNoteNode,
   isFactoryNode,
+  portNodeId,
   NOTE_MAX_DISTANCE,
   findValidationIssues,
   computeRecipeChangePreview,
@@ -19,6 +21,7 @@ const idFor = (itemId: string) =>
 const balanceFor = (itemId: string) =>
   (usePlanStore.getState().nodes.find(n => n.type === 'itemNode' && n.data.itemId === itemId) as ItemNodeType)
     .data.balance!;
+const posFor = (id: string) => usePlanStore.getState().nodes.find(n => n.id === id)!.position;
 
 describe('planStore — manual builder', () => {
   beforeEach(reset);
@@ -423,5 +426,108 @@ describe('computeRecipeChangePreview', () => {
     expect(preview.kept).toEqual([]);
     expect(preview.dropped).toEqual([]);
     expect(preview.unfed.sort()).toEqual(['calcite-sheets', 'helium-ore', 'wolfram-powder']);
+  });
+});
+
+describe('planStore — autoLayout', () => {
+  beforeEach(reset);
+
+  it('orders multi-input producers to match the consumer\'s ingredient row order', () => {
+    // recipe_crafter_rotor.inputs = [titanium-rod (row 0), wolfram-wire (row 1)].
+    // Add the producers in the opposite order so a correct layout must reorder them.
+    const s = usePlanStore.getState();
+    s.addNode('rotor', 'recipe_crafter_rotor');
+    s.addNode('wolfram-wire', 'recipe_crafter_wolfram-wire');
+    s.addNode('titanium-rod', 'recipe_crafter_titanium-rod');
+    s.connectNodes({ source: idFor('wolfram-wire'), target: idFor('rotor'), sourceHandle: null, targetHandle: 'wolfram-wire' });
+    s.connectNodes({ source: idFor('titanium-rod'), target: idFor('rotor'), sourceHandle: null, targetHandle: 'titanium-rod' });
+
+    s.autoLayout();
+
+    expect(posFor(idFor('titanium-rod')).y).toBeLessThan(posFor(idFor('wolfram-wire')).y);
+  });
+
+  it("orders consumers to match a multi-output factory's output row order", () => {
+    const factory: FactoryNodeType = {
+      id: 'factory-1',
+      type: 'factoryNode',
+      position: { x: 0, y: 0 },
+      data: {
+        name: 'Factory',
+        // out-a is row 0 (top), out-b is row 1 (bottom).
+        inputs: [],
+        outputs: [
+          { id: 'out-a', itemId: 'titanium-bar' },
+          { id: 'out-b', itemId: 'wolfram-bar' },
+        ],
+        inner: { nodes: [], edges: [] },
+      },
+    };
+    const consumerA: ItemNodeType = {
+      id: 'consumer-a',
+      type: 'itemNode',
+      position: { x: 300, y: 0 },
+      data: { itemId: 'titanium-rod', recipeId: 'recipe_crafter_titanium-rod', isRaw: false },
+    };
+    const consumerB: ItemNodeType = {
+      id: 'consumer-b',
+      type: 'itemNode',
+      position: { x: 300, y: 200 },
+      data: { itemId: 'wolfram-wire', recipeId: 'recipe_crafter_wolfram-wire', isRaw: false },
+    };
+    // consumerB (fed by the bottom output row) is placed first, so a correct
+    // layout must swap them to match output row order.
+    const edges: Edge[] = [
+      { id: 'e-b', source: factory.id, target: consumerB.id, sourceHandle: portNodeId('output', 'out-b'), targetHandle: 'wolfram-bar' },
+      { id: 'e-a', source: factory.id, target: consumerA.id, sourceHandle: portNodeId('output', 'out-a'), targetHandle: 'titanium-bar' },
+    ];
+    usePlanStore.setState({
+      rootGraph: { nodes: [factory, consumerB, consumerA], edges },
+      viewPath: [],
+      nodes: [factory, consumerB, consumerA],
+      edges,
+    });
+
+    usePlanStore.getState().autoLayout();
+
+    expect(posFor('consumer-a').y).toBeLessThan(posFor('consumer-b').y);
+  });
+
+  it('does not disturb a simple single-input chain', () => {
+    const s = usePlanStore.getState();
+    s.addNode('rotor', 'recipe_crafter_rotor');
+    s.addNode('titanium-rod', 'recipe_crafter_titanium-rod');
+    s.connectNodes({ source: idFor('titanium-rod'), target: idFor('rotor'), sourceHandle: null, targetHandle: 'titanium-rod' });
+
+    s.autoLayout();
+
+    const rotorPos = posFor(idFor('rotor'));
+    const rodPos = posFor(idFor('titanium-rod'));
+    expect(rodPos.x).toBeLessThan(rotorPos.x); // raw side stays left of the consumer
+    expect(Number.isFinite(rotorPos.y)).toBe(true);
+    expect(Number.isFinite(rodPos.y)).toBe(true);
+  });
+
+  it('terminates and produces finite positions on a cyclic edge graph', () => {
+    const a: ItemNodeType = { id: 'a', type: 'itemNode', position: { x: 0, y: 0 }, data: { itemId: 'rotor', recipeId: null, isRaw: true } };
+    const b: ItemNodeType = { id: 'b', type: 'itemNode', position: { x: 0, y: 0 }, data: { itemId: 'wolfram-wire', recipeId: null, isRaw: true } };
+    const edges: Edge[] = [
+      { id: 'e-ab', source: a.id, target: b.id, sourceHandle: null, targetHandle: 'wolfram-wire' },
+      { id: 'e-ba', source: b.id, target: a.id, sourceHandle: null, targetHandle: 'rotor' },
+    ];
+    usePlanStore.setState({
+      rootGraph: { nodes: [a, b], edges },
+      viewPath: [],
+      nodes: [a, b],
+      edges,
+    });
+
+    usePlanStore.getState().autoLayout();
+
+    for (const id of ['a', 'b']) {
+      const pos = posFor(id);
+      expect(Number.isFinite(pos.x)).toBe(true);
+      expect(Number.isFinite(pos.y)).toBe(true);
+    }
   });
 });

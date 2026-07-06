@@ -16,7 +16,7 @@ import { ALL_RECIPES } from '../data/index.ts';
 import { computeEndProductIds } from '../lib/endProducts.ts';
 import { buildSnapshot, saveLocalSnapshot, loadLocalSnapshot } from '../lib/persistence.ts';
 import { defaultRawConfig } from '../lib/tierSettings.ts';
-import { LAYOUT_COL_W, LAYOUT_ROW_H } from '../lib/layoutConstants.ts';
+import { LAYOUT_COL_W, LAYOUT_ROW_H, PORT_ALIGN_WEIGHT, LAYOUT_BARY_ITERS, LAYOUT_TRANSPOSE_ROUNDS } from '../lib/layoutConstants.ts';
 import { buildPrereqPlan, PREREQ_STEP_DELAY_MS, type PrereqStep } from '../lib/prereqTree.ts';
 import { useSettingsStore } from './settingsStore.ts';
 import { useUiStore } from './uiStore.ts';
@@ -699,6 +699,58 @@ export function computeRecipeChangePreview(nodeId: string, edges: Edge[], newRec
 // Layered auto-layout (producer→consumer; raw on the left, products on the right)
 // ------------------------------------------------------------------
 
+const SINGLE_OUTPUT_KEY = '__single-output__';
+
+/** Ordered handle ids on one side of a node, matching the row order the
+ *  component actually renders (ItemNode.tsx / FactoryNode.tsx). */
+function nodePortIds(n: AnyNode, side: 'input' | 'output'): string[] {
+  if (isFactoryNode(n)) {
+    return (side === 'input' ? n.data.inputs : n.data.outputs).map(p => portNodeId(side, p.id));
+  }
+  if (isItemNode(n)) {
+    if (side === 'output') return [SINGLE_OUTPUT_KEY]; // single unnamed output handle
+    const fromBalance = n.data.balance?.inputs?.map(i => i.itemId);
+    if (fromBalance) return fromBalance;
+    const recipe = n.data.recipeId ? ALL_RECIPES.find(r => r.id === n.data.recipeId) : undefined;
+    return recipe?.inputs.map(i => i.itemId) ?? [];
+  }
+  return [];
+}
+
+/** Normalized row offset in [-0.5, 0.5] for the handle an edge end attaches
+ *  to on node `n`; 0 when `n` has ≤1 port on that side or the handle id
+ *  isn't found (stale/malformed edge data — neutral, not an error). */
+function portRowOffset(n: AnyNode, side: 'input' | 'output', handleId: string | null | undefined): number {
+  const ports = nodePortIds(n, side);
+  if (ports.length <= 1) return 0;
+  const key = side === 'output' && isItemNode(n) ? SINGLE_OUTPUT_KEY : (handleId ?? '');
+  const idx = ports.indexOf(key);
+  return idx < 0 ? 0 : idx / (ports.length - 1) - 0.5;
+}
+
+interface PortLink { id: string; rowOffset: number }
+
+/** producers.get(id): nodes feeding id, each tagged with THAT PRODUCER's own
+ *  output-row offset for this edge. consumers.get(id): nodes id feeds, each
+ *  tagged with THAT CONSUMER's own input-row offset for this edge. Lets the
+ *  ordering pass below pull a node's position toward whichever row its
+ *  shared handles actually connect to, instead of treating every neighbor
+ *  as a single point. */
+function buildPortLinks(nodes: AnyNode[], edges: Edge[]) {
+  const idSet = new Set(nodes.map(n => n.id));
+  const byId = new Map(nodes.map(n => [n.id, n]));
+  const producers = new Map<string, PortLink[]>();
+  const consumers = new Map<string, PortLink[]>();
+  for (const n of nodes) { producers.set(n.id, []); consumers.set(n.id, []); }
+  for (const e of edges) {
+    if (e.source === e.target) continue;
+    if (!idSet.has(e.source) || !idSet.has(e.target)) continue;
+    const p = byId.get(e.source)!, c = byId.get(e.target)!;
+    consumers.get(e.source)!.push({ id: e.target, rowOffset: portRowOffset(c, 'input', e.targetHandle) });
+    producers.get(e.target)!.push({ id: e.source, rowOffset: portRowOffset(p, 'output', e.sourceHandle) });
+  }
+  return { producers, consumers };
+}
 
 function layoutNodes(allNodes: AnyNode[], edges: Edge[]): AnyNode[] {
   if (allNodes.length === 0) return allNodes;
@@ -707,13 +759,12 @@ function layoutNodes(allNodes: AnyNode[], edges: Edge[]): AnyNode[] {
   const nodes = allNodes.filter(n => !isNoteNode(n));
 
   const idSet = new Set(nodes.map(n => n.id));
-  const consumers = new Map<string, string[]>();
-  const producers = new Map<string, string[]>();
-  for (const n of nodes) { consumers.set(n.id, []); producers.set(n.id, []); }
+  // Plain structural adjacency for ranking only — rank stays port-agnostic.
+  const structConsumers = new Map<string, string[]>();
+  for (const n of nodes) structConsumers.set(n.id, []);
   for (const e of edges) {
     if (!idSet.has(e.source) || !idSet.has(e.target)) continue;
-    consumers.get(e.source)!.push(e.target);
-    producers.get(e.target)!.push(e.source);
+    structConsumers.get(e.source)!.push(e.target);
   }
 
   const rank = new Map<string, number>();
@@ -724,7 +775,7 @@ function layoutNodes(allNodes: AnyNode[], edges: Edge[]): AnyNode[] {
     if (visiting.has(id)) return 0;
     visiting.add(id);
     let r = 0;
-    for (const c of consumers.get(id)!) r = Math.max(r, computeRank(c) + 1);
+    for (const c of structConsumers.get(id)!) r = Math.max(r, computeRank(c) + 1);
     visiting.delete(id);
     rank.set(id, r);
     return r;
@@ -738,20 +789,82 @@ function layoutNodes(allNodes: AnyNode[], edges: Edge[]): AnyNode[] {
     layers[r]!.push(n.id); // r is in [0, maxRank], matching layers' length
   }
 
+  const { producers, consumers } = buildPortLinks(nodes, edges);
+
   const order = new Map<string, number>();
   layers.forEach(layer => layer.forEach((id, i) => order.set(id, i)));
-  for (let iter = 0; iter < 8; iter++) {
-    for (const layer of layers) {
-      const bary = new Map<string, number>();
-      for (const id of layer) {
-        const nb = [...producers.get(id)!, ...consumers.get(id)!];
-        bary.set(id, nb.length === 0
-          ? order.get(id)!
-          : nb.reduce((s, x) => s + (order.get(x) ?? 0), 0) / nb.length);
-      }
+
+  function baryFor(id: string, links: PortLink[]): number {
+    if (links.length === 0) return order.get(id)!;
+    const sum = links.reduce((s, l) => s + order.get(l.id)! + PORT_ALIGN_WEIGHT * l.rowOffset, 0);
+    return sum / links.length;
+  }
+
+  for (let iter = 0; iter < LAYOUT_BARY_ITERS; iter++) {
+    const useProducers = iter % 2 === 0;
+    // Producers sit at higher rank (further left); sweep rank descending so
+    // each layer sees already-settled producer positions. Consumers sit at
+    // lower rank (further right); sweep rank ascending for the same reason.
+    const rankOrder = [...layers.keys()].sort((a, b) => (useProducers ? b - a : a - b));
+    for (const r of rankOrder) {
+      const layer = layers[r]!;
+      const links = useProducers ? producers : consumers;
+      const bary = new Map(layer.map(id => [id, baryFor(id, links.get(id)!)]));
       layer.sort((a, b) => bary.get(a)! - bary.get(b)!);
       layer.forEach((id, i) => order.set(id, i));
     }
+  }
+
+  // Transpose cleanup: fix residual local crossings a barycenter mean can't
+  // resolve, by directly counting crossings between adjacent layer pairs and
+  // keeping only swaps that strictly reduce them (standard dagre/ELK step).
+  // Edges spanning more than one rank (no dummy/virtual nodes here, same as
+  // the rest of this algorithm) are excluded from the local crossing count.
+  const edgesBetween = new Map<number, { u: string; l: string }[]>(); // key = lower rank r, pair is (r, r+1)
+  for (const e of edges) {
+    if (e.source === e.target) continue;
+    if (!idSet.has(e.source) || !idSet.has(e.target)) continue;
+    const ru = rank.get(e.source)!, rl = rank.get(e.target)!;
+    if (ru === rl + 1) {
+      if (!edgesBetween.has(rl)) edgesBetween.set(rl, []);
+      edgesBetween.get(rl)!.push({ u: e.source, l: e.target });
+    }
+  }
+
+  function countPair(rLower: number): number {
+    const es = edgesBetween.get(rLower);
+    if (!es || es.length < 2) return 0;
+    let crossings = 0;
+    for (let i = 0; i < es.length; i++) {
+      for (let j = i + 1; j < es.length; j++) {
+        const a = es[i]!, b = es[j]!;
+        const du = order.get(a.u)! - order.get(b.u)!;
+        const dl = order.get(a.l)! - order.get(b.l)!;
+        if (du !== 0 && dl !== 0 && Math.sign(du) !== Math.sign(dl)) crossings++;
+      }
+    }
+    return crossings;
+  }
+
+  for (let round = 0; round < LAYOUT_TRANSPOSE_ROUNDS; round++) {
+    let improved = false;
+    for (let r = 0; r <= maxRank; r++) {
+      const layer = layers[r]!;
+      for (let i = 0; i < layer.length - 1; i++) {
+        const a = layer[i]!, b = layer[i + 1]!;
+        const before = countPair(r - 1) + countPair(r);
+        layer[i] = b; layer[i + 1] = a;
+        order.set(a, i + 1); order.set(b, i);
+        const after = countPair(r - 1) + countPair(r);
+        if (after < before) {
+          improved = true;
+        } else {
+          layer[i] = a; layer[i + 1] = b;
+          order.set(a, i); order.set(b, i + 1);
+        }
+      }
+    }
+    if (!improved) break;
   }
 
   const pos = new Map<string, { x: number; y: number }>();
