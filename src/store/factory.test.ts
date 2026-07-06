@@ -60,8 +60,8 @@ describe('factory nodes — navigation & ports', () => {
     get().addFactoryNode({ x: 0, y: 0 });
     const id = firstFactoryId();
     get().enterFactory(id);
-    get().addInputPort('wire_wolfram');
-    get().addOutputPort('comp_rotor');
+    get().addInputPort('wolfram-wire');
+    get().addOutputPort('rotor');
 
     const fac = factoryAt([id]);
     expect(fac.data.inputs).toHaveLength(1);
@@ -75,8 +75,8 @@ describe('factory nodes — navigation & ports', () => {
     get().addFactoryNode({ x: 0, y: 0 });
     const id = firstFactoryId();
     get().enterFactory(id);
-    const portId = get().addInputPort('wire_wolfram');
-    get().addNode('comp_rotor', 'recipe_comp_rotor', { x: 100, y: 0 });
+    const portId = get().addInputPort('wolfram-wire');
+    get().addNode('rotor', 'recipe_crafter_rotor', { x: 100, y: 0 });
     const rotorId = get().rootGraph.nodes
       .find(isFactoryNode)!.data.inner.nodes.find(n => n.type === 'itemNode')!.id;
 
@@ -84,7 +84,7 @@ describe('factory nodes — navigation & ports', () => {
       source: portNodeId('input', portId),
       target: rotorId,
       sourceHandle: null,
-      targetHandle: 'wire_wolfram',
+      targetHandle: 'wolfram-wire',
     });
 
     const inner = factoryAt([id]).data.inner;
@@ -104,20 +104,20 @@ describe('factory nodes — navigation & ports', () => {
     if (!unsetInput) throw new Error('expected an input port');
     expect(unsetInput.itemId).toBeNull();
 
-    get().addNode('comp_rotor', 'recipe_comp_rotor', { x: 100, y: 0 });
+    get().addNode('rotor', 'recipe_crafter_rotor', { x: 100, y: 0 });
     const rotorId = factoryAt([id]).data.inner.nodes.find(n => n.type === 'itemNode')!.id;
 
-    // Drag the unset port to the rotor's wire_wolfram ingredient handle.
+    // Drag the unset port to the rotor's wolfram-wire ingredient handle.
     get().connectNodes({
       source: portNodeId('input', portId),
       target: rotorId,
       sourceHandle: null,
-      targetHandle: 'wire_wolfram',
+      targetHandle: 'wolfram-wire',
     });
 
     const [connectedInput] = factoryAt([id]).data.inputs;
     if (!connectedInput) throw new Error('expected an input port');
-    expect(connectedInput.itemId).toBe('wire_wolfram');
+    expect(connectedInput.itemId).toBe('wolfram-wire');
     expect(factoryAt([id]).data.inner.edges).toHaveLength(1);
   });
 
@@ -127,7 +127,7 @@ describe('factory nodes — navigation & ports', () => {
     get().enterFactory(id);
     const portId = get().addOutputPort(); // unset
 
-    get().addNode('comp_rotor', 'recipe_comp_rotor', { x: 0, y: 0 });
+    get().addNode('rotor', 'recipe_crafter_rotor', { x: 0, y: 0 });
     const rotorId = factoryAt([id]).data.inner.nodes.find(n => n.type === 'itemNode')!.id;
 
     // The rotor producer feeds the unset output port.
@@ -140,7 +140,7 @@ describe('factory nodes — navigation & ports', () => {
 
     const [connectedOutput] = factoryAt([id]).data.outputs;
     if (!connectedOutput) throw new Error('expected an output port');
-    expect(connectedOutput.itemId).toBe('comp_rotor');
+    expect(connectedOutput.itemId).toBe('rotor');
     expect(factoryAt([id]).data.inner.edges).toHaveLength(1);
   });
 
@@ -148,10 +148,10 @@ describe('factory nodes — navigation & ports', () => {
     get().addFactoryNode({ x: 0, y: 0 });
     const id = firstFactoryId();
     get().enterFactory(id);
-    const portId = get().addInputPort('wire_wolfram');
-    get().addNode('comp_rotor', 'recipe_comp_rotor');
+    const portId = get().addInputPort('wolfram-wire');
+    get().addNode('rotor', 'recipe_crafter_rotor');
     const rotorId = factoryAt([id]).data.inner.nodes.find(n => n.type === 'itemNode')!.id;
-    get().connectNodes({ source: portNodeId('input', portId), target: rotorId, sourceHandle: null, targetHandle: 'wire_wolfram' });
+    get().connectNodes({ source: portNodeId('input', portId), target: rotorId, sourceHandle: null, targetHandle: 'wolfram-wire' });
     expect(factoryAt([id]).data.inner.edges).toHaveLength(1);
 
     get().removePort(portId);
@@ -163,14 +163,14 @@ describe('factory nodes — navigation & ports', () => {
     get().addFactoryNode({ x: 0, y: 0 });
     const id = firstFactoryId();
     get().enterFactory(id);
-    const portId = get().addInputPort('wire_wolfram');
-    get().addNode('comp_rotor', 'recipe_comp_rotor');
+    const portId = get().addInputPort('wolfram-wire');
+    get().addNode('rotor', 'recipe_crafter_rotor');
     const rotorId = factoryAt([id]).data.inner.nodes.find(n => n.type === 'itemNode')!.id;
-    get().connectNodes({ source: portNodeId('input', portId), target: rotorId, sourceHandle: null, targetHandle: 'wire_wolfram' });
+    get().connectNodes({ source: portNodeId('input', portId), target: rotorId, sourceHandle: null, targetHandle: 'wolfram-wire' });
     expect(factoryAt([id]).data.inner.edges).toHaveLength(1);
 
     // Changing the port item to something the rotor doesn't accept on that handle invalidates the edge.
-    get().setPortItem(portId, 'rod_titanium');
+    get().setPortItem(portId, 'titanium-rod');
     expect(factoryAt([id]).data.inner.edges).toHaveLength(0);
   });
 
@@ -178,15 +178,15 @@ describe('factory nodes — navigation & ports', () => {
     get().addFactoryNode({ x: 0, y: 0 });
     const id = firstFactoryId();
     get().enterFactory(id);
-    const inPortId = get().addInputPort('wire_wolfram');
-    const outPortId = get().addOutputPort('comp_rotor');
+    const inPortId = get().addInputPort('wolfram-wire');
+    const outPortId = get().addOutputPort('rotor');
     get().exitTo(0); // back to the root view, where the factory node lives
 
     const facNode = get().nodes.find(isFactoryNode)!;
-    // Input handle is a target (factory consumes wire_wolfram from outside).
-    expect(handleItemId(facNode, portNodeId('input', inPortId), 'target')).toBe('wire_wolfram');
-    // Output handle is a source (factory emits comp_rotor to outside).
-    expect(handleItemId(facNode, portNodeId('output', outPortId), 'source')).toBe('comp_rotor');
+    // Input handle is a target (factory consumes wolfram-wire from outside).
+    expect(handleItemId(facNode, portNodeId('input', inPortId), 'target')).toBe('wolfram-wire');
+    // Output handle is a source (factory emits rotor to outside).
+    expect(handleItemId(facNode, portNodeId('output', outPortId), 'source')).toBe('rotor');
   });
 
   it('renameFactory updates the current factory name without moving the view', () => {
@@ -213,12 +213,12 @@ describe('factory nodes — navigation & ports', () => {
 
   it('removeCurrentFactory drops the deleted factory\'s edges in the parent graph', () => {
     // root: an extractor feeding a factory's input port.
-    get().addNode('wire_wolfram', null); // raw
+    get().addNode('wolfram-wire', null); // raw
     const extractorId = get().rootGraph.nodes.find(n => n.type === 'itemNode')!.id;
     get().addFactoryNode({ x: 200, y: 0 });
     const facId = get().rootGraph.nodes.find(isFactoryNode)!.id;
     get().enterFactory(facId);
-    const portId = get().addInputPort('wire_wolfram');
+    const portId = get().addInputPort('wolfram-wire');
     get().exitTo(0);
     get().connectNodes({
       source: extractorId,
@@ -243,17 +243,17 @@ describe('factory nodes — navigation & ports', () => {
     get().enterFactory(innerId);
     expect(get().viewPath).toEqual([outerId, innerId]);
 
-    get().addNode('comp_rotor', 'recipe_comp_rotor');
+    get().addNode('rotor', 'recipe_crafter_rotor');
     const deepInner = factoryAt([outerId]).data.inner.nodes.find(n => n.id === innerId) as FactoryNodeType;
     expect(deepInner.data.inner.nodes.filter(n => n.type === 'itemNode')).toHaveLength(1);
   });
 
   it('drag-to-create seeds exactly one matching port and auto-connects', () => {
-    // A consumer that needs wire_wolfram; drag off its input handle to create a producing factory.
-    get().addNode('comp_rotor', 'recipe_comp_rotor');
+    // A consumer that needs wolfram-wire; drag off its input handle to create a producing factory.
+    get().addNode('rotor', 'recipe_crafter_rotor');
     const rotorId = get().rootGraph.nodes.find(n => n.type === 'itemNode')!.id;
     get().openAddDialog({
-      pending: { fromNodeId: rotorId, fromHandleId: 'wire_wolfram', fromHandleType: 'target' },
+      pending: { fromNodeId: rotorId, fromHandleId: 'wolfram-wire', fromHandleType: 'target' },
     });
     get().addFactoryNode({ x: 0, y: 0 });
 
@@ -261,21 +261,21 @@ describe('factory nodes — navigation & ports', () => {
     expect(fac.data.outputs).toHaveLength(1);
     const [seededOutput] = fac.data.outputs;
     if (!seededOutput) throw new Error('expected an output port');
-    expect(seededOutput.itemId).toBe('wire_wolfram');
+    expect(seededOutput.itemId).toBe('wolfram-wire');
     expect(fac.data.inputs).toHaveLength(0);
 
     const edge = get().rootGraph.edges.find(e => e.source === fac.id && e.target === rotorId);
     expect(edge).toBeTruthy();
-    expect(edge!.targetHandle).toBe('wire_wolfram');
+    expect(edge!.targetHandle).toBe('wolfram-wire');
   });
 
   it('a hard limit on an inner node scales the root through the store', () => {
-    // root: a factory producing wire_wolfram, feeding a rotor consumer.
+    // root: a factory producing wolfram-wire, feeding a rotor consumer.
     get().addFactoryNode({ x: 0, y: 0 });
     const facId = firstFactoryId();
     get().enterFactory(facId);
-    const outPortId = get().addOutputPort('wire_wolfram');
-    get().addNode('wire_wolfram', 'recipe_wire_wolfram', { x: 0, y: 0 });
+    const outPortId = get().addOutputPort('wolfram-wire');
+    get().addNode('wolfram-wire', 'recipe_crafter_wolfram-wire', { x: 0, y: 0 });
     const wireId = factoryAt([facId]).data.inner.nodes.find(n => n.type === 'itemNode')!.id;
     get().connectNodes({
       source: wireId,
@@ -284,13 +284,13 @@ describe('factory nodes — navigation & ports', () => {
       targetHandle: null,
     });
     get().exitTo(0);
-    get().addNode('comp_rotor', 'recipe_comp_rotor', { x: 200, y: 0 });
+    get().addNode('rotor', 'recipe_crafter_rotor', { x: 200, y: 0 });
     const rotorId = get().rootGraph.nodes.find(n => n.type === 'itemNode')!.id;
     get().connectNodes({
       source: facId,
       target: rotorId,
       sourceHandle: portNodeId('output', outPortId),
-      targetHandle: 'wire_wolfram',
+      targetHandle: 'wolfram-wire',
     });
 
     // Rotor's unlimited demand on wire is 20/min; limiting the inner node to 10 halves the root.
@@ -310,7 +310,7 @@ describe('factory nodes — navigation & ports', () => {
     get().addFactoryNode({ x: 0, y: 0 });
     const id = firstFactoryId();
     get().enterFactory(id);
-    get().addInputPort('wire_wolfram');
+    get().addInputPort('wolfram-wire');
 
     const port = get().nodes.find(n => n.type === 'inputPort')!;
     expect(port.draggable).toBe(false);
@@ -320,8 +320,8 @@ describe('factory nodes — navigation & ports', () => {
     get().addFactoryNode({ x: 0, y: 0 });
     const id = firstFactoryId();
     get().enterFactory(id);
-    const portId = get().addInputPort('wire_wolfram');
-    get().addNode('comp_rotor', 'recipe_comp_rotor', { x: 100, y: 0 });
+    const portId = get().addInputPort('wolfram-wire');
+    get().addNode('rotor', 'recipe_crafter_rotor', { x: 100, y: 0 });
 
     const rootBefore = get().rootGraph;
     const nodeId = portNodeId('input', portId);

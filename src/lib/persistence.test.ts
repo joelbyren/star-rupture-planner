@@ -12,12 +12,12 @@ describe('persistence — snapshot slimming', () => {
 
   it('strips engine-derived and transient fields from the snapshot', () => {
     const s = usePlanStore.getState();
-    s.addNode('comp_rotor', 'recipe_comp_rotor');
-    s.addNode('wire_wolfram', 'recipe_wire_wolfram');
-    s.connectNodes({ source: idFor('wire_wolfram'), target: idFor('comp_rotor'), sourceHandle: null, targetHandle: 'wire_wolfram' });
+    s.addNode('rotor', 'recipe_crafter_rotor');
+    s.addNode('wolfram-wire', 'recipe_crafter_wolfram-wire');
+    s.connectNodes({ source: idFor('wolfram-wire'), target: idFor('rotor'), sourceHandle: null, targetHandle: 'wolfram-wire' });
 
     // Live store nodes carry a computed balance…
-    const live = usePlanStore.getState().nodes.find(n => n.id === idFor('comp_rotor')) as ItemNodeType;
+    const live = usePlanStore.getState().nodes.find(n => n.id === idFor('rotor')) as ItemNodeType;
     expect(live.data.balance).toBeDefined();
 
     // …but the snapshot drops it (and isEndProduct / selected / dragging).
@@ -34,18 +34,18 @@ describe('persistence — snapshot slimming', () => {
 
   it('loadPlan regenerates balance from a slimmed snapshot (round-trip)', () => {
     const s = usePlanStore.getState();
-    s.addNode('comp_rotor', 'recipe_comp_rotor');
-    s.addNode('wire_wolfram', 'recipe_wire_wolfram');
-    s.connectNodes({ source: idFor('wire_wolfram'), target: idFor('comp_rotor'), sourceHandle: null, targetHandle: 'wire_wolfram' });
+    s.addNode('rotor', 'recipe_crafter_rotor');
+    s.addNode('wolfram-wire', 'recipe_crafter_wolfram-wire');
+    s.connectNodes({ source: idFor('wolfram-wire'), target: idFor('rotor'), sourceHandle: null, targetHandle: 'wolfram-wire' });
 
-    const before = (usePlanStore.getState().nodes.find(n => n.id === idFor('comp_rotor')) as ItemNodeType)
+    const before = (usePlanStore.getState().nodes.find(n => n.id === idFor('rotor')) as ItemNodeType)
       .data.balance!.outputRatePerMin;
 
     // Export (slim) then re-import through the same path the app uses.
     const snap = buildSnapshot(usePlanStore.getState());
     usePlanStore.getState().loadPlan(snap);
 
-    const after = (usePlanStore.getState().nodes.find(n => n.id === idFor('comp_rotor')) as ItemNodeType)
+    const after = (usePlanStore.getState().nodes.find(n => n.id === idFor('rotor')) as ItemNodeType)
       .data.balance!.outputRatePerMin;
     expect(after).toBeCloseTo(before);
   });
@@ -70,11 +70,11 @@ describe('persistence — parseSnapshot validation', () => {
 
   it('round-trips a valid snapshot with a nested factory, byte-identical after JSON round-trip', () => {
     const s = usePlanStore.getState();
-    s.addNode('wire_wolfram', 'recipe_wire_wolfram');
+    s.addNode('wolfram-wire', 'recipe_crafter_wolfram-wire');
     s.addFactoryNode();
     const facId = usePlanStore.getState().nodes.find(n => n.type === 'factoryNode')!.id;
     s.enterFactory(facId);
-    usePlanStore.getState().addNode('comp_rotor', 'recipe_comp_rotor');
+    usePlanStore.getState().addNode('rotor', 'recipe_crafter_rotor');
     usePlanStore.getState().exitTo(0);
 
     const built = buildSnapshot(usePlanStore.getState());
@@ -124,7 +124,7 @@ describe('persistence — parseSnapshot validation', () => {
       planId: 'p1',
       planName: 'Broken',
       nodes: [
-        { id: 'n1', type: 'itemNode', position: { x: 'oops', y: 0 }, data: { itemId: 'wire_wolfram', recipeId: null, isRaw: true } },
+        { id: 'n1', type: 'itemNode', position: { x: 'oops', y: 0 }, data: { itemId: 'wolfram-wire', recipeId: null, isRaw: true } },
       ],
       edges: [],
     });
@@ -139,10 +139,10 @@ describe('persistence — parseSnapshot validation', () => {
       planId: 'legacy',
       planName: 'Legacy plan',
       nodes: [
-        { id: 'n1', type: 'itemNode', position: { x: 0, y: 0 }, data: { itemId: 'wire_wolfram', recipeId: null, isRaw: true } },
-        { id: 'n2', type: 'itemNode', position: { x: 100, y: 0 }, data: { itemId: 'comp_rotor', recipeId: 'recipe_comp_rotor', isRaw: false } },
+        { id: 'n1', type: 'itemNode', position: { x: 0, y: 0 }, data: { itemId: 'wolfram-wire', recipeId: null, isRaw: true } },
+        { id: 'n2', type: 'itemNode', position: { x: 100, y: 0 }, data: { itemId: 'rotor', recipeId: 'recipe_crafter_rotor', isRaw: false } },
       ],
-      edges: [{ id: 'e1', source: 'n1', target: 'n2', sourceHandle: null, targetHandle: 'wire_wolfram', animated: true }],
+      edges: [{ id: 'e1', source: 'n1', target: 'n2', sourceHandle: null, targetHandle: 'wolfram-wire', animated: true }],
     } satisfies PlanSnapshot);
 
     const parsed = parseSnapshot(raw);

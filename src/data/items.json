@@ -1,344 +1,968 @@
 [
   {
-    "id": "ore_goethite",
-    "name": "Goethite Ore",
+    "id": "accumulator",
+    "name": "Accumulator",
     "type": "Resource",
     "stackSize": 100
   },
   {
-    "id": "ingot_goethite",
-    "name": "Goethite Ingot",
-    "type": "Component",
-    "stackSize": 100
-  },
-  {
-    "id": "ingot_goethite",
-    "name": "Goethite Ingot",
-    "type": "Component",
-    "stackSize": 100
-  },
-  {
-    "id": "sheet_calcite",
-    "name": "Calcite Sheets",
-    "type": "Component",
-    "stackSize": 100
-  },
-  {
-    "id": "comp_glass",
-    "name": "Glass",
-    "type": "Component",
-    "stackSize": 100
-  },
-  {
-    "id": "comp_electronics",
-    "name": "Electronics",
-    "type": "Component",
-    "stackSize": 50
-  },
-  {
-    "id": "ore_titanium",
-    "name": "Titanium Ore",
+    "id": "aerogel",
+    "name": "Aerogel",
     "type": "Resource",
     "stackSize": 100
   },
   {
-    "id": "ore_wolfram",
-    "name": "Wolfram Ore",
+    "id": "airlock",
+    "name": "Airlock",
     "type": "Resource",
     "stackSize": 100
   },
   {
-    "id": "comp_rotor",
-    "name": "Rotor",
-    "type": "Component",
-    "stackSize": 50
-  },
-  {
-    "id": "ingot_titanium",
-    "name": "Titanium Bar",
-    "type": "Component",
-    "stackSize": 50
-  },
-  {
-    "id": "ingot_wolfram",
-    "name": "Wolfram Bar",
-    "type": "Component",
-    "stackSize": 50
-  },
-  {
-    "id": "comp_ceramics",
-    "name": "Ceramics",
-    "type": "Component",
+    "id": "anti-radiation-covers",
+    "name": "Anti-Radiation Covers",
+    "type": "Resource",
     "stackSize": 100
   },
   {
-    "id": "comp_synthetic_silicon",
-    "name": "Synthetic Silicon",
-    "type": "Component",
+    "id": "antidote-fluid",
+    "name": "Antidote Fluid",
+    "type": "Consumable",
     "stackSize": 100
   },
   {
-    "id": "item_bbm",
+    "id": "antidote-gel",
+    "name": "Antidote Gel",
+    "type": "Consumable",
+    "stackSize": 100
+  },
+  {
+    "id": "antidote-shards",
+    "name": "Antidote Shards",
+    "type": "Consumable",
+    "stackSize": 100
+  },
+  {
+    "id": "aqua-bar",
+    "name": "Aqua Bar",
+    "type": "Consumable",
+    "stackSize": 100
+  },
+  {
+    "id": "aqua-block-capsules",
+    "name": "Aqua Block Capsules",
+    "type": "Consumable",
+    "stackSize": 100
+  },
+  {
+    "id": "aqua-chew",
+    "name": "Aqua Chew",
+    "type": "Consumable",
+    "stackSize": 100
+  },
+  {
+    "id": "aqua-fluid",
+    "name": "Aqua Fluid",
+    "type": "Consumable",
+    "stackSize": 100
+  },
+  {
+    "id": "aqua-gel",
+    "name": "Aqua Gel",
+    "type": "Consumable",
+    "stackSize": 100
+  },
+  {
+    "id": "aqua-stim-shards",
+    "name": "Aqua Stim Shards",
+    "type": "Consumable",
+    "stackSize": 100
+  },
+  {
+    "id": "basic-building-material",
     "name": "Basic Building Material",
-    "type": "Component",
-    "stackSize": 200
+    "type": "Resource",
+    "stackSize": 1000
   },
   {
-    "id": "ore_calcium",
+    "id": "basic-fuel",
+    "name": "Basic Fuel",
+    "type": "Resource",
+    "stackSize": 100
+  },
+  {
+    "id": "battery",
+    "name": "Battery",
+    "type": "Resource",
+    "stackSize": 100
+  },
+  {
+    "id": "biofilament",
+    "name": "Biofilament",
+    "type": "Resource",
+    "stackSize": 100
+  },
+  {
+    "id": "calcite-sheets",
+    "name": "Calcite Sheets",
+    "type": "Resource",
+    "stackSize": 100
+  },
+  {
+    "id": "calcium-block",
+    "name": "Calcium Block",
+    "type": "Resource",
+    "stackSize": 100
+  },
+  {
+    "id": "calcium-ore",
     "name": "Calcium Ore",
     "type": "Resource",
     "stackSize": 100
   },
   {
-    "id": "ore_sulfur",
+    "id": "calcium-powder",
+    "name": "Calcium Powder",
+    "type": "Resource",
+    "stackSize": 100
+  },
+  {
+    "id": "calorie-bar",
+    "name": "Calorie Bar",
+    "type": "Consumable",
+    "stackSize": 100
+  },
+  {
+    "id": "calorie-block-capsules",
+    "name": "Calorie Block Capsules",
+    "type": "Consumable",
+    "stackSize": 100
+  },
+  {
+    "id": "calorie-chew",
+    "name": "Calorie Chew",
+    "type": "Consumable",
+    "stackSize": 100
+  },
+  {
+    "id": "calorie-fluid",
+    "name": "Calorie Fluid",
+    "type": "Consumable",
+    "stackSize": 100
+  },
+  {
+    "id": "calorie-gel",
+    "name": "Calorie Gel",
+    "type": "Consumable",
+    "stackSize": 100
+  },
+  {
+    "id": "calorie-stim-shards",
+    "name": "Calorie Stim Shards",
+    "type": "Consumable",
+    "stackSize": 100
+  },
+  {
+    "id": "carbon-sonar",
+    "name": "Carbon Sonar",
+    "type": "Resource",
+    "stackSize": 100
+  },
+  {
+    "id": "ceramics",
+    "name": "Ceramics",
+    "type": "Resource",
+    "stackSize": 100
+  },
+  {
+    "id": "clear-capsules",
+    "name": "Clear Capsules",
+    "type": "Consumable",
+    "stackSize": 100
+  },
+  {
+    "id": "coil",
+    "name": "Inductor",
+    "type": "Resource",
+    "stackSize": 100
+  },
+  {
+    "id": "condenser",
+    "name": "Condenser",
+    "type": "Resource",
+    "stackSize": 100
+  },
+  {
+    "id": "converter",
+    "name": "Converter",
+    "type": "Resource",
+    "stackSize": 100
+  },
+  {
+    "id": "corrosion-res-plasm",
+    "name": "Corrosion Res Plasm",
+    "type": "Consumable",
+    "stackSize": 100
+  },
+  {
+    "id": "crab-egg",
+    "name": "Coralion Egg",
+    "type": "Consumable",
+    "stackSize": 100
+  },
+  {
+    "id": "cyclotrone",
+    "name": "Cyclotrone",
+    "type": "Resource",
+    "stackSize": 100
+  },
+  {
+    "id": "dome",
+    "name": "Dome",
+    "type": "Resource",
+    "stackSize": 100
+  },
+  {
+    "id": "drain-res-plasm",
+    "name": "Drain Res Plasm",
+    "type": "Consumable",
+    "stackSize": 100
+  },
+  {
+    "id": "electromagnet",
+    "name": "Electromagnet",
+    "type": "Resource",
+    "stackSize": 100
+  },
+  {
+    "id": "electromagnetic-coil",
+    "name": "Electromagnetic Coil",
+    "type": "Resource",
+    "stackSize": 100
+  },
+  {
+    "id": "electronics",
+    "name": "Electronics",
+    "type": "Resource",
+    "stackSize": 100
+  },
+  {
+    "id": "elementary-building-material",
+    "name": "Elementary Building Material",
+    "type": "Resource",
+    "stackSize": 5000
+  },
+  {
+    "id": "energy-boost-capsules",
+    "name": "Energy Boost Capsules",
+    "type": "Consumable",
+    "stackSize": 100
+  },
+  {
+    "id": "energy-boost-chew",
+    "name": "Energy Boost Chew",
+    "type": "Consumable",
+    "stackSize": 100
+  },
+  {
+    "id": "energy-stim-shards",
+    "name": "Energy Stim Shards",
+    "type": "Consumable",
+    "stackSize": 100
+  },
+  {
+    "id": "epoxy",
+    "name": "Epoxy",
+    "type": "Resource",
+    "stackSize": 100
+  },
+  {
+    "id": "explosive",
+    "name": "Chemicals",
+    "type": "Resource",
+    "stackSize": 100
+  },
+  {
+    "id": "figler",
+    "name": "Figler",
+    "type": "Consumable",
+    "stackSize": 100
+  },
+  {
+    "id": "fox-egg",
+    "name": "Vulpir Egg",
+    "type": "Consumable",
+    "stackSize": 100
+  },
+  {
+    "id": "generator",
+    "name": "Generator",
+    "type": "Resource",
+    "stackSize": 100
+  },
+  {
+    "id": "glass",
+    "name": "Glass",
+    "type": "Resource",
+    "stackSize": 100
+  },
+  {
+    "id": "glowcap",
+    "name": "Glowcap",
+    "type": "Consumable",
+    "stackSize": 100
+  },
+  {
+    "id": "goethite-ingot",
+    "name": "Goethite Ingot",
+    "type": "Resource",
+    "stackSize": 100
+  },
+  {
+    "id": "goethite-lattice",
+    "name": "Goethite Lattice",
+    "type": "Resource",
+    "stackSize": 100
+  },
+  {
+    "id": "goethite-ore",
+    "name": "Goethite Ore",
+    "type": "Resource",
+    "stackSize": 100
+  },
+  {
+    "id": "goethite-powder",
+    "name": "Goethite Powder",
+    "type": "Resource",
+    "stackSize": 100
+  },
+  {
+    "id": "grenade",
+    "name": "Explosive Charge",
+    "type": "Resource",
+    "stackSize": 100
+  },
+  {
+    "id": "grubbler",
+    "name": "Grubbler",
+    "type": "Consumable",
+    "stackSize": 100
+  },
+  {
+    "id": "gyroscope",
+    "name": "Stabilizer",
+    "type": "Resource",
+    "stackSize": 100
+  },
+  {
+    "id": "hardening-agent",
+    "name": "Hardening Agent",
+    "type": "Resource",
+    "stackSize": 100
+  },
+  {
+    "id": "health-shards",
+    "name": "Health Shards",
+    "type": "Consumable",
+    "stackSize": 100
+  },
+  {
+    "id": "heat-resistant-sheet",
+    "name": "Heat Resistant Sheet",
+    "type": "Resource",
+    "stackSize": 100
+  },
+  {
+    "id": "heat-shield",
+    "name": "Heat Shield",
+    "type": "Resource",
+    "stackSize": 100
+  },
+  {
+    "id": "heavy-ammo-item",
+    "name": "Heavy Ammo",
+    "type": "Other",
+    "stackSize": 300
+  },
+  {
+    "id": "helium-ore",
+    "name": "Helium-3",
+    "type": "Resource",
+    "stackSize": 100
+  },
+  {
+    "id": "hydrobulb",
+    "name": "Hydrobulb",
+    "type": "Consumable",
+    "stackSize": 100
+  },
+  {
+    "id": "hydrolite",
+    "name": "Hydrolite",
+    "type": "Consumable",
+    "stackSize": 100
+  },
+  {
+    "id": "impeller",
+    "name": "Impeller",
+    "type": "Resource",
+    "stackSize": 100
+  },
+  {
+    "id": "infection-res-plasm",
+    "name": "Infection Res Plasm",
+    "type": "Consumable",
+    "stackSize": 100
+  },
+  {
+    "id": "intermediate-building-material",
+    "name": "Intermediate Building Material",
+    "type": "Resource",
+    "stackSize": 1000
+  },
+  {
+    "id": "ion-bomb",
+    "name": "Ion Bomb",
+    "type": "Resource",
+    "stackSize": 100
+  },
+  {
+    "id": "ion-injector",
+    "name": "Ion Injector",
+    "type": "Resource",
+    "stackSize": 100
+  },
+  {
+    "id": "ion-stabilizer",
+    "name": "Ion Stabilizer",
+    "type": "Resource",
+    "stackSize": 100
+  },
+  {
+    "id": "ion-thrusters",
+    "name": "Ion Thrusters",
+    "type": "Resource",
+    "stackSize": 100
+  },
+  {
+    "id": "laser-emitter",
+    "name": "Laser Emitter",
+    "type": "Resource",
+    "stackSize": 100
+  },
+  {
+    "id": "lens",
+    "name": "Lens",
+    "type": "Resource",
+    "stackSize": 100
+  },
+  {
+    "id": "liquid-helium",
+    "name": "Liquid Helium",
+    "type": "Resource",
+    "stackSize": 100
+  },
+  {
+    "id": "magic-oil-ore",
+    "name": "Crude Oil",
+    "type": "Resource",
+    "stackSize": 100
+  },
+  {
+    "id": "nanofibre",
+    "name": "Nanofibre",
+    "type": "Resource",
+    "stackSize": 100
+  },
+  {
+    "id": "nanosyringe",
+    "name": "Nanosyringe",
+    "type": "Resource",
+    "stackSize": 100
+  },
+  {
+    "id": "nozzle",
+    "name": "Nozzle",
+    "type": "Resource",
+    "stackSize": 100
+  },
+  {
+    "id": "nutri-bar",
+    "name": "Nutri Bar",
+    "type": "Consumable",
+    "stackSize": 100
+  },
+  {
+    "id": "nutri-block-capsules",
+    "name": "Nutri Block Capsules",
+    "type": "Consumable",
+    "stackSize": 100
+  },
+  {
+    "id": "nutri-chew",
+    "name": "Nutri Chew",
+    "type": "Consumable",
+    "stackSize": 100
+  },
+  {
+    "id": "nutri-fluid",
+    "name": "Nutri Fluid",
+    "type": "Consumable",
+    "stackSize": 100
+  },
+  {
+    "id": "nutri-gel",
+    "name": "Nutri Gel",
+    "type": "Consumable",
+    "stackSize": 100
+  },
+  {
+    "id": "nutri-stim-shards",
+    "name": "Nutri Stim Shards",
+    "type": "Consumable",
+    "stackSize": 100
+  },
+  {
+    "id": "onboard-instruments",
+    "name": "Onboard Instruments",
+    "type": "Resource",
+    "stackSize": 100
+  },
+  {
+    "id": "organic-compound",
+    "name": "Organic Compound",
+    "type": "Resource",
+    "stackSize": 100
+  },
+  {
+    "id": "oxallop",
+    "name": "Oxallop",
+    "type": "Consumable",
+    "stackSize": 100
+  },
+  {
+    "id": "pistol-ammo-item",
+    "name": "Pistol Ammo",
+    "type": "Other",
+    "stackSize": 300
+  },
+  {
+    "id": "plastic-dust",
+    "name": "Plastic Dust",
+    "type": "Resource",
+    "stackSize": 100
+  },
+  {
+    "id": "polifruit",
+    "name": "Polufruit",
+    "type": "Consumable",
+    "stackSize": 100
+  },
+  {
+    "id": "polisnack",
+    "name": "Polisnack",
+    "type": "Consumable",
+    "stackSize": 100
+  },
+  {
+    "id": "power-cell",
+    "name": "Power Cell",
+    "type": "Valuable",
+    "stackSize": 100
+  },
+  {
+    "id": "pressure-tank",
+    "name": "Pressure Tank",
+    "type": "Resource",
+    "stackSize": 100
+  },
+  {
+    "id": "pressurized-helium",
+    "name": "Pressurized Helium",
+    "type": "Resource",
+    "stackSize": 100
+  },
+  {
+    "id": "prickler",
+    "name": "Prickler",
+    "type": "Consumable",
+    "stackSize": 100
+  },
+  {
+    "id": "prism-herb",
+    "name": "Prism Herb",
+    "type": "Consumable",
+    "stackSize": 100
+  },
+  {
+    "id": "processed-coralion-egg",
+    "name": "Processed Coralion Egg",
+    "type": "Consumable",
+    "stackSize": 100
+  },
+  {
+    "id": "pseudorubber-insulator",
+    "name": "Pseudorubber Insulator",
+    "type": "Resource",
+    "stackSize": 100
+  },
+  {
+    "id": "pump",
+    "name": "Pump",
+    "type": "Resource",
+    "stackSize": 100
+  },
+  {
+    "id": "purfins",
+    "name": "Purfins",
+    "type": "Consumable",
+    "stackSize": 100
+  },
+  {
+    "id": "purplant",
+    "name": "Purplant",
+    "type": "Consumable",
+    "stackSize": 100
+  },
+  {
+    "id": "quantum-tranqualizer",
+    "name": "Quantum Tranqualizer",
+    "type": "Resource",
+    "stackSize": 100
+  },
+  {
+    "id": "refined-oil",
+    "name": "Refined Oil",
+    "type": "Resource",
+    "stackSize": 100
+  },
+  {
+    "id": "refined-vulpir-egg",
+    "name": "Refined Vulpir Egg",
+    "type": "Consumable",
+    "stackSize": 100
+  },
+  {
+    "id": "regen-capsules",
+    "name": "Regen Capsules",
+    "type": "Consumable",
+    "stackSize": 100
+  },
+  {
+    "id": "reinforced-frame",
+    "name": "Reinforced Frame",
+    "type": "Resource",
+    "stackSize": 100
+  },
+  {
+    "id": "reinforced-housing",
+    "name": "Reinforced Housing",
+    "type": "Resource",
+    "stackSize": 100
+  },
+  {
+    "id": "resonator",
+    "name": "Resonator",
+    "type": "Resource",
+    "stackSize": 100
+  },
+  {
+    "id": "rna-stabilizer",
+    "name": "RNA Stabilizer",
+    "type": "Resource",
+    "stackSize": 100
+  },
+  {
+    "id": "rocket-engine",
+    "name": "Rocket Engine",
+    "type": "Resource",
+    "stackSize": 100
+  },
+  {
+    "id": "rocket-fuel",
+    "name": "Rocket Fuel",
+    "type": "Resource",
+    "stackSize": 100
+  },
+  {
+    "id": "rotor",
+    "name": "Rotor",
+    "type": "Resource",
+    "stackSize": 100
+  },
+  {
+    "id": "rtsc",
+    "name": "RTSC",
+    "type": "Resource",
+    "stackSize": 100
+  },
+  {
+    "id": "rtsc-generator",
+    "name": "RTSC Generator",
+    "type": "Resource",
+    "stackSize": 100
+  },
+  {
+    "id": "satellite-body",
+    "name": "Satellite Body",
+    "type": "Resource",
+    "stackSize": 100
+  },
+  {
+    "id": "scafolding",
+    "name": "Scafolding",
+    "type": "Resource",
+    "stackSize": 100
+  },
+  {
+    "id": "scanner",
+    "name": "Scanner",
+    "type": "Resource",
+    "stackSize": 100
+  },
+  {
+    "id": "serpent-root",
+    "name": "Serpent Root",
+    "type": "Consumable",
+    "stackSize": 100
+  },
+  {
+    "id": "serpent-sticks",
+    "name": "Serpent Sticks",
+    "type": "Consumable",
+    "stackSize": 100
+  },
+  {
+    "id": "shotgun-ammo-item",
+    "name": "Shotgun Ammo",
+    "type": "Other",
+    "stackSize": 300
+  },
+  {
+    "id": "silica-sand",
+    "name": "Synthetic Silicon",
+    "type": "Resource",
+    "stackSize": 100
+  },
+  {
+    "id": "standard-ammo-item",
+    "name": "Standard Ammo",
+    "type": "Other",
+    "stackSize": 300
+  },
+  {
+    "id": "star-bites",
+    "name": "Star Bites",
+    "type": "Consumable",
+    "stackSize": 100
+  },
+  {
+    "id": "star-tears",
+    "name": "Star Tears",
+    "type": "Consumable",
+    "stackSize": 100
+  },
+  {
+    "id": "stator",
+    "name": "Stator",
+    "type": "Resource",
+    "stackSize": 100
+  },
+  {
+    "id": "substance-fhs-135-493",
+    "name": "Substance #FHS-135-493",
+    "type": "Resource",
+    "stackSize": 100
+  },
+  {
+    "id": "sulbon",
+    "name": "Sulbon",
+    "type": "Consumable",
+    "stackSize": 100
+  },
+  {
+    "id": "sulheart",
+    "name": "Sulheart",
+    "type": "Consumable",
+    "stackSize": 100
+  },
+  {
+    "id": "sulphur-ore",
     "name": "Sulphur Ore",
     "type": "Resource",
     "stackSize": 100
   },
   {
-    "id": "fluid_crude_oil",
-    "name": "Crude Oil",
-    "type": "Fluid",
-    "stackSize": null
-  },
-  {
-    "id": "gas_helium3",
-    "name": "Helium-3",
-    "type": "Fluid",
-    "stackSize": null
-  },
-  {
-    "id": "fluid_sulfuric_acid",
-    "name": "Sulfuric Acid",
-    "type": "Fluid",
-    "stackSize": null
-  },
-  {
-    "id": "block_calcium",
-    "name": "Calcium Block",
-    "type": "Component",
+    "id": "sulphuric-acid",
+    "name": "Sulphuric Acid",
+    "type": "Resource",
     "stackSize": 100
   },
   {
-    "id": "rod_titanium",
-    "name": "Titanium Rod",
-    "type": "Component",
+    "id": "superconductor",
+    "name": "Superconductor",
+    "type": "Resource",
     "stackSize": 100
   },
   {
-    "id": "sheet_titanium",
-    "name": "Titanium Sheet",
-    "type": "Component",
-    "stackSize": 100
-  },
-  {
-    "id": "beam_titanium",
-    "name": "Titanium Beam",
-    "type": "Component",
-    "stackSize": 50
-  },
-  {
-    "id": "comp_titanium_housing",
-    "name": "Titanium Housing",
-    "type": "Component",
-    "stackSize": 50
-  },
-  {
-    "id": "plate_wolfram",
-    "name": "Wolfram Plate",
-    "type": "Component",
-    "stackSize": 100
-  },
-  {
-    "id": "wire_wolfram",
-    "name": "Wolfram Wire",
-    "type": "Component",
-    "stackSize": 200
-  },
-  {
-    "id": "powder_wolfram",
-    "name": "Wolfram Powder",
-    "type": "Powder",
-    "stackSize": 200
-  },
-  {
-    "id": "powder_calcium",
-    "name": "Calcium Powder",
-    "type": "Powder",
-    "stackSize": 200
-  },
-  {
-    "id": "comp_tube",
-    "name": "Tube",
-    "type": "Component",
-    "stackSize": 100
-  },
-  {
-    "id": "comp_stator",
-    "name": "Stator",
-    "type": "Component",
-    "stackSize": 50
-  },
-  {
-    "id": "comp_stabilizer",
-    "name": "Stabilizer",
-    "type": "Component",
-    "stackSize": 50
-  },
-  {
-    "id": "comp_applicator",
-    "name": "Applicator",
-    "type": "Component",
-    "stackSize": 50
-  },
-  {
-    "id": "comp_inductor",
-    "name": "Inductor",
-    "type": "Component",
-    "stackSize": 100
-  },
-  {
-    "id": "comp_chemicals",
-    "name": "Chemicals",
-    "type": "Component",
-    "stackSize": 100
-  },
-  {
-    "id": "comp_supermagnet",
+    "id": "supermagnet",
     "name": "Supermagnet",
-    "type": "Component",
-    "stackSize": 50
-  },
-  {
-    "id": "comp_valve",
-    "name": "Valve",
-    "type": "Component",
+    "type": "Resource",
     "stackSize": 100
   },
   {
-    "id": "comp_electromagnetic_coil",
-    "name": "Electromagnetic Coil",
-    "type": "Component",
-    "stackSize": 50
+    "id": "synthetic-dna",
+    "name": "Synthetic DNA",
+    "type": "Resource",
+    "stackSize": 100
   },
   {
-    "id": "comp_turbine",
+    "id": "synthetic-protein",
+    "name": "Synthetic Protein",
+    "type": "Resource",
+    "stackSize": 100
+  },
+  {
+    "id": "synthetic-resin",
+    "name": "Synthetic Resin",
+    "type": "Resource",
+    "stackSize": 100
+  },
+  {
+    "id": "syringe",
+    "name": "Applicator",
+    "type": "Resource",
+    "stackSize": 100
+  },
+  {
+    "id": "termo-res-plasm",
+    "name": "Termo Res Plasm",
+    "type": "Consumable",
+    "stackSize": 100
+  },
+  {
+    "id": "titanium-bar",
+    "name": "Titanium Bar",
+    "type": "Resource",
+    "stackSize": 100
+  },
+  {
+    "id": "titanium-beam",
+    "name": "Titanium Beam",
+    "type": "Resource",
+    "stackSize": 100
+  },
+  {
+    "id": "titanium-housing",
+    "name": "Titanium Housing",
+    "type": "Resource",
+    "stackSize": 100
+  },
+  {
+    "id": "titanium-ore",
+    "name": "Titanium Ore",
+    "type": "Resource",
+    "stackSize": 100
+  },
+  {
+    "id": "titanium-rod",
+    "name": "Titanium Rod",
+    "type": "Resource",
+    "stackSize": 100
+  },
+  {
+    "id": "titanium-sheet",
+    "name": "Titanium Sheet",
+    "type": "Resource",
+    "stackSize": 100
+  },
+  {
+    "id": "tracking-device",
+    "name": "Tracking Device",
+    "type": "Resource",
+    "stackSize": 100
+  },
+  {
+    "id": "tube",
+    "name": "Tube",
+    "type": "Resource",
+    "stackSize": 100
+  },
+  {
+    "id": "turbine",
     "name": "Turbine",
-    "type": "Component",
-    "stackSize": 50
-  },
-  {
-    "id": "comp_impeller",
-    "name": "Impeller",
-    "type": "Component",
-    "stackSize": 50
-  },
-  {
-    "id": "comp_hardening_agent",
-    "name": "Hardening Agent",
-    "type": "Fluid",
-    "stackSize": null
-  },
-  {
-    "id": "item_power_cell",
-    "name": "Power Cell",
-    "type": "Component",
-    "stackSize": 10
-  },
-  {
-    "id": "item_keycard",
-    "name": "Redleaf Keycard",
-    "type": "Component",
-    "stackSize": 1
-  },
-  {
-    "id": "wpn_pistol",
-    "name": "UPP-7 Pistol",
-    "type": "Weapon",
-    "stackSize": 1
-  },
-  {
-    "id": "ammo_pistol",
-    "name": "Pistol Ammo",
-    "type": "Ammo",
-    "stackSize": 500
-  },
-  {
-    "id": "ammo_standard",
-    "name": "Standard Ammo",
-    "type": "Ammo",
-    "stackSize": 500
-  },
-  {
-    "id": "ammo_heavy",
-    "name": "Heavy Ammo",
-    "type": "Ammo",
-    "stackSize": 500
-  },
-  {
-    "id": "ammo_shotgun",
-    "name": "Shotgun Ammo",
-    "type": "Ammo",
-    "stackSize": 500
-  },
-  {
-    "id": "wpn_grenade",
-    "name": "Fragmentation Grenade",
-    "type": "Weapon",
-    "stackSize": 10
-  },
-  {
-    "id": "ammo_explosive",
-    "name": "Explosive Ammo",
-    "type": "Ammo",
-    "stackSize": 200
-  },
-  {
-    "id": "item_war_bond",
-    "name": "War Bond",
-    "type": "Component",
-    "stackSize": 1
-  },
-  {
-    "id": "sheet_heat_resistant",
-    "name": "Heat-Resistant Sheet",
-    "type": "Component",
-    "stackSize": 50
-  },
-  {
-    "id": "comp_biofilament",
-    "name": "Biofilament",
-    "type": "Component",
+    "type": "Resource",
     "stackSize": 100
   },
   {
-    "id": "item_ibm",
-    "name": "Intermediate Building Material",
-    "type": "Component",
-    "stackSize": 200
+    "id": "uber-oil",
+    "name": "Plastic",
+    "type": "Resource",
+    "stackSize": 100
   },
   {
-    "id": "comp_nozzle",
-    "name": "Nozzle",
-    "type": "Component",
-    "stackSize": 50
+    "id": "uber-titanium",
+    "name": "Titanoferrite Ingot",
+    "type": "Resource",
+    "stackSize": 100
   },
   {
-    "id": "comp_battery",
-    "name": "Battery",
-    "type": "Component",
-    "stackSize": 50
+    "id": "uber-wolfram",
+    "name": "Wolfram Steel Ingot",
+    "type": "Resource",
+    "stackSize": 100
   },
   {
-    "id": "comp_pump",
-    "name": "Pump",
-    "type": "Component",
-    "stackSize": 50
+    "id": "uberfilament",
+    "name": "Uberfilament",
+    "type": "Resource",
+    "stackSize": 100
   },
   {
-    "id": "fluid_pressurized_helium",
-    "name": "Pressurized Helium",
-    "type": "Fluid",
-    "stackSize": null
+    "id": "valve",
+    "name": "Valve",
+    "type": "Resource",
+    "stackSize": 100
+  },
+  {
+    "id": "vulpir-loot",
+    "name": "Vulpir Meat",
+    "type": "Consumable",
+    "stackSize": 100
+  },
+  {
+    "id": "vulpir-meal",
+    "name": "Processed Vulpir Meat",
+    "type": "Consumable",
+    "stackSize": 100
+  },
+  {
+    "id": "wolfram-bar",
+    "name": "Wolfram Bar",
+    "type": "Resource",
+    "stackSize": 100
+  },
+  {
+    "id": "wolfram-ore",
+    "name": "Wolfram Ore",
+    "type": "Resource",
+    "stackSize": 100
+  },
+  {
+    "id": "wolfram-plate",
+    "name": "Wolfram Plate",
+    "type": "Resource",
+    "stackSize": 100
+  },
+  {
+    "id": "wolfram-powder",
+    "name": "Wolfram Powder",
+    "type": "Resource",
+    "stackSize": 100
+  },
+  {
+    "id": "wolfram-wire",
+    "name": "Wolfram Wire",
+    "type": "Resource",
+    "stackSize": 100
   }
 ]

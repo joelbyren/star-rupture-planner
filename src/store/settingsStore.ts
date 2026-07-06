@@ -11,9 +11,9 @@ export type TierPreference = 'only-v1' | 'prefer-v1' | 'prefer-v2';
 /** Tier preference per machine name (as in recipes.json / power.json). */
 export type TierPrefs = Record<string, TierPreference>;
 
-// Machines with a settings row. Only types with confirmed V2 variants are
-// listed — extend as V2 recipe data lands for the remaining machines.
-export const TIER_MACHINES = ['Ore Extractor', 'Fabricator', 'Furnace', 'Mega Press'] as const;
+// Machines with a settings row: every machine with a v.2 building in the
+// starrupture.tools data (crafting machines + the ore extractor).
+export const TIER_MACHINES = ['Compounder', 'Constructorizer', 'Fabricator', 'Furnace', 'Ore Excavator'] as const;
 
 const TIER_PREFERENCES: TierPreference[] = ['only-v1', 'prefer-v1', 'prefer-v2'];
 const STORAGE_KEY = 'srp.settings';

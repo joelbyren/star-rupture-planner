@@ -3,8 +3,8 @@
 // the prerequisite-tree builder so both resolve recipes identically.
 
 import type { Recipe, RawResourceConfig } from '../engine/types.ts';
-import { ALL_RECIPES, ITEMS_BY_ID } from '../data/index.ts';
-import { DEFAULT_RAW_CONFIG, machineForResource } from '../engine/rawResources.ts';
+import { ALL_RECIPES } from '../data/index.ts';
+import { DEFAULT_RAW_CONFIG, hasV2Extractor, machineForResource } from '../engine/rawResources.ts';
 import { tierPrefFor, type TierPrefs } from '../store/settingsStore.ts';
 
 /**
@@ -58,12 +58,11 @@ export function chooseRecipeForItem(
 
 /**
  * Extractor config for a new raw node. V2 only when the resource's extractor
- * machine is set to prefer-v2 AND the item is an ore (type 'Resource' — the
- * same gate the config dialog uses; other raws have no confirmed V2 form).
+ * machine is set to prefer-v2 AND a V2 extractor actually exists for it
+ * (only Ore Excavator ores — the same gate the config dialog uses).
  */
 export function defaultRawConfig(itemId: string, prefs: TierPrefs): RawResourceConfig {
-  const oreWithV2 = ITEMS_BY_ID.get(itemId)?.type === 'Resource';
-  if (oreWithV2 && tierPrefFor(prefs, machineForResource(itemId)) === 'prefer-v2') {
+  if (hasV2Extractor(itemId) && tierPrefFor(prefs, machineForResource(itemId)) === 'prefer-v2') {
     return { purity: 'normal', extractorVersion: 'V2' };
   }
   return DEFAULT_RAW_CONFIG;

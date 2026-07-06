@@ -7,7 +7,7 @@ import { useUiStore } from '../store/uiStore.ts';
 import { useSettingsStore, tierPrefFor } from '../store/settingsStore.ts';
 import { ALL_RECIPES } from '../data/index.ts';
 import type { ResourcePurity, ExtractorVersion, ExtractorMode } from '../engine/types.ts';
-import { DEFAULT_RAW_CONFIG, machineForResource, rawSupplyInfo } from '../engine/rawResources.ts';
+import { DEFAULT_RAW_CONFIG, hasV2Extractor, machineForResource, rawSupplyInfo } from '../engine/rawResources.ts';
 import { itemById } from '../lib/itemVisual.ts';
 
 const PURITY: { value: ResourcePurity; label: string }[] = [
@@ -50,7 +50,7 @@ export function NodeConfigDialog() {
   const balance = data.balance;
 
   const { supplyRate, needed, surplus, statusClass } = rawSupplyInfo(data, balance);
-  const showV2 = item?.type === 'Resource';
+  const showV2 = hasV2Extractor(data.itemId);
   // Under "Only V1" the version dropdown disappears — but only while the node is
   // actually V1. A legacy/imported V2 node keeps it so it can be inspected or
   // downgraded (settings never mutate existing nodes).

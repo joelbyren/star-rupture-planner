@@ -7,8 +7,6 @@ import type { BuildingTier } from './types.ts';
 import { machineForResource } from './rawResources.ts';
 import { POWER, ALL_RECIPES } from '../data/index.ts';
 
-// "Chemicals at" is a known scrape artifact in recipes.json's `machine` field — kept
-// verbatim here since it's the only join key recipes expose for that machine.
 const RECIPE_BY_ID = new Map(ALL_RECIPES.map(r => [r.id, r]));
 
 /** Power draw (kW) for one machine at a given tier; unknown machine → 0 (+ dev warning). */

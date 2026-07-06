@@ -4,7 +4,7 @@ import { machinePower, graphPower, type PowerNode } from './power.ts';
 describe('machinePower', () => {
   it('looks up a known machine/tier', () => {
     expect(machinePower('Fabricator', 'V1')).toBe(10);
-    expect(machinePower('Fabricator', 'V2')).toBe(10);
+    expect(machinePower('Fabricator', 'V2')).toBe(25);
   });
 
   it('unknown machine returns 0 and warns', () => {
@@ -16,18 +16,18 @@ describe('machinePower', () => {
 
 describe('graphPower', () => {
   it('production node: buildingCount × machinePower', () => {
-    const nodes: PowerNode[] = [{ kind: 'production', recipeId: 'recipe_sheet_calcite', buildingCount: 3 }];
+    const nodes: PowerNode[] = [{ kind: 'production', recipeId: 'recipe_crafter_titanium-sheet', buildingCount: 3 }];
     expect(graphPower(nodes)).toBe(30); // 3 Fabricators × 10 kW
   });
 
   it('raw node counts as exactly one extractor regardless of custom rate', () => {
-    const nodes: PowerNode[] = [{ kind: 'raw', itemId: 'gas_helium3', extractorVersion: 'V2' }];
-    expect(graphPower(nodes)).toBe(10); // 1 Helium Extractor V2 × 10 kW
+    const nodes: PowerNode[] = [{ kind: 'raw', itemId: 'helium-ore', extractorVersion: 'V2' }];
+    expect(graphPower(nodes)).toBe(15); // 1 Helium-3 Extractor × 15 kW (no V2 building → V1 value)
   });
 
   it('raw node defaults to V1 when extractorVersion is absent', () => {
-    const nodes: PowerNode[] = [{ kind: 'raw', itemId: 'ore_titanium' }];
-    expect(graphPower(nodes)).toBe(10);
+    const nodes: PowerNode[] = [{ kind: 'raw', itemId: 'titanium-ore' }];
+    expect(graphPower(nodes)).toBe(5); // 1 Ore Excavator V1 × 5 kW
   });
 
   it('recurses into nested factories', () => {
@@ -35,15 +35,15 @@ describe('graphPower', () => {
       {
         kind: 'factory',
         inner: [
-          { kind: 'production', recipeId: 'recipe_comp_glass', buildingCount: 2 },
+          { kind: 'production', recipeId: 'recipe_furnace_glass', buildingCount: 2 },
           {
             kind: 'factory',
-            inner: [{ kind: 'raw', itemId: 'ore_sulfur', extractorVersion: 'V1' }],
+            inner: [{ kind: 'raw', itemId: 'sulphur-ore', extractorVersion: 'V1' }],
           },
         ],
       },
     ];
-    expect(graphPower(nodes)).toBe(30); // 2 Furnaces × 10 + 1 Sulphur Extractor × 10
+    expect(graphPower(nodes)).toBe(80); // 2 Furnaces × 20 + 1 Sulfur Extractor × 40
   });
 
   it('unknown recipe id contributes 0', () => {
@@ -53,9 +53,9 @@ describe('graphPower', () => {
 
   it('sums across a mixed list', () => {
     const nodes: PowerNode[] = [
-      { kind: 'production', recipeId: 'recipe_sheet_calcite', buildingCount: 1 },
-      { kind: 'raw', itemId: 'fluid_crude_oil', extractorVersion: 'V1' },
+      { kind: 'production', recipeId: 'recipe_crafter_titanium-sheet', buildingCount: 1 },
+      { kind: 'raw', itemId: 'magic-oil-ore', extractorVersion: 'V1' },
     ];
-    expect(graphPower(nodes)).toBe(20);
+    expect(graphPower(nodes)).toBe(410); // 1 Fabricator × 10 + 1 Oil Extractor × 400
   });
 });

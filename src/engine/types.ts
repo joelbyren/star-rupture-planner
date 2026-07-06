@@ -30,12 +30,11 @@ export interface RecipeIngredient {
   quantity: number;
 }
 
-// TODO: recipe variants (V1/V2) not present in this source — site models one recipe per item
 export interface Recipe {
   id: string;
   outputItemId: string;
   machine: string;
-  /** Always null until the source exposes variant data. */
+  /** Building variant crafting this recipe. Scraped data always sets 'V1'/'V2'; null ≈ V1 (legacy/fixtures). */
   buildingTier: BuildingTier | null;
   /** Rate at which the building produces output, in items-per-minute. */
   outputRatePerMin: number;

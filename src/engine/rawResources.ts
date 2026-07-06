@@ -1,32 +1,47 @@
 import type { ExtractorVersion, RawResourceConfig, ResourcePurity } from './types.ts';
 
-/** Extractor machine name per raw resource. */
+/** Extractor machine name per raw resource (keys are starrupture.tools item ids). */
 const MACHINE_NAMES: Record<string, string> = {
-  gas_helium3: 'Helium Extractor',
-  ore_sulfur: 'Sulphur Extractor',
-  fluid_crude_oil: 'Oil Pump',
+  'helium-ore': 'Helium-3 Extractor',
+  'sulphur-ore': 'Sulfur Extractor',
+  'magic-oil-ore': 'Oil Extractor',
+  'goethite-ore': 'Laser Drill',
 };
-const DEFAULT_MACHINE = 'Ore Extractor';
+const DEFAULT_MACHINE = 'Ore Excavator';
+
+/** Ores mined by the Ore Excavator — the only extractor with a V2 building. */
+const V2_ORES = new Set(['titanium-ore', 'wolfram-ore', 'calcium-ore']);
 
 export function machineForResource(itemId: string): string {
   return MACHINE_NAMES[itemId] ?? DEFAULT_MACHINE;
 }
 
-/** Normal-purity, V1-extractor rate for each raw resource (items/min). */
+/** Whether a V2 extractor variant exists for this resource. */
+export function hasV2Extractor(itemId: string): boolean {
+  return V2_ORES.has(itemId);
+}
+
+/**
+ * Normal-purity, V1-extractor rate for each raw resource (items/min), measured
+ * from the extraction-building recipes on starrupture.tools. Foraged organics
+ * (crab-egg, glowcap, …) have no extractor building and fall back to the
+ * default — use custom mode to enter a real rate for those.
+ */
 const BASE_RATES: Record<string, number> = {
-  gas_helium3: 240,
-  ore_titanium: 120,
-  ore_wolfram: 120,
-  ore_calcium: 120,
-  ore_goethite: 120,
-  ore_sulfur: 120,
-  fluid_crude_oil: 120,
+  'helium-ore': 240,
+  'sulphur-ore': 240,
+  'magic-oil-ore': 10,
+  'goethite-ore': 15,
+  'titanium-ore': 120,
+  'wolfram-ore': 120,
+  'calcium-ore': 120,
 };
 
 const DEFAULT_BASE_RATE = 120;
 
 const PURITY_MULT: Record<ResourcePurity, number> = { impure: 0.5, normal: 1.0, pure: 2.0 };
-const VERSION_MULT: Record<ExtractorVersion, number> = { V1: 1.0, V2: 2.0 };
+// Ore Excavator v.2 mines 300/min at normal purity vs 120 for V1 → ×2.5.
+const VERSION_MULT: Record<ExtractorVersion, number> = { V1: 1.0, V2: 2.5 };
 
 function baseRateForItem(itemId: string): number {
   return BASE_RATES[itemId] ?? DEFAULT_BASE_RATE;

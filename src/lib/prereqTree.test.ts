@@ -7,17 +7,17 @@ import type { TierPrefs } from '../store/settingsStore.ts';
 const NONE: TierPrefs = {};
 const ANCHOR = { x: 1000, y: 500 };
 
-// Full V1 chain: comp_rotor ← {wire_wolfram, rod_titanium} ← {ingot_wolfram,
-// ingot_titanium} ← {ore_wolfram, ore_titanium} — 7 distinct items.
+// Full V1 chain: rotor ← {wolfram-wire, titanium-rod} ← {wolfram-bar,
+// titanium-bar} ← {wolfram-ore, titanium-ore} — 7 distinct items.
 const plan = () =>
-  buildPrereqPlan({ rootItemId: 'comp_rotor', rootRecipeId: 'recipe_comp_rotor', anchor: ANCHOR, prefs: NONE });
+  buildPrereqPlan({ rootItemId: 'rotor', rootRecipeId: 'recipe_crafter_rotor', anchor: ANCHOR, prefs: NONE });
 
 describe('buildPrereqPlan', () => {
   it('expands the whole chain, one step per distinct item, root first', () => {
     const steps = plan();
-    expect(steps[0]!.itemId).toBe('comp_rotor');
+    expect(steps[0]!.itemId).toBe('rotor');
     expect(steps.map(s => s.itemId).sort()).toEqual(
-      ['comp_rotor', 'ingot_titanium', 'ingot_wolfram', 'ore_titanium', 'ore_wolfram', 'rod_titanium', 'wire_wolfram'],
+      ['rotor', 'titanium-bar', 'titanium-ore', 'titanium-rod', 'wolfram-bar', 'wolfram-ore', 'wolfram-wire'],
     );
   });
 
@@ -32,42 +32,42 @@ describe('buildPrereqPlan', () => {
   });
 
   it('marks recipe-less leaves raw with a default extractor config', () => {
-    const ore = plan().find(s => s.itemId === 'ore_titanium')!;
+    const ore = plan().find(s => s.itemId === 'titanium-ore')!;
     expect(ore.isRaw).toBe(true);
     expect(ore.recipeId).toBeNull();
     expect(ore.rawConfig).toEqual({ purity: 'normal', extractorVersion: 'V1' });
-    expect(ore.consumers).toEqual(['ingot_titanium']);
+    expect(ore.consumers).toEqual(['titanium-bar']);
   });
 
   it('applies extractor settings to raw leaves', () => {
     const steps = buildPrereqPlan({
-      rootItemId: 'comp_rotor',
-      rootRecipeId: 'recipe_comp_rotor',
+      rootItemId: 'rotor',
+      rootRecipeId: 'recipe_crafter_rotor',
       anchor: ANCHOR,
-      prefs: { 'Ore Extractor': 'prefer-v2' },
+      prefs: { 'Ore Excavator': 'prefer-v2' },
     });
-    expect(steps.find(s => s.itemId === 'ore_titanium')!.rawConfig?.extractorVersion).toBe('V2');
+    expect(steps.find(s => s.itemId === 'titanium-ore')!.rawConfig?.extractorVersion).toBe('V2');
   });
 
   it('children follow the tier settings while the root keeps its manual recipe', () => {
     const steps = buildPrereqPlan({
-      rootItemId: 'comp_rotor',
-      rootRecipeId: 'recipe_comp_rotor', // manual V1 pick
+      rootItemId: 'rotor',
+      rootRecipeId: 'recipe_crafter_rotor', // manual V1 pick
       anchor: ANCHOR,
       prefs: { Fabricator: 'prefer-v2' },
     });
-    expect(steps[0]!.recipeId).toBe('recipe_comp_rotor');
-    // rod_titanium is also made in a Fabricator → prefer-v2 picks its V2 recipe.
-    expect(steps.find(s => s.itemId === 'rod_titanium')!.recipeId).toBe('recipe_rod_titanium_v2');
+    expect(steps[0]!.recipeId).toBe('recipe_crafter_rotor');
+    // titanium-rod is also made in a Fabricator → prefer-v2 picks its V2 recipe.
+    expect(steps.find(s => s.itemId === 'titanium-rod')!.recipeId).toBe('recipe_crafter-tier2_titanium-rod-v2');
   });
 
   it('places the root at the anchor and each rank one column to the left', () => {
     const steps = plan();
     const byId = new Map(steps.map(s => [s.itemId, s]));
-    expect(byId.get('comp_rotor')!.position).toEqual(ANCHOR);
-    expect(byId.get('wire_wolfram')!.position.x).toBe(ANCHOR.x - LAYOUT_COL_W);
-    expect(byId.get('ingot_wolfram')!.position.x).toBe(ANCHOR.x - 2 * LAYOUT_COL_W);
-    expect(byId.get('ore_wolfram')!.position.x).toBe(ANCHOR.x - 3 * LAYOUT_COL_W);
+    expect(byId.get('rotor')!.position).toEqual(ANCHOR);
+    expect(byId.get('wolfram-wire')!.position.x).toBe(ANCHOR.x - LAYOUT_COL_W);
+    expect(byId.get('wolfram-bar')!.position.x).toBe(ANCHOR.x - 2 * LAYOUT_COL_W);
+    expect(byId.get('wolfram-ore')!.position.x).toBe(ANCHOR.x - 3 * LAYOUT_COL_W);
   });
 
   it('terminates on cyclic recipe data', () => {

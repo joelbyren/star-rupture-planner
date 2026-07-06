@@ -15,7 +15,8 @@
       "Bash(sort *)",
       "Bash(grep *)",
       "Bash(wc *)",
-      "Bash(xargs wc -l)"
+      "Bash(xargs wc -l)",
+      "WebFetch(domain:starrupture.tools)"
     ]
   }
 }

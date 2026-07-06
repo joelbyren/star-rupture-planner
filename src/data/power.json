@@ -1,12 +1,74 @@
 {
-  "Fabricator": { "V1": 10, "V2": 10 },
-  "Furnace": { "V1": 10, "V2": 10 },
-  "Smelter": { "V1": 10, "V2": 10 },
-  "Chemicals at": { "V1": 10, "V2": 10 },
-  "Refinery": { "V1": 10, "V2": 10 },
-  "Mega Press": { "V1": 10, "V2": 10 },
-  "Ore Extractor": { "V1": 10, "V2": 10 },
-  "Helium Extractor": { "V1": 10, "V2": 10 },
-  "Sulphur Extractor": { "V1": 10, "V2": 10 },
-  "Oil Pump": { "V1": 10, "V2": 10 }
+  "Assembler": {
+    "V1": 60,
+    "V2": 60
+  },
+  "Basic Item Printer": {
+    "V1": 0,
+    "V2": 0
+  },
+  "Compounder": {
+    "V1": 60,
+    "V2": 180
+  },
+  "Constructorizer": {
+    "V1": 700,
+    "V2": 700
+  },
+  "Fabricator": {
+    "V1": 10,
+    "V2": 25
+  },
+  "Facturer": {
+    "V1": 850,
+    "V2": 850
+  },
+  "Food Station": {
+    "V1": 0,
+    "V2": 0
+  },
+  "Furnace": {
+    "V1": 20,
+    "V2": 50
+  },
+  "Helium-3 Extractor": {
+    "V1": 15,
+    "V2": 15
+  },
+  "Laser Drill": {
+    "V1": 250,
+    "V2": 250
+  },
+  "Mega Press": {
+    "V1": 30,
+    "V2": 30
+  },
+  "Oil Extractor": {
+    "V1": 400,
+    "V2": 400
+  },
+  "Ore Excavator": {
+    "V1": 5,
+    "V2": 30
+  },
+  "Pressurizer": {
+    "V1": 40,
+    "V2": 40
+  },
+  "Pyro Forge": {
+    "V1": 200,
+    "V2": 200
+  },
+  "Refinery": {
+    "V1": 150,
+    "V2": 150
+  },
+  "Smelter": {
+    "V1": 5,
+    "V2": 5
+  },
+  "Sulfur Extractor": {
+    "V1": 40,
+    "V2": 40
+  }
 }

@@ -13,68 +13,68 @@ describe('planStore — manual builder', () => {
   beforeEach(reset);
 
   it('adds an itemNode with a balance for a single end product', () => {
-    usePlanStore.getState().addNode('comp_rotor', 'recipe_comp_rotor', { x: 0, y: 0 });
+    usePlanStore.getState().addNode('rotor', 'recipe_crafter_rotor', { x: 0, y: 0 });
     const nodes = usePlanStore.getState().nodes;
     expect(nodes).toHaveLength(1);
-    expect(balanceFor('comp_rotor').buildingCountExact).toBeCloseTo(1);
-    expect(balanceFor('comp_rotor').outputRatePerMin).toBeCloseTo(10);
+    expect(balanceFor('rotor').buildingCountExact).toBeCloseTo(1);
+    expect(balanceFor('rotor').outputRatePerMin).toBeCloseTo(10);
   });
 
   it('connects matching producers and rebalances the graph', () => {
     const s = usePlanStore.getState();
-    s.addNode('comp_rotor', 'recipe_comp_rotor');
-    s.addNode('wire_wolfram', 'recipe_wire_wolfram');
-    s.addNode('rod_titanium', 'recipe_rod_titanium');
+    s.addNode('rotor', 'recipe_crafter_rotor');
+    s.addNode('wolfram-wire', 'recipe_crafter_wolfram-wire');
+    s.addNode('titanium-rod', 'recipe_crafter_titanium-rod');
 
-    s.connectNodes({ source: idFor('wire_wolfram'), target: idFor('comp_rotor'), sourceHandle: null, targetHandle: 'wire_wolfram' });
-    s.connectNodes({ source: idFor('rod_titanium'), target: idFor('comp_rotor'), sourceHandle: null, targetHandle: 'rod_titanium' });
+    s.connectNodes({ source: idFor('wolfram-wire'), target: idFor('rotor'), sourceHandle: null, targetHandle: 'wolfram-wire' });
+    s.connectNodes({ source: idFor('titanium-rod'), target: idFor('rotor'), sourceHandle: null, targetHandle: 'titanium-rod' });
 
     expect(usePlanStore.getState().edges).toHaveLength(2);
-    expect(balanceFor('comp_rotor').buildingCountExact).toBeCloseTo(1);
-    expect(balanceFor('wire_wolfram').buildingCountExact).toBeCloseTo(20 / 30);
-    expect(balanceFor('rod_titanium').buildingCountExact).toBeCloseTo(20 / 30);
+    expect(balanceFor('rotor').buildingCountExact).toBeCloseTo(1);
+    expect(balanceFor('wolfram-wire').buildingCountExact).toBeCloseTo(20 / 30);
+    expect(balanceFor('titanium-rod').buildingCountExact).toBeCloseTo(20 / 30);
   });
 
   it('rejects a connection whose producer output does not match the target handle', () => {
     const s = usePlanStore.getState();
-    s.addNode('comp_rotor', 'recipe_comp_rotor');
-    s.addNode('wire_wolfram', 'recipe_wire_wolfram');
-    // wire feeding the rod_titanium handle is invalid
-    s.connectNodes({ source: idFor('wire_wolfram'), target: idFor('comp_rotor'), sourceHandle: null, targetHandle: 'rod_titanium' });
+    s.addNode('rotor', 'recipe_crafter_rotor');
+    s.addNode('wolfram-wire', 'recipe_crafter_wolfram-wire');
+    // wire feeding the titanium-rod handle is invalid
+    s.connectNodes({ source: idFor('wolfram-wire'), target: idFor('rotor'), sourceHandle: null, targetHandle: 'titanium-rod' });
     expect(usePlanStore.getState().edges).toHaveLength(0);
   });
 
   it('removeNode drops the node and its incident edges', () => {
     const s = usePlanStore.getState();
-    s.addNode('comp_rotor', 'recipe_comp_rotor');
-    s.addNode('wire_wolfram', 'recipe_wire_wolfram');
-    s.connectNodes({ source: idFor('wire_wolfram'), target: idFor('comp_rotor'), sourceHandle: null, targetHandle: 'wire_wolfram' });
+    s.addNode('rotor', 'recipe_crafter_rotor');
+    s.addNode('wolfram-wire', 'recipe_crafter_wolfram-wire');
+    s.connectNodes({ source: idFor('wolfram-wire'), target: idFor('rotor'), sourceHandle: null, targetHandle: 'wolfram-wire' });
     expect(usePlanStore.getState().edges).toHaveLength(1);
 
-    s.removeNode(idFor('wire_wolfram'));
+    s.removeNode(idFor('wolfram-wire'));
     expect(usePlanStore.getState().nodes).toHaveLength(1);
     expect(usePlanStore.getState().edges).toHaveLength(0);
   });
 
   it('removeElements drops several nodes, their attached notes and the listed edges in one commit', () => {
     const s = usePlanStore.getState();
-    s.addNode('comp_rotor', 'recipe_comp_rotor');
-    s.addNode('wire_wolfram', 'recipe_wire_wolfram');
-    s.addNode('rod_titanium', 'recipe_rod_titanium');
-    s.connectNodes({ source: idFor('wire_wolfram'), target: idFor('comp_rotor'), sourceHandle: null, targetHandle: 'wire_wolfram' });
-    s.connectNodes({ source: idFor('rod_titanium'), target: idFor('comp_rotor'), sourceHandle: null, targetHandle: 'rod_titanium' });
-    s.addNote(idFor('wire_wolfram'), 'a note');
-    const rodEdge = usePlanStore.getState().edges.find(e => e.source === idFor('rod_titanium'))!;
+    s.addNode('rotor', 'recipe_crafter_rotor');
+    s.addNode('wolfram-wire', 'recipe_crafter_wolfram-wire');
+    s.addNode('titanium-rod', 'recipe_crafter_titanium-rod');
+    s.connectNodes({ source: idFor('wolfram-wire'), target: idFor('rotor'), sourceHandle: null, targetHandle: 'wolfram-wire' });
+    s.connectNodes({ source: idFor('titanium-rod'), target: idFor('rotor'), sourceHandle: null, targetHandle: 'titanium-rod' });
+    s.addNote(idFor('wolfram-wire'), 'a note');
+    const rodEdge = usePlanStore.getState().edges.find(e => e.source === idFor('titanium-rod'))!;
 
     // Delete the wire node (taking its note and edge with it) plus the rod→rotor edge explicitly.
-    s.removeElements([idFor('wire_wolfram')], [rodEdge.id]);
+    s.removeElements([idFor('wolfram-wire')], [rodEdge.id]);
 
     const state = usePlanStore.getState();
     expect(state.nodes.map(n => n.type).sort()).toEqual(['itemNode', 'itemNode']);
     expect(state.nodes.some(isNoteNode)).toBe(false);
     expect(state.edges).toHaveLength(0);
     // Rotor is unfed again → back to its standalone balance.
-    expect(balanceFor('comp_rotor').buildingCountExact).toBeCloseTo(1);
+    expect(balanceFor('rotor').buildingCountExact).toBeCloseTo(1);
   });
 });
 
@@ -83,68 +83,68 @@ describe('planStore — hard limits', () => {
 
   it('setNodeHardLimit caps the network', () => {
     const s = usePlanStore.getState();
-    s.addNode('comp_rotor', 'recipe_comp_rotor');
-    s.addNode('wire_wolfram', 'recipe_wire_wolfram');
-    s.connectNodes({ source: idFor('wire_wolfram'), target: idFor('comp_rotor'), sourceHandle: null, targetHandle: 'wire_wolfram' });
+    s.addNode('rotor', 'recipe_crafter_rotor');
+    s.addNode('wolfram-wire', 'recipe_crafter_wolfram-wire');
+    s.connectNodes({ source: idFor('wolfram-wire'), target: idFor('rotor'), sourceHandle: null, targetHandle: 'wolfram-wire' });
 
-    s.setNodeHardLimit(idFor('wire_wolfram'), 10);
+    s.setNodeHardLimit(idFor('wolfram-wire'), 10);
     // wire's relative demand (unlimited) is 20/min at rotor=1 → limit 10 halves the network.
-    expect(balanceFor('comp_rotor').outputRatePerMin).toBeCloseTo(5);
-    expect(balanceFor('wire_wolfram').hardLimitPerMin).toBe(10);
-    expect(balanceFor('wire_wolfram').isLimitBinding).toBe(true);
+    expect(balanceFor('rotor').outputRatePerMin).toBeCloseTo(5);
+    expect(balanceFor('wolfram-wire').hardLimitPerMin).toBe(10);
+    expect(balanceFor('wolfram-wire').isLimitBinding).toBe(true);
   });
 
   it('setNodeHardLimit(null) clears the limit', () => {
     const s = usePlanStore.getState();
-    s.addNode('comp_rotor', 'recipe_comp_rotor');
-    s.addNode('wire_wolfram', 'recipe_wire_wolfram');
-    s.connectNodes({ source: idFor('wire_wolfram'), target: idFor('comp_rotor'), sourceHandle: null, targetHandle: 'wire_wolfram' });
-    s.setNodeHardLimit(idFor('wire_wolfram'), 10);
+    s.addNode('rotor', 'recipe_crafter_rotor');
+    s.addNode('wolfram-wire', 'recipe_crafter_wolfram-wire');
+    s.connectNodes({ source: idFor('wolfram-wire'), target: idFor('rotor'), sourceHandle: null, targetHandle: 'wolfram-wire' });
+    s.setNodeHardLimit(idFor('wolfram-wire'), 10);
 
-    s.setNodeHardLimit(idFor('wire_wolfram'), null);
-    expect(balanceFor('comp_rotor').buildingCountExact).toBeCloseTo(1);
-    expect(balanceFor('wire_wolfram').hardLimitPerMin).toBeUndefined();
+    s.setNodeHardLimit(idFor('wolfram-wire'), null);
+    expect(balanceFor('rotor').buildingCountExact).toBeCloseTo(1);
+    expect(balanceFor('wolfram-wire').hardLimitPerMin).toBeUndefined();
   });
 
   it('a raw node always caps the network at calcSupplyRate, scaling UP when there is spare capacity', () => {
     const s = usePlanStore.getState();
-    s.addNode('comp_rotor', 'recipe_comp_rotor');
-    s.addNode('wire_wolfram', 'recipe_wire_wolfram');
-    s.addNode('ingot_wolfram', null); // raw
-    s.connectNodes({ source: idFor('wire_wolfram'), target: idFor('comp_rotor'), sourceHandle: null, targetHandle: 'wire_wolfram' });
-    s.connectNodes({ source: idFor('ingot_wolfram'), target: idFor('wire_wolfram'), sourceHandle: null, targetHandle: 'ingot_wolfram' });
+    s.addNode('rotor', 'recipe_crafter_rotor');
+    s.addNode('wolfram-wire', 'recipe_crafter_wolfram-wire');
+    s.addNode('wolfram-bar', null); // raw
+    s.connectNodes({ source: idFor('wolfram-wire'), target: idFor('rotor'), sourceHandle: null, targetHandle: 'wolfram-wire' });
+    s.connectNodes({ source: idFor('wolfram-bar'), target: idFor('wolfram-wire'), sourceHandle: null, targetHandle: 'wolfram-bar' });
 
     // normal purity × V1 = 120/min supply; relative demand at rotor=1 is 10 → scales UP to use it all.
-    expect(balanceFor('ingot_wolfram').outputRatePerMin).toBeCloseTo(120);
-    expect(balanceFor('ingot_wolfram').isLimitBinding).toBe(true);
-    expect(balanceFor('comp_rotor').buildingCountExact).toBeGreaterThan(1);
+    expect(balanceFor('wolfram-bar').outputRatePerMin).toBeCloseTo(120);
+    expect(balanceFor('wolfram-bar').isLimitBinding).toBe(true);
+    expect(balanceFor('rotor').buildingCountExact).toBeGreaterThan(1);
   });
 
   it('changing purity moves the raw cap and rescales the network', () => {
     const s = usePlanStore.getState();
-    s.addNode('comp_rotor', 'recipe_comp_rotor');
-    s.addNode('wire_wolfram', 'recipe_wire_wolfram');
-    s.addNode('ingot_wolfram', null);
-    s.connectNodes({ source: idFor('wire_wolfram'), target: idFor('comp_rotor'), sourceHandle: null, targetHandle: 'wire_wolfram' });
-    s.connectNodes({ source: idFor('ingot_wolfram'), target: idFor('wire_wolfram'), sourceHandle: null, targetHandle: 'ingot_wolfram' });
+    s.addNode('rotor', 'recipe_crafter_rotor');
+    s.addNode('wolfram-wire', 'recipe_crafter_wolfram-wire');
+    s.addNode('wolfram-bar', null);
+    s.connectNodes({ source: idFor('wolfram-wire'), target: idFor('rotor'), sourceHandle: null, targetHandle: 'wolfram-wire' });
+    s.connectNodes({ source: idFor('wolfram-bar'), target: idFor('wolfram-wire'), sourceHandle: null, targetHandle: 'wolfram-bar' });
 
-    s.setNodeRawConfig(idFor('ingot_wolfram'), { purity: 'pure' });
-    expect(balanceFor('ingot_wolfram').outputRatePerMin).toBeCloseTo(240);
+    s.setNodeRawConfig(idFor('wolfram-bar'), { purity: 'pure' });
+    expect(balanceFor('wolfram-bar').outputRatePerMin).toBeCloseTo(240);
   });
 
   it('custom mode drives the raw cap directly', () => {
     const s = usePlanStore.getState();
-    s.addNode('comp_rotor', 'recipe_comp_rotor');
-    s.addNode('wire_wolfram', 'recipe_wire_wolfram');
-    s.addNode('ingot_wolfram', null);
-    s.connectNodes({ source: idFor('wire_wolfram'), target: idFor('comp_rotor'), sourceHandle: null, targetHandle: 'wire_wolfram' });
-    s.connectNodes({ source: idFor('ingot_wolfram'), target: idFor('wire_wolfram'), sourceHandle: null, targetHandle: 'ingot_wolfram' });
+    s.addNode('rotor', 'recipe_crafter_rotor');
+    s.addNode('wolfram-wire', 'recipe_crafter_wolfram-wire');
+    s.addNode('wolfram-bar', null);
+    s.connectNodes({ source: idFor('wolfram-wire'), target: idFor('rotor'), sourceHandle: null, targetHandle: 'wolfram-wire' });
+    s.connectNodes({ source: idFor('wolfram-bar'), target: idFor('wolfram-wire'), sourceHandle: null, targetHandle: 'wolfram-bar' });
 
-    s.setNodeRawConfig(idFor('ingot_wolfram'), { mode: 'custom', customRatePerMin: 30 });
-    expect(balanceFor('ingot_wolfram').outputRatePerMin).toBeCloseTo(30);
+    s.setNodeRawConfig(idFor('wolfram-bar'), { mode: 'custom', customRatePerMin: 30 });
+    expect(balanceFor('wolfram-bar').outputRatePerMin).toBeCloseTo(30);
 
-    s.setNodeRawConfig(idFor('ingot_wolfram'), { customRatePerMin: 60 });
-    expect(balanceFor('ingot_wolfram').outputRatePerMin).toBeCloseTo(60);
+    s.setNodeRawConfig(idFor('wolfram-bar'), { customRatePerMin: 60 });
+    expect(balanceFor('wolfram-bar').outputRatePerMin).toBeCloseTo(60);
   });
 });
 
@@ -153,8 +153,8 @@ describe('planStore — notes', () => {
 
   it('addNote attaches a note node to its parent, after it in the array', () => {
     const s = usePlanStore.getState();
-    s.addNode('comp_rotor', 'recipe_comp_rotor');
-    const parentId = idFor('comp_rotor');
+    s.addNode('rotor', 'recipe_crafter_rotor');
+    const parentId = idFor('rotor');
     s.addNote(parentId, 'remember to double this');
 
     const nodes = usePlanStore.getState().nodes;
@@ -167,16 +167,16 @@ describe('planStore — notes', () => {
 
   it('does not count notes toward the balance solve', () => {
     const s = usePlanStore.getState();
-    s.addNode('comp_rotor', 'recipe_comp_rotor');
-    const before = balanceFor('comp_rotor').buildingCountExact;
-    s.addNote(idFor('comp_rotor'), 'a note');
-    expect(balanceFor('comp_rotor').buildingCountExact).toBeCloseTo(before);
+    s.addNode('rotor', 'recipe_crafter_rotor');
+    const before = balanceFor('rotor').buildingCountExact;
+    s.addNote(idFor('rotor'), 'a note');
+    expect(balanceFor('rotor').buildingCountExact).toBeCloseTo(before);
   });
 
   it('updateNoteText edits the note in place', () => {
     const s = usePlanStore.getState();
-    s.addNode('comp_rotor', 'recipe_comp_rotor');
-    s.addNote(idFor('comp_rotor'), 'original');
+    s.addNode('rotor', 'recipe_crafter_rotor');
+    s.addNote(idFor('rotor'), 'original');
     const noteId = (usePlanStore.getState().nodes.find(isNoteNode) as NoteNodeType).id;
 
     s.updateNoteText(noteId, 'updated');
@@ -185,8 +185,8 @@ describe('planStore — notes', () => {
 
   it('removeNode cascade-deletes notes attached to the removed parent', () => {
     const s = usePlanStore.getState();
-    s.addNode('comp_rotor', 'recipe_comp_rotor');
-    const parentId = idFor('comp_rotor');
+    s.addNode('rotor', 'recipe_crafter_rotor');
+    const parentId = idFor('rotor');
     s.addNote(parentId, 'a note');
     expect(usePlanStore.getState().nodes).toHaveLength(2);
 
@@ -196,8 +196,8 @@ describe('planStore — notes', () => {
 
   it('setNodes clamps a note further than NOTE_MAX_DISTANCE from its parent origin', () => {
     const s = usePlanStore.getState();
-    s.addNode('comp_rotor', 'recipe_comp_rotor');
-    s.addNote(idFor('comp_rotor'), 'a note');
+    s.addNode('rotor', 'recipe_crafter_rotor');
+    s.addNote(idFor('rotor'), 'a note');
     const nodes = usePlanStore.getState().nodes;
     const note = nodes.find(isNoteNode) as NoteNodeType;
 
@@ -210,18 +210,18 @@ describe('planStore — notes', () => {
 
   it('loadPlan imports a pre-notes snapshot (no noteNode entries) cleanly', () => {
     const s = usePlanStore.getState();
-    s.addNode('comp_rotor', 'recipe_comp_rotor');
+    s.addNode('rotor', 'recipe_crafter_rotor');
     const snapshotNoNotes = { planId: 'p1', planName: 'Old plan', nodes: usePlanStore.getState().rootGraph.nodes, edges: [] };
 
     s.loadPlan(snapshotNoNotes);
     expect(usePlanStore.getState().nodes).toHaveLength(1);
-    expect(balanceFor('comp_rotor').buildingCountExact).toBeCloseTo(1);
+    expect(balanceFor('rotor').buildingCountExact).toBeCloseTo(1);
   });
 
   it('a note round-trips through a save/load snapshot cycle', () => {
     const s = usePlanStore.getState();
-    s.addNode('comp_rotor', 'recipe_comp_rotor');
-    s.addNote(idFor('comp_rotor'), 'keep this');
+    s.addNode('rotor', 'recipe_crafter_rotor');
+    s.addNote(idFor('rotor'), 'keep this');
     const snapshot = { planId: 'p1', planName: 'Plan', nodes: usePlanStore.getState().rootGraph.nodes, edges: usePlanStore.getState().rootGraph.edges };
 
     reset();

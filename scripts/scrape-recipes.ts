@@ -1,20 +1,29 @@
 /**
- * Star Rupture recipe scraper.
+ * Star Rupture data scraper.
  * Usage: npx tsx scripts/scrape-recipes.ts [--refresh]
  *
- * Fetches item and crafting data from starruptureplanner.com and emits
- * src/data/items.json and src/data/recipes.json consumed by the calc engine.
+ * Fetches item and building data from starrupture.tools and emits
+ * src/data/items.json, src/data/recipes.json and src/data/power.json
+ * consumed by the calc engine.
+ *
+ * The site is a Next.js app-router SPA: the visible HTML is an empty shell,
+ * but the full dataset is embedded in the React Server Components "flight"
+ * payload (`self.__next_f.push([1, "..."])` script chunks). Two pages carry
+ * everything we need:
+ *   /items      → all items (id, name, category, stack size)
+ *   /buildings  → all buildings incl. every crafting recipe (inputs, output,
+ *                 duration in seconds) plus power draw and temperature
+ * so the whole scrape is 2 requests instead of one per item.
  */
 import * as fs from 'fs';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
-import { load } from 'cheerio';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
 const CACHE_DIR = path.join(ROOT, '.cache', 'scrape');
 const DATA_DIR = path.join(ROOT, 'src', 'data');
-const BASE_URL = 'https://starruptureplanner.com';
+const BASE_URL = 'https://starrupture.tools';
 const REFRESH = process.argv.includes('--refresh');
 const DELAY_MS = 800;
 
@@ -26,7 +35,7 @@ const BROWSER_HEADERS: Record<string, string> = {
 };
 
 // ---------------------------------------------------------------------------
-// Output types (mirrors src/engine/types.ts)
+// Output types (mirror src/engine/types.ts)
 // ---------------------------------------------------------------------------
 
 interface ScrapedItem {
@@ -45,13 +54,51 @@ interface ScrapedRecipe {
   id: string;
   outputItemId: string;
   machine: string;
-  buildingTier: null;
+  buildingTier: 'V1' | 'V2';
   outputRatePerMin: number;
   outputs: RecipeIngredient[];
   inputs: RecipeIngredient[];
   confidence: string | null;
   lastVerified: string | null;
   sourceUrl: string;
+}
+
+/** Mirrors MachinePower in src/engine/types.ts. */
+type ScrapedPower = Record<string, { V1: number; V2: number }>;
+
+// ---------------------------------------------------------------------------
+// Source types (shape of the flight-payload page props)
+// ---------------------------------------------------------------------------
+
+interface SourceItem {
+  id: string;
+  name: string;
+  stack?: number;
+  category?: string;
+  categoryLabel?: string;
+}
+
+interface SourceIngredient {
+  item: SourceItem;
+  quantity: number;
+}
+
+interface SourceRecipe {
+  id: string;
+  /** Seconds per craft cycle. */
+  duration: number;
+  inputs: SourceIngredient[];
+  output: SourceIngredient & { displayName?: string };
+}
+
+interface SourceBuilding {
+  id: string;
+  name: string;
+  url: string;
+  categoryId?: string;
+  recipes: SourceRecipe[];
+  /** kW; negative = consumption, positive = generation. */
+  power: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -117,231 +164,265 @@ async function fetchHtml(url: string, isFirst = false): Promise<string> {
 }
 
 // ---------------------------------------------------------------------------
-// Step 1: Harvest slugs from /database
+// Next.js flight-payload parsing
+//
+// The payload is streamed as script tags: self.__next_f.push([1, "chunk"]).
+// Concatenating the string chunks yields lines of the form "<hexId>:<data>",
+// where <data> for the chunks we care about is plain JSON. The page props
+// live on a React element tuple ["$", "$L<ref>", null, {…props}] — props is
+// tuple index 3.
+//
+// Repeated objects are deduplicated as reference strings, e.g.
+// "$29:props:buildings:0:requirements:0:item" = chunk 29, walk props (tuple
+// index 3 on an element), then buildings[0].requirements[0].item. resolveRefs
+// rehydrates these in place.
 // ---------------------------------------------------------------------------
 
-function extractSlugs(html: string): string[] {
-  const $ = load(html);
-  const slugs = new Set<string>();
-  $('a[href]').each((_, el) => {
-    const href = $(el).attr('href') ?? '';
-    const m = href.match(/^\/items\/([^/?#]+)/);
-    if (m) slugs.add(decodeURIComponent(m[1]!)); // capture group is mandatory in the pattern
-  });
-  return [...slugs];
-}
-
-// ---------------------------------------------------------------------------
-// JSON-LD helpers
-// ---------------------------------------------------------------------------
-
-type JsonLdBlock = Record<string, unknown>;
-
-function extractJsonLdBlocks(html: string): JsonLdBlock[] {
-  const blocks: JsonLdBlock[] = [];
-  const re = /<script[^>]+type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/gi;
+function flightStream(html: string): string {
+  const re = /self\.__next_f\.push\(\[1,("(?:[^"\\]|\\.)*")\]\)/g;
+  let out = '';
   let m: RegExpExecArray | null;
   while ((m = re.exec(html)) !== null) {
-    try {
-      blocks.push(JSON.parse(m[1]!) as JsonLdBlock); // capture group is mandatory in the pattern
-    } catch {
-      // malformed JSON-LD — skip
+    out += JSON.parse(m[1]!) as string; // capture group is mandatory in the pattern
+  }
+  return out;
+}
+
+function flightChunks(stream: string): Map<string, string> {
+  const chunks = new Map<string, string>();
+  let cur: { id: string; data: string } | null = null;
+  for (const line of stream.split('\n')) {
+    const m = line.match(/^([0-9a-f]+):(.*)$/i);
+    if (m) {
+      if (cur) chunks.set(cur.id, cur.data);
+      cur = { id: m[1]!, data: m[2]! }; // capture groups are mandatory in the pattern
+    } else if (cur) {
+      cur.data += '\n' + line; // JSON payload containing a literal newline
     }
   }
-  return blocks;
+  if (cur) chunks.set(cur.id, cur.data);
+  return chunks;
 }
 
-const KNOWN_TYPES = ['Component', 'Resource', 'Fluid', 'Powder', 'Weapon', 'Ammo'];
+type Json = unknown;
 
-/** Type from BreadcrumbList position-3 item, e.g. "/database?category=Component". */
-function extractType(blocks: JsonLdBlock[], fullText: string): string {
-  for (const b of blocks) {
-    if (b['@type'] !== 'BreadcrumbList') continue;
-    for (const item of (b.itemListElement as Array<{ position: number; name: string }>) ?? []) {
-      if (KNOWN_TYPES.includes(item.name)) return item.name;
+const REF_RE = /^\$[0-9a-f]+:/i;
+
+/**
+ * Find the page props object holding `key` (an array of >5 entries) anywhere
+ * in the parsed chunks, and return it with every `$id:path` reference string
+ * resolved to its actual value.
+ */
+function extractProps<T>(html: string, key: string): T[] {
+  const chunks = flightChunks(flightStream(html));
+
+  const parsed = new Map<string, Json>();
+  const chunkById = (id: string): Json => {
+    if (!parsed.has(id)) {
+      const raw = chunks.get(id);
+      if (raw === undefined) throw new Error(`flight chunk ${id} not found`);
+      parsed.set(id, JSON.parse(raw));
     }
-  }
-  // Fallback: first type word found in body text
-  for (const t of KNOWN_TYPES) {
-    if (fullText.includes(t)) return t;
-  }
-  return 'Resource';
-}
-
-/** lastVerified from TechArticle.dateModified. */
-function extractLastVerified(blocks: JsonLdBlock[]): string | null {
-  for (const b of blocks) {
-    if (b['@type'] === 'TechArticle' && typeof b.dateModified === 'string') {
-      return b.dateModified;
-    }
-  }
-  return null;
-}
-
-/**
- * Machine name + output rate from FAQPage "How do you make X?" answer.
- * Answer text: "Glass is crafted in the Furnace at 20 items per minute (IPM)."
- */
-function extractRecipeFromFaq(blocks: JsonLdBlock[]): { machine: string; rate: number } {
-  for (const b of blocks) {
-    if (b['@type'] !== 'FAQPage') continue;
-    for (const q of (b.mainEntity as Array<{
-      acceptedAnswer?: { text?: string };
-    }>) ?? []) {
-      const text = q?.acceptedAnswer?.text ?? '';
-      const m = text.match(
-        /crafted in (?:the )?([A-Za-z][A-Za-z0-9 ]*?) at (\d+(?:\.\d+)?) items? per minute/i,
-      );
-      if (m) return { machine: m[1]!.trim(), rate: parseFloat(m[2]!) }; // capture groups are mandatory
-    }
-  }
-  return { machine: '', rate: 0 };
-}
-
-// ---------------------------------------------------------------------------
-// HTML ingredient parsing
-// ---------------------------------------------------------------------------
-
-/**
- * Extract ingredient list from a named section of the raw HTML.
- *
- * The site renders each row as:
- *   <a href="/items/SLUG">Name</a><span class="...">x<!-- -->N</span>
- *
- * We find the section by its label div, slice to the next label, then regex
- * for item-link + quantity-span pairs. The React comment artifact <!-- --> is
- * handled by allowing it between x and the digit.
- */
-function parseIngredientSection(html: string, label: string): RecipeIngredient[] {
-  const startIdx = html.indexOf(`>${label}<`);
-  if (startIdx === -1) return [];
-
-  // Slice to whichever next section label comes first
-  const SECTION_LABELS = ['Inputs', 'Outputs', 'How to Craft', 'Production Chain', 'Used In', 'Similar Items'];
-  let endIdx = html.length;
-  for (const l of SECTION_LABELS) {
-    if (l === label) continue;
-    const idx = html.indexOf(`>${l}<`, startIdx + 1);
-    if (idx !== -1 && idx < endIdx) endIdx = idx;
-  }
-
-  const section = html.slice(startIdx, endIdx);
-  const results: RecipeIngredient[] = [];
-
-  // Match: href="/items/SLUG">LinkText</a><span...>x<!-- -->N</span>
-  const re =
-    /href="\/items\/([^"?#]+)"[^>]*>[^<]+<\/a><span[^>]*>x(?:<!--[^>]*-->)?(\d+)<\/span>/gi;
-  let m: RegExpExecArray | null;
-  while ((m = re.exec(section)) !== null) {
-    results.push({ itemId: decodeURIComponent(m[1]!), quantity: parseInt(m[2]!, 10) }); // capture groups are mandatory
-  }
-
-  return results;
-}
-
-/**
- * Quantity for the output item from the Outputs section.
- * The output is always the item itself (no <a> link in the HTML);
- * we just pull the x<!-- -->N quantity.
- */
-function extractOutputQuantity(html: string, slug: string): RecipeIngredient {
-  const startIdx = html.indexOf('>Outputs<');
-  if (startIdx !== -1) {
-    const window = html.slice(startIdx, startIdx + 600);
-    const m = window.match(/x(?:<!--[^>]*-->)?(\d+)<\/span>/i);
-    if (m) return { itemId: slug, quantity: parseInt(m[1]!, 10) }; // capture group is mandatory
-  }
-  return { itemId: slug, quantity: 1 };
-}
-
-/**
- * HTML fallback for machine + rate when the page has no FAQ JSON-LD.
- * Looks for the pattern: <span>MachineName</span></a><span class="...">N<!-- --> IPM</span>
- */
-function extractMachineFromHtml(html: string): { machine: string; rate: number } {
-  // Match: >MachineName</span></a><span...>N<!-- --> IPM</span>
-  const m = html.match(/>([A-Za-z][A-Za-z0-9 ]+?)<\/span><\/a><span[^>]*>(\d+(?:\.\d+)?)(?:<!--[^>]*-->)?\s*IPM<\/span>/i);
-  if (m) return { machine: m[1]!.trim(), rate: parseFloat(m[2]!) }; // capture groups are mandatory
-
-  // Broader fallback: any "N IPM" span preceded by a plausible machine name
-  const m2 = html.match(/([A-Za-z][A-Za-z0-9 ]+?)\s+(\d+(?:\.\d+)?)\s*IPM/i);
-  if (m2) return { machine: m2[1]!.trim(), rate: parseFloat(m2[2]!) }; // capture groups are mandatory
-
-  return { machine: '', rate: 0 };
-}
-
-// ---------------------------------------------------------------------------
-// Step 2: Parse an item page
-// ---------------------------------------------------------------------------
-
-function parseItemPage(
-  html: string,
-  slug: string,
-  url: string,
-): { item: ScrapedItem; recipe: ScrapedRecipe | null } {
-  const $ = load(html);
-  const fullText = $('body').text();
-  const blocks = extractJsonLdBlocks(html);
-
-  // Name
-  const name = $('h1').first().text().trim() || slug;
-
-  // Type
-  const type = extractType(blocks, fullText);
-
-  // Stack size
-  let stackSize: number | null = null;
-  const stackMatch = fullText.match(/Stack\s*[:\-]?\s*(\d+)/i);
-  if (stackMatch) stackSize = parseInt(stackMatch[1]!, 10); // capture group is mandatory
-
-  // Confidence (visible badge on the page)
-  let confidence: string | null = null;
-  const confMatch = fullText.match(/(High|Medium|Low)\s+Confidence/i);
-  if (confMatch) confidence = confMatch[0].trim();
-
-  // Last verified
-  let lastVerified = extractLastVerified(blocks);
-  if (!lastVerified) {
-    const lvm = fullText.match(/Last\s+Verified\s*[:\-]?\s*(\d{4}-\d{2}-\d{2})/i);
-    if (lvm) lastVerified = lvm[1]!; // capture group is mandatory
-  }
-
-  // Machine + output rate (JSON-LD first, HTML fallback)
-  let machine: string;
-  let outputRatePerMin: number;
-  const faq = extractRecipeFromFaq(blocks);
-  if (faq.machine) {
-    machine = faq.machine;
-    outputRatePerMin = faq.rate;
-  } else {
-    const htmlResult = extractMachineFromHtml(html);
-    machine = htmlResult.machine;
-    outputRatePerMin = htmlResult.rate;
-  }
-
-  const item: ScrapedItem = { id: slug, name, type, stackSize };
-
-  // No machine → leaf resource, no recipe
-  if (!machine) return { item, recipe: null };
-
-  const inputs = parseIngredientSection(html, 'Inputs');
-  const outputs = [extractOutputQuantity(html, slug)];
-
-  return {
-    item,
-    recipe: {
-      id: `recipe_${slug}`,
-      outputItemId: slug,
-      machine,
-      buildingTier: null,
-      outputRatePerMin,
-      outputs,
-      inputs,
-      confidence,
-      lastVerified,
-      sourceUrl: url,
-    },
+    return parsed.get(id);
   };
+
+  // Locate the target array by brute-force deep search over all JSON chunks.
+  let found: Json[] | null = null;
+  const search = (node: Json): void => {
+    if (found || node === null || typeof node !== 'object') return;
+    if (Array.isArray(node)) {
+      for (const c of node) search(c);
+      return;
+    }
+    const obj = node as Record<string, Json>;
+    if (Array.isArray(obj[key]) && (obj[key] as Json[]).length > 5) {
+      found = obj[key] as Json[];
+      return;
+    }
+    for (const v of Object.values(obj)) search(v);
+  };
+  for (const id of chunks.keys()) {
+    let v: Json;
+    try {
+      v = chunkById(id);
+    } catch {
+      continue; // non-JSON chunk (module refs etc.)
+    }
+    search(v);
+    if (found) break;
+  }
+  if (!found) throw new Error(`no "${key}" array found in flight payload — page structure may have changed`);
+
+  const resolvePath = (ref: string): Json => {
+    const [id, ...parts] = ref.slice(1).split(':');
+    let node: Json = chunkById(id!);
+    for (const p of parts) {
+      if (node === null || typeof node !== 'object') return undefined;
+      // React element tuples are ["$", type, key, props]; "props" = index 3.
+      if (p === 'props' && Array.isArray(node)) {
+        node = node[3];
+        continue;
+      }
+      node = (node as Record<string, Json>)[p];
+    }
+    return node;
+  };
+
+  const resolving = new Set<string>();
+  const walk = (node: Json): Json => {
+    if (typeof node === 'string' && REF_RE.test(node)) {
+      if (resolving.has(node)) throw new Error(`circular flight reference: ${node}`);
+      const target = resolvePath(node);
+      if (target === undefined) return node; // leave unresolved; validated below
+      resolving.add(node);
+      const out = walk(target);
+      resolving.delete(node);
+      return out;
+    }
+    if (Array.isArray(node)) return node.map(walk);
+    if (node !== null && typeof node === 'object') {
+      const out: Record<string, Json> = {};
+      for (const [k, v] of Object.entries(node)) out[k] = walk(v);
+      return out;
+    }
+    return node;
+  };
+
+  const resolved = walk(found) as T[];
+
+  const leftovers = JSON.stringify(resolved).match(/"\$[0-9a-f]+:[^"]*"/gi) ?? [];
+  if (leftovers.length > 0) {
+    throw new Error(
+      `${leftovers.length} unresolved flight reference(s) in "${key}", e.g. ${leftovers[0]}`,
+    );
+  }
+  return resolved;
+}
+
+// ---------------------------------------------------------------------------
+// Transformation
+// ---------------------------------------------------------------------------
+
+/**
+ * "Fabricator v.2" → { machine: "Fabricator", tier: "V2" }. Buildings without
+ * a version suffix are the base (V1) variant.
+ */
+function normalizeMachine(buildingName: string): { machine: string; tier: 'V1' | 'V2' } {
+  const name = buildingName.trim();
+  const m = name.match(/^(.*?)\s+v\.(\d+)$/i);
+  if (m) return { machine: m[1]!.trim(), tier: Number(m[2]!) >= 2 ? 'V2' : 'V1' }; // capture groups are mandatory
+  return { machine: name, tier: 'V1' };
+}
+
+/** Extractor buildings model ore patches as input-less "recipes" (one per purity). */
+function isExtractor(b: SourceBuilding): boolean {
+  return b.categoryId === 'extraction';
+}
+
+function toRecipes(buildings: SourceBuilding[]): ScrapedRecipe[] {
+  const recipes: ScrapedRecipe[] = [];
+  for (const b of buildings) {
+    if (isExtractor(b) || !b.recipes?.length) continue;
+    const { machine, tier } = normalizeMachine(b.name);
+    for (const r of b.recipes) {
+      recipes.push({
+        id: `recipe_${b.id}_${r.id}`,
+        outputItemId: r.output.item.id,
+        machine,
+        buildingTier: tier,
+        outputRatePerMin: Number(((r.output.quantity * 60) / r.duration).toFixed(2)),
+        outputs: [{ itemId: r.output.item.id, quantity: r.output.quantity }],
+        inputs: r.inputs.map((i) => ({ itemId: i.item.id, quantity: i.quantity })),
+        confidence: null,
+        lastVerified: null,
+        sourceUrl: `${BASE_URL}${b.url}`,
+      });
+    }
+  }
+  return recipes.sort(
+    (a, b) =>
+      a.outputItemId.localeCompare(b.outputItemId) ||
+      a.machine.localeCompare(b.machine) ||
+      a.id.localeCompare(b.id),
+  );
+}
+
+/**
+ * Power draw per machine, keyed the same way as Recipe.machine. Covers every
+ * crafting machine and every extractor. Source `power` is negative for
+ * consumers; we store the positive draw. Machines without a v.2 building get
+ * their V1 value mirrored into V2.
+ */
+function toPower(buildings: SourceBuilding[]): ScrapedPower {
+  const power: ScrapedPower = {};
+  const partial = new Map<string, { V1?: number; V2?: number }>();
+  for (const b of buildings) {
+    if (!isExtractor(b) && !b.recipes?.length) continue;
+    const { machine, tier } = normalizeMachine(b.name);
+    const draw = Math.max(0, -b.power);
+    const entry = partial.get(machine) ?? {};
+    entry[tier] = draw;
+    partial.set(machine, entry);
+  }
+  for (const [machine, entry] of [...partial.entries()].sort(([a], [b]) => a.localeCompare(b))) {
+    power[machine] = { V1: entry.V1 ?? entry.V2 ?? 0, V2: entry.V2 ?? entry.V1 ?? 0 };
+  }
+  return power;
+}
+
+/**
+ * Items referenced by any emitted recipe or produced by an extractor — the
+ * factory-relevant subset. (The site lists ~470 items, most of which are
+ * blueprints/gems/story items with no role in production chains; recipe-less
+ * items surface in the app as raw resources, so emitting all of them would
+ * flood the add-node dialog.)
+ */
+function toItems(
+  sourceItems: SourceItem[],
+  buildings: SourceBuilding[],
+  recipes: ScrapedRecipe[],
+): ScrapedItem[] {
+  const wanted = new Set<string>();
+  for (const r of recipes) {
+    wanted.add(r.outputItemId);
+    for (const i of r.inputs) wanted.add(i.itemId);
+  }
+  for (const b of buildings) {
+    if (!isExtractor(b)) continue;
+    for (const r of b.recipes ?? []) wanted.add(r.output.item.id);
+  }
+
+  const byId = new Map(sourceItems.map((i) => [i.id, i]));
+  // Recipes embed their own copy of each item — fallback for anything the
+  // /items listing doesn't carry.
+  for (const b of buildings) {
+    for (const r of b.recipes ?? []) {
+      for (const si of [r.output.item, ...r.inputs.map((i) => i.item)]) {
+        if (!byId.has(si.id)) byId.set(si.id, si);
+      }
+    }
+  }
+
+  const items: ScrapedItem[] = [];
+  const missing: string[] = [];
+  for (const id of [...wanted].sort()) {
+    const src = byId.get(id);
+    if (!src) {
+      missing.push(id);
+      continue;
+    }
+    const rawType = src.categoryLabel ?? src.category ?? 'Other';
+    items.push({
+      id: src.id,
+      name: src.name,
+      type: rawType.charAt(0).toUpperCase() + rawType.slice(1),
+      stackSize: src.stack ?? null,
+    });
+  }
+  if (missing.length) {
+    throw new Error(`items referenced by recipes but not found anywhere: ${missing.join(', ')}`);
+  }
+  return items;
 }
 
 // ---------------------------------------------------------------------------
@@ -349,93 +430,47 @@ function parseItemPage(
 // ---------------------------------------------------------------------------
 
 async function main() {
-  console.log('=== Star Rupture Recipe Scraper ===');
+  console.log('=== Star Rupture Data Scraper ===');
+  console.log(`Source:    ${BASE_URL}`);
   console.log(`Cache dir: ${CACHE_DIR}`);
   if (REFRESH) console.log('(--refresh: bypassing cache)\n');
   else console.log('(use --refresh to force re-fetch)\n');
 
-  // Step 1: database index
-  const dbUrl = `${BASE_URL}/database`;
-  const dbHtml = await fetchHtml(dbUrl, true).catch((e: Error) => {
-    console.error(`\nFATAL: could not fetch ${dbUrl}: ${e.message}`);
-    if (e.message.includes('403')) {
-      console.error('Received 403 Forbidden even with browser headers. Report this before escalating.');
-    }
-    process.exit(1);
-  });
+  const itemsHtml = await fetchHtml(`${BASE_URL}/items`, true);
+  const buildingsHtml = await fetchHtml(`${BASE_URL}/buildings`);
 
-  const slugs = extractSlugs(dbHtml);
-  if (slugs.length === 0) {
-    console.error('No item slugs found on /database — page structure may have changed.');
-    process.exit(1);
-  }
-  console.log(`\nFound ${slugs.length} slugs on /database\n`);
+  const sourceItems = extractProps<SourceItem>(itemsHtml, 'items');
+  const buildings = extractProps<SourceBuilding>(buildingsHtml, 'buildings');
+  console.log(`\nParsed ${sourceItems.length} items, ${buildings.length} buildings from flight payload`);
 
-  // Step 2: fetch + parse each item page
-  const items: ScrapedItem[] = [];
-  const recipes: ScrapedRecipe[] = [];
-  const leafItems: string[] = [];
-  const failures: Array<{ slug: string; reason: string }> = [];
+  const recipes = toRecipes(buildings);
+  const power = toPower(buildings);
+  const items = toItems(sourceItems, buildings, recipes);
 
-  for (const slug of slugs) {
-    const itemUrl = `${BASE_URL}/items/${slug}`;
-    try {
-      const html = await fetchHtml(itemUrl);
-      const { item, recipe } = parseItemPage(html, slug, itemUrl);
-      items.push(item);
-      if (recipe) {
-        recipes.push(recipe);
-      } else {
-        leafItems.push(slug);
-      }
-    } catch (e) {
-      const reason = (e as Error).message;
-      console.error(`  FAILED: ${slug} — ${reason}`);
-      failures.push({ slug, reason });
-      if (reason.includes('403')) {
-        console.error('\nStopping due to 403. Report before escalating.');
-        break;
-      }
-    }
-  }
-
-  // Step 3: write output
-  fs.writeFileSync(
-    path.join(DATA_DIR, 'items.json'),
-    JSON.stringify(items, null, 2) + '\n',
-    'utf-8',
-  );
-  fs.writeFileSync(
-    path.join(DATA_DIR, 'recipes.json'),
-    JSON.stringify(recipes, null, 2) + '\n',
-    'utf-8',
-  );
+  const write = (file: string, data: unknown) =>
+    fs.writeFileSync(path.join(DATA_DIR, file), JSON.stringify(data, null, 2) + '\n', 'utf-8');
+  write('items.json', items);
+  write('recipes.json', recipes);
+  write('power.json', power);
 
   // Summary
+  const craftingBuildings = buildings.filter((b) => !isExtractor(b) && b.recipes?.length);
+  const extractors = buildings.filter(isExtractor);
+  const leafItems = items.filter((i) => !recipes.some((r) => r.outputItemId === i.id));
   console.log('\n=== Summary ===');
-  console.log(`Items found:            ${items.length}`);
-  console.log(`Recipes emitted:        ${recipes.length}`);
+  console.log(`Items emitted:          ${items.length}`);
+  console.log(`Recipes emitted:        ${recipes.length} (from ${craftingBuildings.length} crafting machines)`);
+  console.log(`Power entries:          ${Object.keys(power).length} (incl. ${extractors.length} extractor buildings)`);
   console.log(`Leaf items (no recipe): ${leafItems.length}`);
-  if (leafItems.length) console.log(`  Leaves: ${leafItems.join(', ')}`);
-  if (failures.length) {
-    console.log(`\nUnexpected parse failures (${failures.length}):`);
-    for (const { slug, reason } of failures) {
-      console.log(`  ${slug}: ${reason}`);
-    }
-  } else {
-    console.log('Unexpected failures:    0');
-  }
+  if (leafItems.length) console.log(`  Leaves: ${leafItems.map((i) => i.id).join(', ')}`);
 
-  // Glass sanity check
-  const glassRecipe = recipes.find(
-    (r) => r.outputItemId === 'glass' || r.outputItemId.toLowerCase().includes('glass'),
-  );
-  if (glassRecipe) {
+  // Glass sanity check (expected: Furnace, 3s × 1 → 20/min at V1)
+  const glass = recipes.filter((r) => r.outputItemId === 'glass');
+  if (glass.length > 0) {
     console.log('\n=== Glass sanity check ===');
-    console.log(JSON.stringify(glassRecipe, null, 2));
+    console.log(JSON.stringify(glass, null, 2));
   } else {
-    console.log('\n[note] No "glass" recipe found. All recipe IDs:');
-    console.log(' ', recipes.map((r) => r.outputItemId).join(', ') || '(none)');
+    console.log('\n[warn] No "glass" recipe found — page structure may have changed.');
   }
 }
 

@@ -1,1221 +1,4824 @@
 [
   {
-    "id": "recipe_sheet_calcite",
-    "outputItemId": "sheet_calcite",
-    "machine": "Fabricator",
-    "buildingTier": null,
-    "outputRatePerMin": 60,
-    "outputs": [
-      {
-        "itemId": "sheet_calcite",
-        "quantity": 2
-      }
-    ],
-    "inputs": [
-      {
-        "itemId": "block_calcium",
-        "quantity": 1
-      }
-    ],
-    "confidence": "High Confidence",
-    "lastVerified": "2026-01-09",
-    "sourceUrl": "https://starruptureplanner.com/items/sheet_calcite"
-  },
-  {
-    "id": "recipe_comp_glass",
-    "outputItemId": "comp_glass",
-    "machine": "Furnace",
-    "buildingTier": null,
-    "outputRatePerMin": 20,
-    "outputs": [
-      {
-        "itemId": "comp_glass",
-        "quantity": 1
-      }
-    ],
-    "inputs": [
-      {
-        "itemId": "gas_helium3",
-        "quantity": 1
-      },
-      {
-        "itemId": "powder_calcium",
-        "quantity": 2
-      }
-    ],
-    "confidence": "High Confidence",
-    "lastVerified": "2026-01-09",
-    "sourceUrl": "https://starruptureplanner.com/items/comp_glass"
-  },
-  {
-    "id": "recipe_comp_electronics",
-    "outputItemId": "comp_electronics",
-    "machine": "Furnace",
-    "buildingTier": null,
+    "id": "recipe_assembler_accumulator",
+    "outputItemId": "accumulator",
+    "machine": "Assembler",
+    "buildingTier": "V1",
     "outputRatePerMin": 12,
     "outputs": [
       {
-        "itemId": "comp_electronics",
+        "itemId": "accumulator",
         "quantity": 1
       }
     ],
     "inputs": [
       {
-        "itemId": "comp_synthetic_silicon",
+        "itemId": "electronics",
         "quantity": 2
       },
       {
-        "itemId": "comp_inductor",
+        "itemId": "stator",
         "quantity": 1
       },
       {
-        "itemId": "comp_stator",
+        "itemId": "battery",
         "quantity": 1
       }
     ],
-    "confidence": "High Confidence",
-    "lastVerified": "2026-01-09",
-    "sourceUrl": "https://starruptureplanner.com/items/comp_electronics"
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/assembler"
   },
   {
-    "id": "recipe_comp_rotor",
-    "outputItemId": "comp_rotor",
-    "machine": "Fabricator",
-    "buildingTier": null,
-    "outputRatePerMin": 10,
+    "id": "recipe_synthetizer_aerogel",
+    "outputItemId": "aerogel",
+    "machine": "Compounder",
+    "buildingTier": "V1",
+    "outputRatePerMin": 20,
     "outputs": [
       {
-        "itemId": "comp_rotor",
+        "itemId": "aerogel",
+        "quantity": 2
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "goethite-powder",
+        "quantity": 4
+      },
+      {
+        "itemId": "calcium-powder",
+        "quantity": 6
+      },
+      {
+        "itemId": "liquid-helium",
+        "quantity": 2
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/synthetizer"
+  },
+  {
+    "id": "recipe_factory_airlock",
+    "outputItemId": "airlock",
+    "machine": "Constructorizer",
+    "buildingTier": "V1",
+    "outputRatePerMin": 5,
+    "outputs": [
+      {
+        "itemId": "airlock",
         "quantity": 1
       }
     ],
     "inputs": [
       {
-        "itemId": "wire_wolfram",
+        "itemId": "scafolding",
+        "quantity": 1
+      },
+      {
+        "itemId": "pressure-tank",
+        "quantity": 1
+      },
+      {
+        "itemId": "uberfilament",
+        "quantity": 1
+      },
+      {
+        "itemId": "pseudorubber-insulator",
+        "quantity": 1
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/factory"
+  },
+  {
+    "id": "recipe_factory_anti-radiation-covers",
+    "outputItemId": "anti-radiation-covers",
+    "machine": "Constructorizer",
+    "buildingTier": "V1",
+    "outputRatePerMin": 6,
+    "outputs": [
+      {
+        "itemId": "anti-radiation-covers",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "reinforced-housing",
         "quantity": 2
       },
       {
-        "itemId": "rod_titanium",
+        "itemId": "reinforced-frame",
+        "quantity": 1
+      },
+      {
+        "itemId": "pseudorubber-insulator",
+        "quantity": 1
+      },
+      {
+        "itemId": "epoxy",
         "quantity": 2
       }
     ],
-    "confidence": "High Confidence",
-    "lastVerified": "2026-01-09",
-    "sourceUrl": "https://starruptureplanner.com/items/comp_rotor"
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/factory"
   },
   {
-    "id": "recipe_ingot_titanium",
-    "outputItemId": "ingot_titanium",
-    "machine": "Smelter",
-    "buildingTier": null,
+    "id": "recipe_food-processor_antidote-fluid",
+    "outputItemId": "antidote-fluid",
+    "machine": "Food Station",
+    "buildingTier": "V1",
+    "outputRatePerMin": 12,
+    "outputs": [
+      {
+        "itemId": "antidote-fluid",
+        "quantity": 2
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "star-tears",
+        "quantity": 2
+      },
+      {
+        "itemId": "purplant",
+        "quantity": 3
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/food-processor"
+  },
+  {
+    "id": "recipe_food-processor_antidote-gel",
+    "outputItemId": "antidote-gel",
+    "machine": "Food Station",
+    "buildingTier": "V1",
+    "outputRatePerMin": 6,
+    "outputs": [
+      {
+        "itemId": "antidote-gel",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "purplant",
+        "quantity": 3
+      },
+      {
+        "itemId": "grubbler",
+        "quantity": 1
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/food-processor"
+  },
+  {
+    "id": "recipe_food-processor_antidote-shards",
+    "outputItemId": "antidote-shards",
+    "machine": "Food Station",
+    "buildingTier": "V1",
+    "outputRatePerMin": 12,
+    "outputs": [
+      {
+        "itemId": "antidote-shards",
+        "quantity": 2
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "purplant",
+        "quantity": 3
+      },
+      {
+        "itemId": "sulheart",
+        "quantity": 2
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/food-processor"
+  },
+  {
+    "id": "recipe_food-processor_aqua-bar",
+    "outputItemId": "aqua-bar",
+    "machine": "Food Station",
+    "buildingTier": "V1",
+    "outputRatePerMin": 18,
+    "outputs": [
+      {
+        "itemId": "aqua-bar",
+        "quantity": 3
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "hydrobulb",
+        "quantity": 5
+      },
+      {
+        "itemId": "serpent-root",
+        "quantity": 1
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/food-processor"
+  },
+  {
+    "id": "recipe_food-processor_aqua-block-capsules",
+    "outputItemId": "aqua-block-capsules",
+    "machine": "Food Station",
+    "buildingTier": "V1",
+    "outputRatePerMin": 6,
+    "outputs": [
+      {
+        "itemId": "aqua-block-capsules",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "hydrobulb",
+        "quantity": 4
+      },
+      {
+        "itemId": "oxallop",
+        "quantity": 1
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/food-processor"
+  },
+  {
+    "id": "recipe_food-processor_aqua-chew",
+    "outputItemId": "aqua-chew",
+    "machine": "Food Station",
+    "buildingTier": "V1",
+    "outputRatePerMin": 6,
+    "outputs": [
+      {
+        "itemId": "aqua-chew",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "hydrobulb",
+        "quantity": 4
+      },
+      {
+        "itemId": "prism-herb",
+        "quantity": 1
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/food-processor"
+  },
+  {
+    "id": "recipe_food-processor_aqua-fluid",
+    "outputItemId": "aqua-fluid",
+    "machine": "Food Station",
+    "buildingTier": "V1",
+    "outputRatePerMin": 6,
+    "outputs": [
+      {
+        "itemId": "aqua-fluid",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "hydrobulb",
+        "quantity": 2
+      },
+      {
+        "itemId": "star-tears",
+        "quantity": 1
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/food-processor"
+  },
+  {
+    "id": "recipe_food-processor_aqua-gel",
+    "outputItemId": "aqua-gel",
+    "machine": "Food Station",
+    "buildingTier": "V1",
+    "outputRatePerMin": 12,
+    "outputs": [
+      {
+        "itemId": "aqua-gel",
+        "quantity": 2
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "hydrobulb",
+        "quantity": 6
+      },
+      {
+        "itemId": "grubbler",
+        "quantity": 1
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/food-processor"
+  },
+  {
+    "id": "recipe_food-processor_aqua-stim-shards",
+    "outputItemId": "aqua-stim-shards",
+    "machine": "Food Station",
+    "buildingTier": "V1",
+    "outputRatePerMin": 6,
+    "outputs": [
+      {
+        "itemId": "aqua-stim-shards",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "hydrobulb",
+        "quantity": 2
+      },
+      {
+        "itemId": "sulheart",
+        "quantity": 1
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/food-processor"
+  },
+  {
+    "id": "recipe_item-printer_basic-building-material-item-printer",
+    "outputItemId": "basic-building-material",
+    "machine": "Basic Item Printer",
+    "buildingTier": "V1",
     "outputRatePerMin": 60,
     "outputs": [
       {
-        "itemId": "ingot_titanium",
-        "quantity": 2
-      }
-    ],
-    "inputs": [
-      {
-        "itemId": "ore_titanium",
-        "quantity": 2
-      }
-    ],
-    "confidence": "High Confidence",
-    "lastVerified": "2026-01-09",
-    "sourceUrl": "https://starruptureplanner.com/items/ingot_titanium"
-  },
-  {
-    "id": "recipe_ingot_wolfram",
-    "outputItemId": "ingot_wolfram",
-    "machine": "Smelter",
-    "buildingTier": null,
-    "outputRatePerMin": 60,
-    "outputs": [
-      {
-        "itemId": "ingot_wolfram",
-        "quantity": 2
-      }
-    ],
-    "inputs": [
-      {
-        "itemId": "ore_wolfram",
-        "quantity": 2
-      }
-    ],
-    "confidence": "High Confidence",
-    "lastVerified": "2026-01-09",
-    "sourceUrl": "https://starruptureplanner.com/items/ingot_wolfram"
-  },
-  {
-    "id": "recipe_comp_ceramics",
-    "outputItemId": "comp_ceramics",
-    "machine": "Furnace",
-    "buildingTier": null,
-    "outputRatePerMin": 60,
-    "outputs": [
-      {
-        "itemId": "comp_ceramics",
-        "quantity": 2
-      }
-    ],
-    "inputs": [
-      {
-        "itemId": "sheet_calcite",
-        "quantity": 1
-      },
-      {
-        "itemId": "powder_wolfram",
-        "quantity": 1
-      }
-    ],
-    "confidence": "High Confidence",
-    "lastVerified": "2026-01-09",
-    "sourceUrl": "https://starruptureplanner.com/items/comp_ceramics"
-  },
-  {
-    "id": "recipe_comp_synthetic_silicon",
-    "outputItemId": "comp_synthetic_silicon",
-    "machine": "Furnace",
-    "buildingTier": null,
-    "outputRatePerMin": 60,
-    "outputs": [
-      {
-        "itemId": "comp_synthetic_silicon",
-        "quantity": 2
-      }
-    ],
-    "inputs": [
-      {
-        "itemId": "powder_calcium",
-        "quantity": 2
-      },
-      {
-        "itemId": "gas_helium3",
-        "quantity": 1
-      },
-      {
-        "itemId": "comp_ceramics",
-        "quantity": 2
-      }
-    ],
-    "confidence": "High Confidence",
-    "lastVerified": "2026-01-09",
-    "sourceUrl": "https://starruptureplanner.com/items/comp_synthetic_silicon"
-  },
-  {
-    "id": "recipe_item_bbm",
-    "outputItemId": "item_bbm",
-    "machine": "Fabricator",
-    "buildingTier": null,
-    "outputRatePerMin": 300,
-    "outputs": [
-      {
-        "itemId": "item_bbm",
+        "itemId": "basic-building-material",
         "quantity": 10
       }
     ],
     "inputs": [
       {
-        "itemId": "ore_titanium",
+        "itemId": "wolfram-ore",
         "quantity": 1
       },
       {
-        "itemId": "ore_wolfram",
+        "itemId": "titanium-ore",
         "quantity": 1
       }
     ],
-    "confidence": "High Confidence",
-    "lastVerified": "2026-01-09",
-    "sourceUrl": "https://starruptureplanner.com/items/item_bbm"
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/item-printer"
   },
   {
-    "id": "recipe_fluid_crude_oil",
-    "outputItemId": "fluid_crude_oil",
-    "machine": "Chemicals at",
-    "buildingTier": null,
-    "outputRatePerMin": 20,
-    "outputs": [
-      {
-        "itemId": "fluid_crude_oil",
-        "quantity": 1
-      }
-    ],
-    "inputs": [],
-    "confidence": "High Confidence",
-    "lastVerified": "2026-01-09",
-    "sourceUrl": "https://starruptureplanner.com/items/fluid_crude_oil"
-  },
-  {
-    "id": "recipe_fluid_sulfuric_acid",
-    "outputItemId": "fluid_sulfuric_acid",
-    "machine": "Refinery",
-    "buildingTier": null,
-    "outputRatePerMin": 120,
-    "outputs": [
-      {
-        "itemId": "fluid_sulfuric_acid",
-        "quantity": 1
-      }
-    ],
-    "inputs": [
-      {
-        "itemId": "ore_sulfur",
-        "quantity": 2
-      },
-      {
-        "itemId": "comp_chemicals",
-        "quantity": 1
-      }
-    ],
-    "confidence": "Medium Confidence",
-    "lastVerified": "2026-01-09",
-    "sourceUrl": "https://starruptureplanner.com/items/fluid_sulfuric_acid"
-  },
-  {
-    "id": "recipe_block_calcium",
-    "outputItemId": "block_calcium",
-    "machine": "Smelter",
-    "buildingTier": null,
-    "outputRatePerMin": 60,
-    "outputs": [
-      {
-        "itemId": "block_calcium",
-        "quantity": 2
-      }
-    ],
-    "inputs": [
-      {
-        "itemId": "ore_calcium",
-        "quantity": 2
-      }
-    ],
-    "confidence": "High Confidence",
-    "lastVerified": "2026-01-09",
-    "sourceUrl": "https://starruptureplanner.com/items/block_calcium"
-  },
-  {
-    "id": "recipe_rod_titanium",
-    "outputItemId": "rod_titanium",
-    "machine": "Fabricator",
-    "buildingTier": null,
-    "outputRatePerMin": 30,
-    "outputs": [
-      {
-        "itemId": "rod_titanium",
-        "quantity": 1
-      }
-    ],
-    "inputs": [
-      {
-        "itemId": "ingot_titanium",
-        "quantity": 1
-      }
-    ],
-    "confidence": "High Confidence",
-    "lastVerified": "2026-01-09",
-    "sourceUrl": "https://starruptureplanner.com/items/rod_titanium"
-  },
-  {
-    "id": "recipe_sheet_titanium",
-    "outputItemId": "sheet_titanium",
-    "machine": "Fabricator",
-    "buildingTier": null,
-    "outputRatePerMin": 60,
-    "outputs": [
-      {
-        "itemId": "sheet_titanium",
-        "quantity": 2
-      }
-    ],
-    "inputs": [
-      {
-        "itemId": "ingot_titanium",
-        "quantity": 1
-      }
-    ],
-    "confidence": "High Confidence",
-    "lastVerified": "2026-01-09",
-    "sourceUrl": "https://starruptureplanner.com/items/sheet_titanium"
-  },
-  {
-    "id": "recipe_beam_titanium",
-    "outputItemId": "beam_titanium",
-    "machine": "Fabricator",
-    "buildingTier": null,
-    "outputRatePerMin": 20,
-    "outputs": [
-      {
-        "itemId": "beam_titanium",
-        "quantity": 1
-      }
-    ],
-    "inputs": [
-      {
-        "itemId": "ingot_titanium",
-        "quantity": 1
-      }
-    ],
-    "confidence": "High Confidence",
-    "lastVerified": "2026-01-09",
-    "sourceUrl": "https://starruptureplanner.com/items/beam_titanium"
-  },
-  {
-    "id": "recipe_comp_titanium_housing",
-    "outputItemId": "comp_titanium_housing",
-    "machine": "Furnace",
-    "buildingTier": null,
-    "outputRatePerMin": 30,
-    "outputs": [
-      {
-        "itemId": "comp_titanium_housing",
-        "quantity": 1
-      }
-    ],
-    "inputs": [
-      {
-        "itemId": "beam_titanium",
-        "quantity": 1
-      },
-      {
-        "itemId": "sheet_titanium",
-        "quantity": 2
-      }
-    ],
-    "confidence": "High Confidence",
-    "lastVerified": "2026-01-09",
-    "sourceUrl": "https://starruptureplanner.com/items/comp_titanium_housing"
-  },
-  {
-    "id": "recipe_plate_wolfram",
-    "outputItemId": "plate_wolfram",
-    "machine": "Fabricator",
-    "buildingTier": null,
-    "outputRatePerMin": 60,
-    "outputs": [
-      {
-        "itemId": "plate_wolfram",
-        "quantity": 1
-      }
-    ],
-    "inputs": [
-      {
-        "itemId": "ingot_wolfram",
-        "quantity": 1
-      }
-    ],
-    "confidence": "High Confidence",
-    "lastVerified": "2026-01-09",
-    "sourceUrl": "https://starruptureplanner.com/items/plate_wolfram"
-  },
-  {
-    "id": "recipe_wire_wolfram",
-    "outputItemId": "wire_wolfram",
-    "machine": "Fabricator",
-    "buildingTier": null,
-    "outputRatePerMin": 30,
-    "outputs": [
-      {
-        "itemId": "wire_wolfram",
-        "quantity": 2
-      }
-    ],
-    "inputs": [
-      {
-        "itemId": "ingot_wolfram",
-        "quantity": 1
-      }
-    ],
-    "confidence": "High Confidence",
-    "lastVerified": "2026-01-09",
-    "sourceUrl": "https://starruptureplanner.com/items/wire_wolfram"
-  },
-  {
-    "id": "recipe_powder_wolfram",
-    "outputItemId": "powder_wolfram",
-    "machine": "Furnace",
-    "buildingTier": null,
-    "outputRatePerMin": 90,
-    "outputs": [
-      {
-        "itemId": "powder_wolfram",
-        "quantity": 3
-      }
-    ],
-    "inputs": [
-      {
-        "itemId": "ingot_wolfram",
-        "quantity": 1
-      }
-    ],
-    "confidence": "High Confidence",
-    "lastVerified": "2026-01-09",
-    "sourceUrl": "https://starruptureplanner.com/items/powder_wolfram"
-  },
-  {
-    "id": "recipe_powder_calcium",
-    "outputItemId": "powder_calcium",
-    "machine": "Furnace",
-    "buildingTier": null,
-    "outputRatePerMin": 60,
-    "outputs": [
-      {
-        "itemId": "powder_calcium",
-        "quantity": 3
-      }
-    ],
-    "inputs": [
-      {
-        "itemId": "block_calcium",
-        "quantity": 1
-      }
-    ],
-    "confidence": "High Confidence",
-    "lastVerified": "2026-01-09",
-    "sourceUrl": "https://starruptureplanner.com/items/powder_calcium"
-  },
-  {
-    "id": "recipe_comp_tube",
-    "outputItemId": "comp_tube",
-    "machine": "Fabricator",
-    "buildingTier": null,
-    "outputRatePerMin": 60,
-    "outputs": [
-      {
-        "itemId": "comp_tube",
-        "quantity": 2
-      }
-    ],
-    "inputs": [
-      {
-        "itemId": "rod_titanium",
-        "quantity": 1
-      },
-      {
-        "itemId": "sheet_titanium",
-        "quantity": 1
-      }
-    ],
-    "confidence": "High Confidence",
-    "lastVerified": "2026-01-09",
-    "sourceUrl": "https://starruptureplanner.com/items/comp_tube"
-  },
-  {
-    "id": "recipe_comp_stator",
-    "outputItemId": "comp_stator",
-    "machine": "Fabricator",
-    "buildingTier": null,
-    "outputRatePerMin": 20,
-    "outputs": [
-      {
-        "itemId": "comp_stator",
-        "quantity": 1
-      }
-    ],
-    "inputs": [
-      {
-        "itemId": "wire_wolfram",
-        "quantity": 1
-      },
-      {
-        "itemId": "comp_titanium_housing",
-        "quantity": 2
-      }
-    ],
-    "confidence": "High Confidence",
-    "lastVerified": "2026-01-09",
-    "sourceUrl": "https://starruptureplanner.com/items/comp_stator"
-  },
-  {
-    "id": "recipe_comp_stabilizer",
-    "outputItemId": "comp_stabilizer",
-    "machine": "Fabricator",
-    "buildingTier": null,
-    "outputRatePerMin": 10,
-    "outputs": [
-      {
-        "itemId": "comp_stabilizer",
-        "quantity": 1
-      }
-    ],
-    "inputs": [
-      {
-        "itemId": "comp_rotor",
-        "quantity": 1
-      },
-      {
-        "itemId": "rod_titanium",
-        "quantity": 2
-      }
-    ],
-    "confidence": "High Confidence",
-    "lastVerified": "2026-01-09",
-    "sourceUrl": "https://starruptureplanner.com/items/comp_stabilizer"
-  },
-  {
-    "id": "recipe_comp_applicator",
-    "outputItemId": "comp_applicator",
-    "machine": "Fabricator",
-    "buildingTier": null,
-    "outputRatePerMin": 15,
-    "outputs": [
-      {
-        "itemId": "comp_applicator",
-        "quantity": 1
-      }
-    ],
-    "inputs": [
-      {
-        "itemId": "comp_glass",
-        "quantity": 2
-      },
-      {
-        "itemId": "comp_tube",
-        "quantity": 8
-      }
-    ],
-    "confidence": "High Confidence",
-    "lastVerified": "2026-01-09",
-    "sourceUrl": "https://starruptureplanner.com/items/comp_applicator"
-  },
-  {
-    "id": "recipe_comp_inductor",
-    "outputItemId": "comp_inductor",
-    "machine": "Furnace",
-    "buildingTier": null,
-    "outputRatePerMin": 20,
-    "outputs": [
-      {
-        "itemId": "comp_inductor",
-        "quantity": 1
-      }
-    ],
-    "inputs": [
-      {
-        "itemId": "comp_tube",
-        "quantity": 2
-      },
-      {
-        "itemId": "wire_wolfram",
-        "quantity": 1
-      },
-      {
-        "itemId": "comp_ceramics",
-        "quantity": 2
-      }
-    ],
-    "confidence": "High Confidence",
-    "lastVerified": "2026-01-09",
-    "sourceUrl": "https://starruptureplanner.com/items/comp_inductor"
-  },
-  {
-    "id": "recipe_comp_chemicals",
-    "outputItemId": "comp_chemicals",
-    "machine": "Furnace",
-    "buildingTier": null,
-    "outputRatePerMin": 60,
-    "outputs": [
-      {
-        "itemId": "comp_chemicals",
-        "quantity": 2
-      }
-    ],
-    "inputs": [
-      {
-        "itemId": "comp_synthetic_silicon",
-        "quantity": 1
-      },
-      {
-        "itemId": "powder_wolfram",
-        "quantity": 3
-      },
-      {
-        "itemId": "gas_helium3",
-        "quantity": 1
-      }
-    ],
-    "confidence": "High Confidence",
-    "lastVerified": "2026-01-09",
-    "sourceUrl": "https://starruptureplanner.com/items/comp_chemicals"
-  },
-  {
-    "id": "recipe_comp_supermagnet",
-    "outputItemId": "comp_supermagnet",
-    "machine": "Furnace",
-    "buildingTier": null,
-    "outputRatePerMin": 20,
-    "outputs": [
-      {
-        "itemId": "comp_supermagnet",
-        "quantity": 1
-      }
-    ],
-    "inputs": [
-      {
-        "itemId": "fluid_sulfuric_acid",
-        "quantity": 5
-      },
-      {
-        "itemId": "plate_wolfram",
-        "quantity": 5
-      },
-      {
-        "itemId": "comp_chemicals",
-        "quantity": 2
-      }
-    ],
-    "confidence": "High Confidence",
-    "lastVerified": "2026-01-09",
-    "sourceUrl": "https://starruptureplanner.com/items/comp_supermagnet"
-  },
-  {
-    "id": "recipe_comp_valve",
-    "outputItemId": "comp_valve",
-    "machine": "Mega Press",
-    "buildingTier": null,
+    "id": "recipe_item-printer_basic-building-material-item-printer-elm",
+    "outputItemId": "basic-building-material",
+    "machine": "Basic Item Printer",
+    "buildingTier": "V1",
     "outputRatePerMin": 6,
     "outputs": [
       {
-        "itemId": "comp_valve",
+        "itemId": "basic-building-material",
         "quantity": 1
       }
     ],
     "inputs": [
       {
-        "itemId": "comp_titanium_housing",
-        "quantity": 1
-      },
-      {
-        "itemId": "beam_titanium",
-        "quantity": 3
-      },
-      {
-        "itemId": "rod_titanium",
-        "quantity": 2
-      },
-      {
-        "itemId": "comp_nozzle",
-        "quantity": 1
+        "itemId": "elementary-building-material",
+        "quantity": 10
       }
     ],
-    "confidence": "High Confidence",
-    "lastVerified": "2026-01-09",
-    "sourceUrl": "https://starruptureplanner.com/items/comp_valve"
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/item-printer"
   },
   {
-    "id": "recipe_comp_electromagnetic_coil",
-    "outputItemId": "comp_electromagnetic_coil",
-    "machine": "Mega Press",
-    "buildingTier": null,
-    "outputRatePerMin": 15,
+    "id": "recipe_crafter_basic-building-material",
+    "outputItemId": "basic-building-material",
+    "machine": "Fabricator",
+    "buildingTier": "V1",
+    "outputRatePerMin": 300,
     "outputs": [
       {
-        "itemId": "comp_electromagnetic_coil",
-        "quantity": 1
+        "itemId": "basic-building-material",
+        "quantity": 10
       }
     ],
     "inputs": [
       {
-        "itemId": "comp_inductor",
+        "itemId": "wolfram-ore",
         "quantity": 1
       },
       {
-        "itemId": "fluid_pressurized_helium",
-        "quantity": 1
-      },
-      {
-        "itemId": "plate_wolfram",
-        "quantity": 6
-      },
-      {
-        "itemId": "comp_supermagnet",
+        "itemId": "titanium-ore",
         "quantity": 1
       }
     ],
-    "confidence": "High Confidence",
-    "lastVerified": "2026-01-09",
-    "sourceUrl": "https://starruptureplanner.com/items/comp_electromagnetic_coil"
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/crafter"
   },
   {
-    "id": "recipe_comp_turbine",
-    "outputItemId": "comp_turbine",
-    "machine": "Mega Press",
-    "buildingTier": null,
+    "id": "recipe_synthetizer_basic-fuel",
+    "outputItemId": "basic-fuel",
+    "machine": "Compounder",
+    "buildingTier": "V1",
     "outputRatePerMin": 10,
     "outputs": [
       {
-        "itemId": "comp_turbine",
+        "itemId": "basic-fuel",
         "quantity": 1
       }
     ],
     "inputs": [
       {
-        "itemId": "comp_impeller",
-        "quantity": 1
+        "itemId": "wolfram-powder",
+        "quantity": 4
       },
       {
-        "itemId": "comp_stator",
-        "quantity": 1
-      },
-      {
-        "itemId": "comp_rotor",
+        "itemId": "goethite-powder",
         "quantity": 2
       },
       {
-        "itemId": "fluid_sulfuric_acid",
-        "quantity": 2
-      }
-    ],
-    "confidence": "Medium Confidence",
-    "lastVerified": "2026-01-26",
-    "sourceUrl": "https://starruptureplanner.com/items/comp_turbine"
-  },
-  {
-    "id": "recipe_comp_impeller",
-    "outputItemId": "comp_impeller",
-    "machine": "Mega Press",
-    "buildingTier": null,
-    "outputRatePerMin": 15,
-    "outputs": [
-      {
-        "itemId": "comp_impeller",
-        "quantity": 1
-      }
-    ],
-    "inputs": [
-      {
-        "itemId": "rod_titanium",
-        "quantity": 2
-      },
-      {
-        "itemId": "sheet_heat_resistant",
-        "quantity": 2
-      },
-      {
-        "itemId": "plate_wolfram",
-        "quantity": 1
-      },
-      {
-        "itemId": "comp_stabilizer",
-        "quantity": 1
-      }
-    ],
-    "confidence": "Medium Confidence",
-    "lastVerified": "2026-01-26",
-    "sourceUrl": "https://starruptureplanner.com/items/comp_impeller"
-  },
-  {
-    "id": "recipe_comp_hardening_agent",
-    "outputItemId": "comp_hardening_agent",
-    "machine": "Furnace",
-    "buildingTier": null,
-    "outputRatePerMin": 30,
-    "outputs": [
-      {
-        "itemId": "comp_hardening_agent",
-        "quantity": 2
-      }
-    ],
-    "inputs": [
-      {
-        "itemId": "fluid_sulfuric_acid",
-        "quantity": 5
-      },
-      {
-        "itemId": "comp_synthetic_silicon",
-        "quantity": 1
-      },
-      {
-        "itemId": "comp_applicator",
-        "quantity": 1
-      }
-    ],
-    "confidence": "Medium Confidence",
-    "lastVerified": "2026-01-26",
-    "sourceUrl": "https://starruptureplanner.com/items/comp_hardening_agent"
-  },
-  {
-    "id": "recipe_ammo_pistol",
-    "outputItemId": "ammo_pistol",
-    "machine": "Fabricator",
-    "buildingTier": null,
-    "outputRatePerMin": 375,
-    "outputs": [
-      {
-        "itemId": "ammo_pistol",
-        "quantity": 25
-      }
-    ],
-    "inputs": [
-      {
-        "itemId": "item_bbm",
-        "quantity": 14
-      }
-    ],
-    "confidence": "High Confidence",
-    "lastVerified": "2026-01-09",
-    "sourceUrl": "https://starruptureplanner.com/items/ammo_pistol"
-  },
-  {
-    "id": "recipe_ammo_standard",
-    "outputItemId": "ammo_standard",
-    "machine": "Mega Press",
-    "buildingTier": null,
-    "outputRatePerMin": 200,
-    "outputs": [
-      {
-        "itemId": "ammo_standard",
-        "quantity": 20
-      }
-    ],
-    "inputs": [
-      {
-        "itemId": "item_bbm",
-        "quantity": 18
-      },
-      {
-        "itemId": "powder_wolfram",
+        "itemId": "liquid-helium",
         "quantity": 4
       }
     ],
-    "confidence": "High Confidence",
-    "lastVerified": "2026-02-08",
-    "sourceUrl": "https://starruptureplanner.com/items/ammo_standard"
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/synthetizer"
   },
   {
-    "id": "recipe_ammo_heavy",
-    "outputItemId": "ammo_heavy",
+    "id": "recipe_hammer_battery",
+    "outputItemId": "battery",
     "machine": "Mega Press",
-    "buildingTier": null,
-    "outputRatePerMin": 150,
-    "outputs": [
-      {
-        "itemId": "ammo_heavy",
-        "quantity": 15
-      }
-    ],
-    "inputs": [
-      {
-        "itemId": "item_bbm",
-        "quantity": 24
-      },
-      {
-        "itemId": "rod_titanium",
-        "quantity": 6
-      }
-    ],
-    "confidence": "High Confidence",
-    "lastVerified": "2026-02-08",
-    "sourceUrl": "https://starruptureplanner.com/items/ammo_heavy"
-  },
-  {
-    "id": "recipe_ammo_shotgun",
-    "outputItemId": "ammo_shotgun",
-    "machine": "Mega Press",
-    "buildingTier": null,
-    "outputRatePerMin": 150,
-    "outputs": [
-      {
-        "itemId": "ammo_shotgun",
-        "quantity": 15
-      }
-    ],
-    "inputs": [
-      {
-        "itemId": "item_bbm",
-        "quantity": 20
-      },
-      {
-        "itemId": "powder_calcium",
-        "quantity": 6
-      }
-    ],
-    "confidence": "High Confidence",
-    "lastVerified": "2026-02-08",
-    "sourceUrl": "https://starruptureplanner.com/items/ammo_shotgun"
-  },
-  {
-    "id": "recipe_sheet_heat_resistant",
-    "outputItemId": "sheet_heat_resistant",
-    "machine": "Furnace",
-    "buildingTier": null,
+    "buildingTier": "V1",
     "outputRatePerMin": 15,
     "outputs": [
       {
-        "itemId": "sheet_heat_resistant",
+        "itemId": "battery",
         "quantity": 1
       }
     ],
     "inputs": [
       {
-        "itemId": "plate_wolfram",
-        "quantity": 1
-      },
-      {
-        "itemId": "sheet_titanium",
+        "itemId": "coil",
         "quantity": 2
       },
       {
-        "itemId": "comp_glass",
+        "itemId": "electronics",
+        "quantity": 1
+      },
+      {
+        "itemId": "sulphuric-acid",
         "quantity": 1
       }
     ],
-    "confidence": "Medium Confidence",
-    "lastVerified": "2026-01-09",
-    "sourceUrl": "https://starruptureplanner.com/items/sheet_heat_resistant"
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/hammer"
   },
   {
-    "id": "recipe_item_ibm",
-    "outputItemId": "item_ibm",
+    "id": "recipe_military-assembler_biofilament",
+    "outputItemId": "biofilament",
+    "machine": "Facturer",
+    "buildingTier": "V1",
+    "outputRatePerMin": 4,
+    "outputs": [
+      {
+        "itemId": "biofilament",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "synthetic-protein",
+        "quantity": 2
+      },
+      {
+        "itemId": "rna-stabilizer",
+        "quantity": 1
+      },
+      {
+        "itemId": "substance-fhs-135-493",
+        "quantity": 4
+      },
+      {
+        "itemId": "nanofibre",
+        "quantity": 8
+      },
+      {
+        "itemId": "superconductor",
+        "quantity": 2
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/military-assembler"
+  },
+  {
+    "id": "recipe_crafter_calcite-sheets",
+    "outputItemId": "calcite-sheets",
+    "machine": "Fabricator",
+    "buildingTier": "V1",
+    "outputRatePerMin": 60,
+    "outputs": [
+      {
+        "itemId": "calcite-sheets",
+        "quantity": 2
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "calcium-block",
+        "quantity": 1
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/crafter"
+  },
+  {
+    "id": "recipe_smelter_calcium-block",
+    "outputItemId": "calcium-block",
+    "machine": "Smelter",
+    "buildingTier": "V1",
+    "outputRatePerMin": 60,
+    "outputs": [
+      {
+        "itemId": "calcium-block",
+        "quantity": 2
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "calcium-ore",
+        "quantity": 2
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/smelter"
+  },
+  {
+    "id": "recipe_furnace_calcium-powder",
+    "outputItemId": "calcium-powder",
+    "machine": "Furnace",
+    "buildingTier": "V1",
+    "outputRatePerMin": 60,
+    "outputs": [
+      {
+        "itemId": "calcium-powder",
+        "quantity": 3
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "calcium-block",
+        "quantity": 1
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/furnace"
+  },
+  {
+    "id": "recipe_furnace-tier2_calcium-powder-v2",
+    "outputItemId": "calcium-powder",
+    "machine": "Furnace",
+    "buildingTier": "V2",
+    "outputRatePerMin": 200,
+    "outputs": [
+      {
+        "itemId": "calcium-powder",
+        "quantity": 10
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "calcium-block",
+        "quantity": 2
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/furnace-tier2"
+  },
+  {
+    "id": "recipe_food-processor_calorie-bar",
+    "outputItemId": "calorie-bar",
+    "machine": "Food Station",
+    "buildingTier": "V1",
+    "outputRatePerMin": 6,
+    "outputs": [
+      {
+        "itemId": "calorie-bar",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "polifruit",
+        "quantity": 4
+      },
+      {
+        "itemId": "serpent-root",
+        "quantity": 1
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/food-processor"
+  },
+  {
+    "id": "recipe_food-processor_calorie-block-capsules",
+    "outputItemId": "calorie-block-capsules",
+    "machine": "Food Station",
+    "buildingTier": "V1",
+    "outputRatePerMin": 6,
+    "outputs": [
+      {
+        "itemId": "calorie-block-capsules",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "polifruit",
+        "quantity": 4
+      },
+      {
+        "itemId": "oxallop",
+        "quantity": 1
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/food-processor"
+  },
+  {
+    "id": "recipe_food-processor_calorie-chew",
+    "outputItemId": "calorie-chew",
+    "machine": "Food Station",
+    "buildingTier": "V1",
+    "outputRatePerMin": 18,
+    "outputs": [
+      {
+        "itemId": "calorie-chew",
+        "quantity": 3
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "polifruit",
+        "quantity": 5
+      },
+      {
+        "itemId": "prism-herb",
+        "quantity": 1
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/food-processor"
+  },
+  {
+    "id": "recipe_food-processor_calorie-fluid",
+    "outputItemId": "calorie-fluid",
+    "machine": "Food Station",
+    "buildingTier": "V1",
+    "outputRatePerMin": 6,
+    "outputs": [
+      {
+        "itemId": "calorie-fluid",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "polifruit",
+        "quantity": 2
+      },
+      {
+        "itemId": "star-tears",
+        "quantity": 1
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/food-processor"
+  },
+  {
+    "id": "recipe_food-processor_calorie-gel",
+    "outputItemId": "calorie-gel",
+    "machine": "Food Station",
+    "buildingTier": "V1",
+    "outputRatePerMin": 12,
+    "outputs": [
+      {
+        "itemId": "calorie-gel",
+        "quantity": 2
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "polifruit",
+        "quantity": 6
+      },
+      {
+        "itemId": "grubbler",
+        "quantity": 1
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/food-processor"
+  },
+  {
+    "id": "recipe_food-processor_calorie-stim-shards",
+    "outputItemId": "calorie-stim-shards",
+    "machine": "Food Station",
+    "buildingTier": "V1",
+    "outputRatePerMin": 6,
+    "outputs": [
+      {
+        "itemId": "calorie-stim-shards",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "polifruit",
+        "quantity": 2
+      },
+      {
+        "itemId": "sulheart",
+        "quantity": 1
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/food-processor"
+  },
+  {
+    "id": "recipe_factory_carbon-sonar",
+    "outputItemId": "carbon-sonar",
+    "machine": "Constructorizer",
+    "buildingTier": "V1",
+    "outputRatePerMin": 5,
+    "outputs": [
+      {
+        "itemId": "carbon-sonar",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "ion-stabilizer",
+        "quantity": 1
+      },
+      {
+        "itemId": "quantum-tranqualizer",
+        "quantity": 1
+      },
+      {
+        "itemId": "accumulator",
+        "quantity": 2
+      },
+      {
+        "itemId": "onboard-instruments",
+        "quantity": 3
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/factory"
+  },
+  {
+    "id": "recipe_furnace_ceramics",
+    "outputItemId": "ceramics",
+    "machine": "Furnace",
+    "buildingTier": "V1",
+    "outputRatePerMin": 60,
+    "outputs": [
+      {
+        "itemId": "ceramics",
+        "quantity": 2
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "calcite-sheets",
+        "quantity": 1
+      },
+      {
+        "itemId": "wolfram-powder",
+        "quantity": 1
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/furnace"
+  },
+  {
+    "id": "recipe_furnace-tier2_ceramics-v2",
+    "outputItemId": "ceramics",
+    "machine": "Furnace",
+    "buildingTier": "V2",
+    "outputRatePerMin": 120,
+    "outputs": [
+      {
+        "itemId": "ceramics",
+        "quantity": 4
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "calcite-sheets",
+        "quantity": 1
+      },
+      {
+        "itemId": "helium-ore",
+        "quantity": 2
+      },
+      {
+        "itemId": "wolfram-powder",
+        "quantity": 1
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/furnace-tier2"
+  },
+  {
+    "id": "recipe_food-processor_clear-capsules",
+    "outputItemId": "clear-capsules",
+    "machine": "Food Station",
+    "buildingTier": "V1",
+    "outputRatePerMin": 12,
+    "outputs": [
+      {
+        "itemId": "clear-capsules",
+        "quantity": 2
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "purplant",
+        "quantity": 3
+      },
+      {
+        "itemId": "oxallop",
+        "quantity": 2
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/food-processor"
+  },
+  {
+    "id": "recipe_furnace_coil",
+    "outputItemId": "coil",
+    "machine": "Furnace",
+    "buildingTier": "V1",
+    "outputRatePerMin": 30,
+    "outputs": [
+      {
+        "itemId": "coil",
+        "quantity": 2
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "tube",
+        "quantity": 2
+      },
+      {
+        "itemId": "wolfram-wire",
+        "quantity": 1
+      },
+      {
+        "itemId": "ceramics",
+        "quantity": 2
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/furnace"
+  },
+  {
+    "id": "recipe_assembler_condenser",
+    "outputItemId": "condenser",
+    "machine": "Assembler",
+    "buildingTier": "V1",
+    "outputRatePerMin": 4,
+    "outputs": [
+      {
+        "itemId": "condenser",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "resonator",
+        "quantity": 1
+      },
+      {
+        "itemId": "pump",
+        "quantity": 3
+      },
+      {
+        "itemId": "nanofibre",
+        "quantity": 8
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/assembler"
+  },
+  {
+    "id": "recipe_factory-tier2_condenser-v2",
+    "outputItemId": "condenser",
+    "machine": "Constructorizer",
+    "buildingTier": "V2",
+    "outputRatePerMin": 12,
+    "outputs": [
+      {
+        "itemId": "condenser",
+        "quantity": 2
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "resonator",
+        "quantity": 1
+      },
+      {
+        "itemId": "pump",
+        "quantity": 1
+      },
+      {
+        "itemId": "nanofibre",
+        "quantity": 2
+      },
+      {
+        "itemId": "reinforced-housing",
+        "quantity": 1
+      },
+      {
+        "itemId": "basic-fuel",
+        "quantity": 3
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/factory-tier2"
+  },
+  {
+    "id": "recipe_military-assembler_converter",
+    "outputItemId": "converter",
+    "machine": "Facturer",
+    "buildingTier": "V1",
+    "outputRatePerMin": 4,
+    "outputs": [
+      {
+        "itemId": "converter",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "laser-emitter",
+        "quantity": 2
+      },
+      {
+        "itemId": "accumulator",
+        "quantity": 1
+      },
+      {
+        "itemId": "electromagnetic-coil",
+        "quantity": 4
+      },
+      {
+        "itemId": "uber-oil",
+        "quantity": 3
+      },
+      {
+        "itemId": "rtsc",
+        "quantity": 1
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/military-assembler"
+  },
+  {
+    "id": "recipe_food-processor_corrosion-res-plasm",
+    "outputItemId": "corrosion-res-plasm",
+    "machine": "Food Station",
+    "buildingTier": "V1",
+    "outputRatePerMin": 12,
+    "outputs": [
+      {
+        "itemId": "corrosion-res-plasm",
+        "quantity": 2
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "glowcap",
+        "quantity": 1
+      },
+      {
+        "itemId": "sulheart",
+        "quantity": 1
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/food-processor"
+  },
+  {
+    "id": "recipe_military-assembler_cyclotrone",
+    "outputItemId": "cyclotrone",
+    "machine": "Facturer",
+    "buildingTier": "V1",
+    "outputRatePerMin": 4,
+    "outputs": [
+      {
+        "itemId": "cyclotrone",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "aerogel",
+        "quantity": 8
+      },
+      {
+        "itemId": "electromagnet",
+        "quantity": 1
+      },
+      {
+        "itemId": "ion-injector",
+        "quantity": 2
+      },
+      {
+        "itemId": "reinforced-housing",
+        "quantity": 5
+      },
+      {
+        "itemId": "plastic-dust",
+        "quantity": 5
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/military-assembler"
+  },
+  {
+    "id": "recipe_military-assembler_dome",
+    "outputItemId": "dome",
+    "machine": "Facturer",
+    "buildingTier": "V1",
+    "outputRatePerMin": 3,
+    "outputs": [
+      {
+        "itemId": "dome",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "uberfilament",
+        "quantity": 8
+      },
+      {
+        "itemId": "condenser",
+        "quantity": 2
+      },
+      {
+        "itemId": "airlock",
+        "quantity": 1
+      },
+      {
+        "itemId": "scafolding",
+        "quantity": 4
+      },
+      {
+        "itemId": "converter",
+        "quantity": 1
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/military-assembler"
+  },
+  {
+    "id": "recipe_food-processor_drain-res-plasm",
+    "outputItemId": "drain-res-plasm",
+    "machine": "Food Station",
+    "buildingTier": "V1",
+    "outputRatePerMin": 12,
+    "outputs": [
+      {
+        "itemId": "drain-res-plasm",
+        "quantity": 2
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "glowcap",
+        "quantity": 1
+      },
+      {
+        "itemId": "serpent-root",
+        "quantity": 1
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/food-processor"
+  },
+  {
+    "id": "recipe_assembler_electromagnet",
+    "outputItemId": "electromagnet",
+    "machine": "Assembler",
+    "buildingTier": "V1",
+    "outputRatePerMin": 12,
+    "outputs": [
+      {
+        "itemId": "electromagnet",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "electromagnetic-coil",
+        "quantity": 3
+      },
+      {
+        "itemId": "synthetic-resin",
+        "quantity": 3
+      },
+      {
+        "itemId": "accumulator",
+        "quantity": 1
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/assembler"
+  },
+  {
+    "id": "recipe_hammer_electromagnetic-coil",
+    "outputItemId": "electromagnetic-coil",
     "machine": "Mega Press",
-    "buildingTier": null,
+    "buildingTier": "V1",
+    "outputRatePerMin": 15,
+    "outputs": [
+      {
+        "itemId": "electromagnetic-coil",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "coil",
+        "quantity": 1
+      },
+      {
+        "itemId": "pressurized-helium",
+        "quantity": 1
+      },
+      {
+        "itemId": "wolfram-plate",
+        "quantity": 6
+      },
+      {
+        "itemId": "supermagnet",
+        "quantity": 1
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/hammer"
+  },
+  {
+    "id": "recipe_furnace_electronics",
+    "outputItemId": "electronics",
+    "machine": "Furnace",
+    "buildingTier": "V1",
+    "outputRatePerMin": 12,
+    "outputs": [
+      {
+        "itemId": "electronics",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "silica-sand",
+        "quantity": 2
+      },
+      {
+        "itemId": "coil",
+        "quantity": 1
+      },
+      {
+        "itemId": "stator",
+        "quantity": 1
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/furnace"
+  },
+  {
+    "id": "recipe_food-processor_energy-boost-capsules",
+    "outputItemId": "energy-boost-capsules",
+    "machine": "Food Station",
+    "buildingTier": "V1",
+    "outputRatePerMin": 12,
+    "outputs": [
+      {
+        "itemId": "energy-boost-capsules",
+        "quantity": 2
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "serpent-root",
+        "quantity": 3
+      },
+      {
+        "itemId": "oxallop",
+        "quantity": 2
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/food-processor"
+  },
+  {
+    "id": "recipe_food-processor_energy-boost-chew",
+    "outputItemId": "energy-boost-chew",
+    "machine": "Food Station",
+    "buildingTier": "V1",
+    "outputRatePerMin": 6,
+    "outputs": [
+      {
+        "itemId": "energy-boost-chew",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "serpent-root",
+        "quantity": 3
+      },
+      {
+        "itemId": "prism-herb",
+        "quantity": 2
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/food-processor"
+  },
+  {
+    "id": "recipe_food-processor_energy-stim-shards",
+    "outputItemId": "energy-stim-shards",
+    "machine": "Food Station",
+    "buildingTier": "V1",
+    "outputRatePerMin": 12,
+    "outputs": [
+      {
+        "itemId": "energy-stim-shards",
+        "quantity": 2
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "sulheart",
+        "quantity": 3
+      },
+      {
+        "itemId": "serpent-root",
+        "quantity": 2
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/food-processor"
+  },
+  {
+    "id": "recipe_synthetizer_epoxy",
+    "outputItemId": "epoxy",
+    "machine": "Compounder",
+    "buildingTier": "V1",
+    "outputRatePerMin": 40,
+    "outputs": [
+      {
+        "itemId": "epoxy",
+        "quantity": 2
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "liquid-helium",
+        "quantity": 1
+      },
+      {
+        "itemId": "goethite-powder",
+        "quantity": 3
+      },
+      {
+        "itemId": "synthetic-resin",
+        "quantity": 1
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/synthetizer"
+  },
+  {
+    "id": "recipe_furnace_explosive",
+    "outputItemId": "explosive",
+    "machine": "Furnace",
+    "buildingTier": "V1",
+    "outputRatePerMin": 60,
+    "outputs": [
+      {
+        "itemId": "explosive",
+        "quantity": 2
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "silica-sand",
+        "quantity": 1
+      },
+      {
+        "itemId": "wolfram-powder",
+        "quantity": 3
+      },
+      {
+        "itemId": "helium-ore",
+        "quantity": 1
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/furnace"
+  },
+  {
+    "id": "recipe_furnace-tier2_explosive-v2",
+    "outputItemId": "explosive",
+    "machine": "Furnace",
+    "buildingTier": "V2",
+    "outputRatePerMin": 120,
+    "outputs": [
+      {
+        "itemId": "explosive",
+        "quantity": 4
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "calcium-powder",
+        "quantity": 1
+      },
+      {
+        "itemId": "wolfram-powder",
+        "quantity": 2
+      },
+      {
+        "itemId": "helium-ore",
+        "quantity": 4
+      },
+      {
+        "itemId": "goethite-ingot",
+        "quantity": 1
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/furnace-tier2"
+  },
+  {
+    "id": "recipe_food-processor_figler",
+    "outputItemId": "figler",
+    "machine": "Food Station",
+    "buildingTier": "V1",
+    "outputRatePerMin": 6,
+    "outputs": [
+      {
+        "itemId": "figler",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "prickler",
+        "quantity": 3
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/food-processor"
+  },
+  {
+    "id": "recipe_assembler_generator",
+    "outputItemId": "generator",
+    "machine": "Assembler",
+    "buildingTier": "V1",
+    "outputRatePerMin": 6,
+    "outputs": [
+      {
+        "itemId": "generator",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "turbine",
+        "quantity": 1
+      },
+      {
+        "itemId": "battery",
+        "quantity": 1
+      },
+      {
+        "itemId": "nozzle",
+        "quantity": 1
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/assembler"
+  },
+  {
+    "id": "recipe_furnace_glass",
+    "outputItemId": "glass",
+    "machine": "Furnace",
+    "buildingTier": "V1",
+    "outputRatePerMin": 20,
+    "outputs": [
+      {
+        "itemId": "glass",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "helium-ore",
+        "quantity": 1
+      },
+      {
+        "itemId": "calcium-powder",
+        "quantity": 2
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/furnace"
+  },
+  {
+    "id": "recipe_furnace-tier2_glass-v2",
+    "outputItemId": "glass",
+    "machine": "Furnace",
+    "buildingTier": "V2",
+    "outputRatePerMin": 80,
+    "outputs": [
+      {
+        "itemId": "glass",
+        "quantity": 4
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "pressurized-helium",
+        "quantity": 1
+      },
+      {
+        "itemId": "calcite-sheets",
+        "quantity": 1
+      },
+      {
+        "itemId": "goethite-ingot",
+        "quantity": 1
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/furnace-tier2"
+  },
+  {
+    "id": "recipe_forge_goethite-ingot",
+    "outputItemId": "goethite-ingot",
+    "machine": "Pyro Forge",
+    "buildingTier": "V1",
+    "outputRatePerMin": 150,
+    "outputs": [
+      {
+        "itemId": "goethite-ingot",
+        "quantity": 10
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "goethite-ore",
+        "quantity": 1
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/forge"
+  },
+  {
+    "id": "recipe_hammer_goethite-lattice",
+    "outputItemId": "goethite-lattice",
+    "machine": "Mega Press",
+    "buildingTier": "V1",
+    "outputRatePerMin": 40,
+    "outputs": [
+      {
+        "itemId": "goethite-lattice",
+        "quantity": 2
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "goethite-ingot",
+        "quantity": 2
+      },
+      {
+        "itemId": "uber-titanium",
+        "quantity": 2
+      },
+      {
+        "itemId": "uber-wolfram",
+        "quantity": 2
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/hammer"
+  },
+  {
+    "id": "recipe_synthetizer_goethite-powder",
+    "outputItemId": "goethite-powder",
+    "machine": "Compounder",
+    "buildingTier": "V1",
+    "outputRatePerMin": 120,
+    "outputs": [
+      {
+        "itemId": "goethite-powder",
+        "quantity": 4
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "goethite-ingot",
+        "quantity": 1
+      },
+      {
+        "itemId": "pressurized-helium",
+        "quantity": 1
+      },
+      {
+        "itemId": "calcium-powder",
+        "quantity": 1
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/synthetizer"
+  },
+  {
+    "id": "recipe_assembler_grenade",
+    "outputItemId": "grenade",
+    "machine": "Assembler",
+    "buildingTier": "V1",
+    "outputRatePerMin": 10,
+    "outputs": [
+      {
+        "itemId": "grenade",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "reinforced-housing",
+        "quantity": 2
+      },
+      {
+        "itemId": "epoxy",
+        "quantity": 1
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/assembler"
+  },
+  {
+    "id": "recipe_crafter_gyroscope",
+    "outputItemId": "gyroscope",
+    "machine": "Fabricator",
+    "buildingTier": "V1",
+    "outputRatePerMin": 20,
+    "outputs": [
+      {
+        "itemId": "gyroscope",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "rotor",
+        "quantity": 1
+      },
+      {
+        "itemId": "titanium-rod",
+        "quantity": 2
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/crafter"
+  },
+  {
+    "id": "recipe_furnace_hardening-agent",
+    "outputItemId": "hardening-agent",
+    "machine": "Furnace",
+    "buildingTier": "V1",
+    "outputRatePerMin": 30,
+    "outputs": [
+      {
+        "itemId": "hardening-agent",
+        "quantity": 2
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "sulphuric-acid",
+        "quantity": 5
+      },
+      {
+        "itemId": "silica-sand",
+        "quantity": 1
+      },
+      {
+        "itemId": "syringe",
+        "quantity": 1
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/furnace"
+  },
+  {
+    "id": "recipe_furnace-tier2_hardening-agent-v2",
+    "outputItemId": "hardening-agent",
+    "machine": "Furnace",
+    "buildingTier": "V2",
+    "outputRatePerMin": 75,
+    "outputs": [
+      {
+        "itemId": "hardening-agent",
+        "quantity": 5
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "sulphuric-acid",
+        "quantity": 2
+      },
+      {
+        "itemId": "silica-sand",
+        "quantity": 1
+      },
+      {
+        "itemId": "syringe",
+        "quantity": 1
+      },
+      {
+        "itemId": "pressurized-helium",
+        "quantity": 1
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/furnace-tier2"
+  },
+  {
+    "id": "recipe_food-processor_health-shards",
+    "outputItemId": "health-shards",
+    "machine": "Food Station",
+    "buildingTier": "V1",
+    "outputRatePerMin": 12,
+    "outputs": [
+      {
+        "itemId": "health-shards",
+        "quantity": 2
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "sulheart",
+        "quantity": 2
+      },
+      {
+        "itemId": "star-tears",
+        "quantity": 2
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/food-processor"
+  },
+  {
+    "id": "recipe_furnace_heat-resistant-sheet",
+    "outputItemId": "heat-resistant-sheet",
+    "machine": "Furnace",
+    "buildingTier": "V1",
+    "outputRatePerMin": 15,
+    "outputs": [
+      {
+        "itemId": "heat-resistant-sheet",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "wolfram-plate",
+        "quantity": 1
+      },
+      {
+        "itemId": "titanium-sheet",
+        "quantity": 2
+      },
+      {
+        "itemId": "glass",
+        "quantity": 1
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/furnace"
+  },
+  {
+    "id": "recipe_furnace-tier2_heat-resistant-sheet-v2",
+    "outputItemId": "heat-resistant-sheet",
+    "machine": "Furnace",
+    "buildingTier": "V2",
+    "outputRatePerMin": 75,
+    "outputs": [
+      {
+        "itemId": "heat-resistant-sheet",
+        "quantity": 5
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "uber-titanium",
+        "quantity": 1
+      },
+      {
+        "itemId": "uber-wolfram",
+        "quantity": 1
+      },
+      {
+        "itemId": "helium-ore",
+        "quantity": 3
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/furnace-tier2"
+  },
+  {
+    "id": "recipe_hammer_heat-shield",
+    "outputItemId": "heat-shield",
+    "machine": "Mega Press",
+    "buildingTier": "V1",
+    "outputRatePerMin": 12,
+    "outputs": [
+      {
+        "itemId": "heat-shield",
+        "quantity": 2
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "epoxy",
+        "quantity": 3
+      },
+      {
+        "itemId": "aerogel",
+        "quantity": 3
+      },
+      {
+        "itemId": "uberfilament",
+        "quantity": 3
+      },
+      {
+        "itemId": "reinforced-frame",
+        "quantity": 2
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/hammer"
+  },
+  {
+    "id": "recipe_item-printer_heavy-ammo-item-printer",
+    "outputItemId": "heavy-ammo-item",
+    "machine": "Basic Item Printer",
+    "buildingTier": "V1",
+    "outputRatePerMin": 36,
+    "outputs": [
+      {
+        "itemId": "heavy-ammo-item",
+        "quantity": 6
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "basic-building-material",
+        "quantity": 12
+      },
+      {
+        "itemId": "titanium-rod",
+        "quantity": 3
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/item-printer"
+  },
+  {
+    "id": "recipe_hammer_heavy-ammo",
+    "outputItemId": "heavy-ammo-item",
+    "machine": "Mega Press",
+    "buildingTier": "V1",
+    "outputRatePerMin": 150,
+    "outputs": [
+      {
+        "itemId": "heavy-ammo-item",
+        "quantity": 15
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "basic-building-material",
+        "quantity": 24
+      },
+      {
+        "itemId": "titanium-rod",
+        "quantity": 6
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/hammer"
+  },
+  {
+    "id": "recipe_food-processor_hydrolite",
+    "outputItemId": "hydrolite",
+    "machine": "Food Station",
+    "buildingTier": "V1",
+    "outputRatePerMin": 6,
+    "outputs": [
+      {
+        "itemId": "hydrolite",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "hydrobulb",
+        "quantity": 3
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/food-processor"
+  },
+  {
+    "id": "recipe_hammer_impeller",
+    "outputItemId": "impeller",
+    "machine": "Mega Press",
+    "buildingTier": "V1",
+    "outputRatePerMin": 15,
+    "outputs": [
+      {
+        "itemId": "impeller",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "titanium-rod",
+        "quantity": 2
+      },
+      {
+        "itemId": "heat-resistant-sheet",
+        "quantity": 2
+      },
+      {
+        "itemId": "wolfram-plate",
+        "quantity": 1
+      },
+      {
+        "itemId": "gyroscope",
+        "quantity": 1
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/hammer"
+  },
+  {
+    "id": "recipe_food-processor_infection-res-plasm",
+    "outputItemId": "infection-res-plasm",
+    "machine": "Food Station",
+    "buildingTier": "V1",
+    "outputRatePerMin": 12,
+    "outputs": [
+      {
+        "itemId": "infection-res-plasm",
+        "quantity": 2
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "glowcap",
+        "quantity": 1
+      },
+      {
+        "itemId": "prism-herb",
+        "quantity": 1
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/food-processor"
+  },
+  {
+    "id": "recipe_item-printer_intermediate-building-material-item-printer",
+    "outputItemId": "intermediate-building-material",
+    "machine": "Basic Item Printer",
+    "buildingTier": "V1",
+    "outputRatePerMin": 60,
+    "outputs": [
+      {
+        "itemId": "intermediate-building-material",
+        "quantity": 10
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "basic-building-material",
+        "quantity": 20
+      },
+      {
+        "itemId": "coil",
+        "quantity": 1
+      },
+      {
+        "itemId": "glass",
+        "quantity": 1
+      },
+      {
+        "itemId": "titanium-housing",
+        "quantity": 1
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/item-printer"
+  },
+  {
+    "id": "recipe_hammer_intermediate-building-material",
+    "outputItemId": "intermediate-building-material",
+    "machine": "Mega Press",
+    "buildingTier": "V1",
     "outputRatePerMin": 250,
     "outputs": [
       {
-        "itemId": "item_ibm",
+        "itemId": "intermediate-building-material",
         "quantity": 25
       }
     ],
     "inputs": [
       {
-        "itemId": "item_bbm",
+        "itemId": "basic-building-material",
         "quantity": 40
       },
       {
-        "itemId": "comp_inductor",
+        "itemId": "coil",
         "quantity": 2
       },
       {
-        "itemId": "comp_glass",
+        "itemId": "glass",
         "quantity": 2
       },
       {
-        "itemId": "comp_titanium_housing",
+        "itemId": "titanium-housing",
         "quantity": 2
       }
     ],
-    "confidence": "High Confidence",
-    "lastVerified": "2026-02-08",
-    "sourceUrl": "https://starruptureplanner.com/items/item_ibm"
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/hammer"
   },
   {
-    "id": "recipe_comp_nozzle",
-    "outputItemId": "comp_nozzle",
-    "machine": "Mega Press",
-    "buildingTier": null,
+    "id": "recipe_military-assembler_ion-bomb",
+    "outputItemId": "ion-bomb",
+    "machine": "Facturer",
+    "buildingTier": "V1",
+    "outputRatePerMin": 3,
+    "outputs": [
+      {
+        "itemId": "ion-bomb",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "ion-injector",
+        "quantity": 2
+      },
+      {
+        "itemId": "ion-stabilizer",
+        "quantity": 2
+      },
+      {
+        "itemId": "grenade",
+        "quantity": 6
+      },
+      {
+        "itemId": "tracking-device",
+        "quantity": 1
+      },
+      {
+        "itemId": "resonator",
+        "quantity": 1
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/military-assembler"
+  },
+  {
+    "id": "recipe_synthetizer_ion-injector",
+    "outputItemId": "ion-injector",
+    "machine": "Compounder",
+    "buildingTier": "V1",
+    "outputRatePerMin": 5,
+    "outputs": [
+      {
+        "itemId": "ion-injector",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "syringe",
+        "quantity": 8
+      },
+      {
+        "itemId": "electromagnet",
+        "quantity": 2
+      },
+      {
+        "itemId": "pressure-tank",
+        "quantity": 1
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/synthetizer"
+  },
+  {
+    "id": "recipe_factory-tier2_ion-injector-v2",
+    "outputItemId": "ion-injector",
+    "machine": "Constructorizer",
+    "buildingTier": "V2",
     "outputRatePerMin": 12,
     "outputs": [
       {
-        "itemId": "comp_nozzle",
-        "quantity": 1
+        "itemId": "ion-injector",
+        "quantity": 2
       }
     ],
     "inputs": [
       {
-        "itemId": "sheet_heat_resistant",
-        "quantity": 2
+        "itemId": "syringe",
+        "quantity": 4
       },
       {
-        "itemId": "gas_helium3",
+        "itemId": "electromagnet",
         "quantity": 1
       },
       {
-        "itemId": "comp_stabilizer",
-        "quantity": 2
+        "itemId": "pressure-tank",
+        "quantity": 1
+      },
+      {
+        "itemId": "goethite-lattice",
+        "quantity": 1
+      },
+      {
+        "itemId": "uber-oil",
+        "quantity": 1
       }
     ],
-    "confidence": "High Confidence",
-    "lastVerified": "2026-02-08",
-    "sourceUrl": "https://starruptureplanner.com/items/comp_nozzle"
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/factory-tier2"
   },
   {
-    "id": "recipe_comp_battery",
-    "outputItemId": "comp_battery",
+    "id": "recipe_hammer_ion-stabilizer",
+    "outputItemId": "ion-stabilizer",
     "machine": "Mega Press",
-    "buildingTier": null,
-    "outputRatePerMin": 15,
-    "outputs": [
-      {
-        "itemId": "comp_battery",
-        "quantity": 1
-      }
-    ],
-    "inputs": [
-      {
-        "itemId": "comp_inductor",
-        "quantity": 2
-      },
-      {
-        "itemId": "comp_electronics",
-        "quantity": 2
-      },
-      {
-        "itemId": "fluid_sulfuric_acid",
-        "quantity": 1
-      }
-    ],
-    "confidence": "High Confidence",
-    "lastVerified": "2026-02-08",
-    "sourceUrl": "https://starruptureplanner.com/items/comp_battery"
-  },
-  {
-    "id": "recipe_comp_pump",
-    "outputItemId": "comp_pump",
-    "machine": "Mega Press",
-    "buildingTier": null,
+    "buildingTier": "V1",
     "outputRatePerMin": 6,
     "outputs": [
       {
-        "itemId": "comp_pump",
+        "itemId": "ion-stabilizer",
         "quantity": 1
       }
     ],
     "inputs": [
       {
-        "itemId": "comp_valve",
+        "itemId": "epoxy",
         "quantity": 1
       },
       {
-        "itemId": "comp_turbine",
+        "itemId": "liquid-helium",
+        "quantity": 3
+      },
+      {
+        "itemId": "onboard-instruments",
         "quantity": 1
       },
       {
-        "itemId": "comp_impeller",
+        "itemId": "grenade",
+        "quantity": 1
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/hammer"
+  },
+  {
+    "id": "recipe_factory_ion-thrusters",
+    "outputItemId": "ion-thrusters",
+    "machine": "Constructorizer",
+    "buildingTier": "V1",
+    "outputRatePerMin": 6,
+    "outputs": [
+      {
+        "itemId": "ion-thrusters",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "valve",
         "quantity": 1
       },
       {
-        "itemId": "fluid_sulfuric_acid",
+        "itemId": "heat-shield",
+        "quantity": 1
+      },
+      {
+        "itemId": "pressure-tank",
+        "quantity": 1
+      },
+      {
+        "itemId": "rocket-fuel",
+        "quantity": 1
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/factory"
+  },
+  {
+    "id": "recipe_assembler_laser-emitter",
+    "outputItemId": "laser-emitter",
+    "machine": "Assembler",
+    "buildingTier": "V1",
+    "outputRatePerMin": 10,
+    "outputs": [
+      {
+        "itemId": "laser-emitter",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "lens",
+        "quantity": 1
+      },
+      {
+        "itemId": "resonator",
+        "quantity": 1
+      },
+      {
+        "itemId": "electromagnetic-coil",
+        "quantity": 6
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/assembler"
+  },
+  {
+    "id": "recipe_factory-tier2_laser-emitter-v2",
+    "outputItemId": "laser-emitter",
+    "machine": "Constructorizer",
+    "buildingTier": "V2",
+    "outputRatePerMin": 20,
+    "outputs": [
+      {
+        "itemId": "laser-emitter",
+        "quantity": 2
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "lens",
+        "quantity": 1
+      },
+      {
+        "itemId": "resonator",
+        "quantity": 1
+      },
+      {
+        "itemId": "electromagnetic-coil",
+        "quantity": 3
+      },
+      {
+        "itemId": "grenade",
+        "quantity": 1
+      },
+      {
+        "itemId": "epoxy",
+        "quantity": 1
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/factory-tier2"
+  },
+  {
+    "id": "recipe_synthetizer_lens",
+    "outputItemId": "lens",
+    "machine": "Compounder",
+    "buildingTier": "V1",
+    "outputRatePerMin": 6,
+    "outputs": [
+      {
+        "itemId": "lens",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "glass",
+        "quantity": 10
+      },
+      {
+        "itemId": "hardening-agent",
+        "quantity": 6
+      },
+      {
+        "itemId": "synthetic-resin",
+        "quantity": 4
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/synthetizer"
+  },
+  {
+    "id": "recipe_synthetizer_liquid-helium",
+    "outputItemId": "liquid-helium",
+    "machine": "Compounder",
+    "buildingTier": "V1",
+    "outputRatePerMin": 20,
+    "outputs": [
+      {
+        "itemId": "liquid-helium",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "pressurized-helium",
+        "quantity": 1
+      },
+      {
+        "itemId": "hardening-agent",
+        "quantity": 1
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/synthetizer"
+  },
+  {
+    "id": "recipe_synthetizer-tier2_liquid-helium-v2",
+    "outputItemId": "liquid-helium",
+    "machine": "Compounder",
+    "buildingTier": "V2",
+    "outputRatePerMin": 100,
+    "outputs": [
+      {
+        "itemId": "liquid-helium",
+        "quantity": 5
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "pressurized-helium",
+        "quantity": 1
+      },
+      {
+        "itemId": "hardening-agent",
+        "quantity": 1
+      },
+      {
+        "itemId": "explosive",
+        "quantity": 1
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/synthetizer-tier2"
+  },
+  {
+    "id": "recipe_synthetizer_nanofibre",
+    "outputItemId": "nanofibre",
+    "machine": "Compounder",
+    "buildingTier": "V1",
+    "outputRatePerMin": 20,
+    "outputs": [
+      {
+        "itemId": "nanofibre",
+        "quantity": 2
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "tube",
+        "quantity": 20
+      },
+      {
+        "itemId": "liquid-helium",
+        "quantity": 5
+      },
+      {
+        "itemId": "wolfram-wire",
+        "quantity": 8
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/synthetizer"
+  },
+  {
+    "id": "recipe_factory_nanosyringe",
+    "outputItemId": "nanosyringe",
+    "machine": "Constructorizer",
+    "buildingTier": "V1",
+    "outputRatePerMin": 6,
+    "outputs": [
+      {
+        "itemId": "nanosyringe",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "hardening-agent",
+        "quantity": 1
+      },
+      {
+        "itemId": "syringe",
+        "quantity": 2
+      },
+      {
+        "itemId": "nanofibre",
+        "quantity": 1
+      },
+      {
+        "itemId": "substance-fhs-135-493",
+        "quantity": 1
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/factory"
+  },
+  {
+    "id": "recipe_hammer_nozzle",
+    "outputItemId": "nozzle",
+    "machine": "Mega Press",
+    "buildingTier": "V1",
+    "outputRatePerMin": 12,
+    "outputs": [
+      {
+        "itemId": "nozzle",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "heat-resistant-sheet",
+        "quantity": 2
+      },
+      {
+        "itemId": "helium-ore",
+        "quantity": 6
+      },
+      {
+        "itemId": "gyroscope",
+        "quantity": 1
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/hammer"
+  },
+  {
+    "id": "recipe_food-processor_nutri-bar",
+    "outputItemId": "nutri-bar",
+    "machine": "Food Station",
+    "buildingTier": "V1",
+    "outputRatePerMin": 18,
+    "outputs": [
+      {
+        "itemId": "nutri-bar",
         "quantity": 3
       }
     ],
-    "confidence": "High Confidence",
-    "lastVerified": "2026-02-08",
-    "sourceUrl": "https://starruptureplanner.com/items/comp_pump"
+    "inputs": [
+      {
+        "itemId": "prickler",
+        "quantity": 5
+      },
+      {
+        "itemId": "serpent-root",
+        "quantity": 1
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/food-processor"
   },
   {
-    "id": "recipe_fluid_pressurized_helium",
-    "outputItemId": "fluid_pressurized_helium",
-    "machine": "Refinery",
-    "buildingTier": null,
-    "outputRatePerMin": 30,
+    "id": "recipe_food-processor_nutri-block-capsules",
+    "outputItemId": "nutri-block-capsules",
+    "machine": "Food Station",
+    "buildingTier": "V1",
+    "outputRatePerMin": 6,
     "outputs": [
       {
-        "itemId": "fluid_pressurized_helium",
+        "itemId": "nutri-block-capsules",
         "quantity": 1
       }
     ],
     "inputs": [
       {
-        "itemId": "ore_sulfur",
+        "itemId": "prickler",
+        "quantity": 5
+      },
+      {
+        "itemId": "oxallop",
+        "quantity": 1
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/food-processor"
+  },
+  {
+    "id": "recipe_food-processor_nutri-chew",
+    "outputItemId": "nutri-chew",
+    "machine": "Food Station",
+    "buildingTier": "V1",
+    "outputRatePerMin": 12,
+    "outputs": [
+      {
+        "itemId": "nutri-chew",
+        "quantity": 2
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "prickler",
+        "quantity": 4
+      },
+      {
+        "itemId": "prism-herb",
+        "quantity": 1
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/food-processor"
+  },
+  {
+    "id": "recipe_food-processor_nutri-fluid",
+    "outputItemId": "nutri-fluid",
+    "machine": "Food Station",
+    "buildingTier": "V1",
+    "outputRatePerMin": 6,
+    "outputs": [
+      {
+        "itemId": "nutri-fluid",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "prickler",
+        "quantity": 2
+      },
+      {
+        "itemId": "star-tears",
+        "quantity": 1
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/food-processor"
+  },
+  {
+    "id": "recipe_food-processor_nutri-gel",
+    "outputItemId": "nutri-gel",
+    "machine": "Food Station",
+    "buildingTier": "V1",
+    "outputRatePerMin": 6,
+    "outputs": [
+      {
+        "itemId": "nutri-gel",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "prickler",
+        "quantity": 4
+      },
+      {
+        "itemId": "grubbler",
+        "quantity": 1
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/food-processor"
+  },
+  {
+    "id": "recipe_food-processor_nutri-stim-shards",
+    "outputItemId": "nutri-stim-shards",
+    "machine": "Food Station",
+    "buildingTier": "V1",
+    "outputRatePerMin": 6,
+    "outputs": [
+      {
+        "itemId": "nutri-stim-shards",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "prickler",
+        "quantity": 2
+      },
+      {
+        "itemId": "sulheart",
+        "quantity": 1
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/food-processor"
+  },
+  {
+    "id": "recipe_assembler_onboard-instruments",
+    "outputItemId": "onboard-instruments",
+    "machine": "Assembler",
+    "buildingTier": "V1",
+    "outputRatePerMin": 12,
+    "outputs": [
+      {
+        "itemId": "onboard-instruments",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "electronics",
         "quantity": 1
       },
       {
-        "itemId": "gas_helium3",
+        "itemId": "gyroscope",
+        "quantity": 2
+      },
+      {
+        "itemId": "reinforced-housing",
         "quantity": 1
       }
     ],
-    "confidence": "High Confidence",
-    "lastVerified": "2026-02-08",
-    "sourceUrl": "https://starruptureplanner.com/items/fluid_pressurized_helium"
-  }
-,
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/assembler"
+  },
   {
-    "id": "recipe_rod_titanium_v2",
-    "outputItemId": "rod_titanium",
+    "id": "recipe_synthetizer_organic-compound",
+    "outputItemId": "organic-compound",
+    "machine": "Compounder",
+    "buildingTier": "V1",
+    "outputRatePerMin": 45,
+    "outputs": [
+      {
+        "itemId": "organic-compound",
+        "quantity": 3
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "sulphuric-acid",
+        "quantity": 1
+      },
+      {
+        "itemId": "refined-oil",
+        "quantity": 2
+      },
+      {
+        "itemId": "epoxy",
+        "quantity": 1
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/synthetizer"
+  },
+  {
+    "id": "recipe_item-printer_pistol-ammo-item-printer",
+    "outputItemId": "pistol-ammo-item",
+    "machine": "Basic Item Printer",
+    "buildingTier": "V1",
+    "outputRatePerMin": 60,
+    "outputs": [
+      {
+        "itemId": "pistol-ammo-item",
+        "quantity": 10
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "basic-building-material",
+        "quantity": 7
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/item-printer"
+  },
+  {
+    "id": "recipe_crafter_pistol-ammo-item",
+    "outputItemId": "pistol-ammo-item",
+    "machine": "Fabricator",
+    "buildingTier": "V1",
+    "outputRatePerMin": 375,
+    "outputs": [
+      {
+        "itemId": "pistol-ammo-item",
+        "quantity": 25
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "basic-building-material",
+        "quantity": 14
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/crafter"
+  },
+  {
+    "id": "recipe_assembler_plastic-dust",
+    "outputItemId": "plastic-dust",
+    "machine": "Assembler",
+    "buildingTier": "V1",
+    "outputRatePerMin": 12,
+    "outputs": [
+      {
+        "itemId": "plastic-dust",
+        "quantity": 2
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "organic-compound",
+        "quantity": 2
+      },
+      {
+        "itemId": "basic-fuel",
+        "quantity": 1
+      },
+      {
+        "itemId": "uber-oil",
+        "quantity": 2
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/assembler"
+  },
+  {
+    "id": "recipe_food-processor_polisnack",
+    "outputItemId": "polisnack",
+    "machine": "Food Station",
+    "buildingTier": "V1",
+    "outputRatePerMin": 6,
+    "outputs": [
+      {
+        "itemId": "polisnack",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "polifruit",
+        "quantity": 3
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/food-processor"
+  },
+  {
+    "id": "recipe_item-printer_fe-access-item-item-printer",
+    "outputItemId": "power-cell",
+    "machine": "Basic Item Printer",
+    "buildingTier": "V1",
+    "outputRatePerMin": 6,
+    "outputs": [
+      {
+        "itemId": "power-cell",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "electronics",
+        "quantity": 10
+      },
+      {
+        "itemId": "explosive",
+        "quantity": 10
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/item-printer"
+  },
+  {
+    "id": "recipe_assembler_pressure-tank",
+    "outputItemId": "pressure-tank",
+    "machine": "Assembler",
+    "buildingTier": "V1",
+    "outputRatePerMin": 6,
+    "outputs": [
+      {
+        "itemId": "pressure-tank",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "heat-resistant-sheet",
+        "quantity": 5
+      },
+      {
+        "itemId": "valve",
+        "quantity": 2
+      },
+      {
+        "itemId": "pump",
+        "quantity": 2
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/assembler"
+  },
+  {
+    "id": "recipe_synthetizer-tier2_pressurized-helium-v2",
+    "outputItemId": "pressurized-helium",
+    "machine": "Compounder",
+    "buildingTier": "V2",
+    "outputRatePerMin": 150,
+    "outputs": [
+      {
+        "itemId": "pressurized-helium",
+        "quantity": 5
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "helium-ore",
+        "quantity": 3
+      },
+      {
+        "itemId": "sulphur-ore",
+        "quantity": 3
+      },
+      {
+        "itemId": "calcium-powder",
+        "quantity": 2
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/synthetizer-tier2"
+  },
+  {
+    "id": "recipe_refinery_pressurized-helium",
+    "outputItemId": "pressurized-helium",
+    "machine": "Pressurizer",
+    "buildingTier": "V1",
+    "outputRatePerMin": 30,
+    "outputs": [
+      {
+        "itemId": "pressurized-helium",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "helium-ore",
+        "quantity": 1
+      },
+      {
+        "itemId": "sulphur-ore",
+        "quantity": 1
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/refinery"
+  },
+  {
+    "id": "recipe_food-processor_processed-coralion-egg",
+    "outputItemId": "processed-coralion-egg",
+    "machine": "Food Station",
+    "buildingTier": "V1",
+    "outputRatePerMin": 6,
+    "outputs": [
+      {
+        "itemId": "processed-coralion-egg",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "crab-egg",
+        "quantity": 5
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/food-processor"
+  },
+  {
+    "id": "recipe_assembler_pseudorubber-insulator",
+    "outputItemId": "pseudorubber-insulator",
+    "machine": "Assembler",
+    "buildingTier": "V1",
+    "outputRatePerMin": 10,
+    "outputs": [
+      {
+        "itemId": "pseudorubber-insulator",
+        "quantity": 2
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "uber-oil",
+        "quantity": 5
+      },
+      {
+        "itemId": "epoxy",
+        "quantity": 2
+      },
+      {
+        "itemId": "goethite-lattice",
+        "quantity": 3
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/assembler"
+  },
+  {
+    "id": "recipe_hammer_pump",
+    "outputItemId": "pump",
+    "machine": "Mega Press",
+    "buildingTier": "V1",
+    "outputRatePerMin": 6,
+    "outputs": [
+      {
+        "itemId": "pump",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "valve",
+        "quantity": 1
+      },
+      {
+        "itemId": "turbine",
+        "quantity": 1
+      },
+      {
+        "itemId": "impeller",
+        "quantity": 1
+      },
+      {
+        "itemId": "sulphuric-acid",
+        "quantity": 3
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/hammer"
+  },
+  {
+    "id": "recipe_food-processor_purfins",
+    "outputItemId": "purfins",
+    "machine": "Food Station",
+    "buildingTier": "V1",
+    "outputRatePerMin": 6,
+    "outputs": [
+      {
+        "itemId": "purfins",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "purplant",
+        "quantity": 3
+      },
+      {
+        "itemId": "serpent-root",
+        "quantity": 1
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/food-processor"
+  },
+  {
+    "id": "recipe_factory_quantum-tranqualizer",
+    "outputItemId": "quantum-tranqualizer",
+    "machine": "Constructorizer",
+    "buildingTier": "V1",
+    "outputRatePerMin": 5,
+    "outputs": [
+      {
+        "itemId": "quantum-tranqualizer",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "ion-stabilizer",
+        "quantity": 1
+      },
+      {
+        "itemId": "supermagnet",
+        "quantity": 1
+      },
+      {
+        "itemId": "plastic-dust",
+        "quantity": 1
+      },
+      {
+        "itemId": "sulphuric-acid",
+        "quantity": 3
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/factory"
+  },
+  {
+    "id": "recipe_pressurizer_refined-oil",
+    "outputItemId": "refined-oil",
+    "machine": "Refinery",
+    "buildingTier": "V1",
+    "outputRatePerMin": 100,
+    "outputs": [
+      {
+        "itemId": "refined-oil",
+        "quantity": 10
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "magic-oil-ore",
+        "quantity": 1
+      },
+      {
+        "itemId": "calcium-ore",
+        "quantity": 12
+      },
+      {
+        "itemId": "titanium-ore",
+        "quantity": 12
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/pressurizer"
+  },
+  {
+    "id": "recipe_food-processor_refined-vulpir-egg",
+    "outputItemId": "refined-vulpir-egg",
+    "machine": "Food Station",
+    "buildingTier": "V1",
+    "outputRatePerMin": 6,
+    "outputs": [
+      {
+        "itemId": "refined-vulpir-egg",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "fox-egg",
+        "quantity": 6
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/food-processor"
+  },
+  {
+    "id": "recipe_food-processor_regen-capsules",
+    "outputItemId": "regen-capsules",
+    "machine": "Food Station",
+    "buildingTier": "V1",
+    "outputRatePerMin": 12,
+    "outputs": [
+      {
+        "itemId": "regen-capsules",
+        "quantity": 2
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "star-tears",
+        "quantity": 3
+      },
+      {
+        "itemId": "oxallop",
+        "quantity": 2
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/food-processor"
+  },
+  {
+    "id": "recipe_hammer_reinforced-frame",
+    "outputItemId": "reinforced-frame",
+    "machine": "Mega Press",
+    "buildingTier": "V1",
+    "outputRatePerMin": 12,
+    "outputs": [
+      {
+        "itemId": "reinforced-frame",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "tube",
+        "quantity": 4
+      },
+      {
+        "itemId": "uber-titanium",
+        "quantity": 4
+      },
+      {
+        "itemId": "titanium-beam",
+        "quantity": 2
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/hammer"
+  },
+  {
+    "id": "recipe_hammer_reinforced-housing",
+    "outputItemId": "reinforced-housing",
+    "machine": "Mega Press",
+    "buildingTier": "V1",
+    "outputRatePerMin": 15,
+    "outputs": [
+      {
+        "itemId": "reinforced-housing",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "titanium-housing",
+        "quantity": 1
+      },
+      {
+        "itemId": "uber-wolfram",
+        "quantity": 4
+      },
+      {
+        "itemId": "wolfram-plate",
+        "quantity": 3
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/hammer"
+  },
+  {
+    "id": "recipe_assembler_resonator",
+    "outputItemId": "resonator",
+    "machine": "Assembler",
+    "buildingTier": "V1",
+    "outputRatePerMin": 6,
+    "outputs": [
+      {
+        "itemId": "resonator",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "accumulator",
+        "quantity": 1
+      },
+      {
+        "itemId": "generator",
+        "quantity": 2
+      },
+      {
+        "itemId": "liquid-helium",
+        "quantity": 2
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/assembler"
+  },
+  {
+    "id": "recipe_factory_rna-stabilizer",
+    "outputItemId": "rna-stabilizer",
+    "machine": "Constructorizer",
+    "buildingTier": "V1",
+    "outputRatePerMin": 5,
+    "outputs": [
+      {
+        "itemId": "rna-stabilizer",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "organic-compound",
+        "quantity": 2
+      },
+      {
+        "itemId": "nanosyringe",
+        "quantity": 1
+      },
+      {
+        "itemId": "synthetic-protein",
+        "quantity": 2
+      },
+      {
+        "itemId": "uber-oil",
+        "quantity": 4
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/factory"
+  },
+  {
+    "id": "recipe_military-assembler_rocket-engine",
+    "outputItemId": "rocket-engine",
+    "machine": "Facturer",
+    "buildingTier": "V1",
+    "outputRatePerMin": 4,
+    "outputs": [
+      {
+        "itemId": "rocket-engine",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "nozzle",
+        "quantity": 2
+      },
+      {
+        "itemId": "turbine",
+        "quantity": 1
+      },
+      {
+        "itemId": "pump",
+        "quantity": 3
+      },
+      {
+        "itemId": "rocket-fuel",
+        "quantity": 5
+      },
+      {
+        "itemId": "condenser",
+        "quantity": 1
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/military-assembler"
+  },
+  {
+    "id": "recipe_factory_rocket-fuel",
+    "outputItemId": "rocket-fuel",
+    "machine": "Constructorizer",
+    "buildingTier": "V1",
+    "outputRatePerMin": 10,
+    "outputs": [
+      {
+        "itemId": "rocket-fuel",
+        "quantity": 2
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "liquid-helium",
+        "quantity": 6
+      },
+      {
+        "itemId": "basic-fuel",
+        "quantity": 2
+      },
+      {
+        "itemId": "sulphuric-acid",
+        "quantity": 3
+      },
+      {
+        "itemId": "refined-oil",
+        "quantity": 8
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/factory"
+  },
+  {
+    "id": "recipe_crafter_rotor",
+    "outputItemId": "rotor",
+    "machine": "Fabricator",
+    "buildingTier": "V1",
+    "outputRatePerMin": 10,
+    "outputs": [
+      {
+        "itemId": "rotor",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "titanium-rod",
+        "quantity": 2
+      },
+      {
+        "itemId": "wolfram-wire",
+        "quantity": 2
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/crafter"
+  },
+  {
+    "id": "recipe_crafter-tier2_rotor-v2",
+    "outputItemId": "rotor",
+    "machine": "Fabricator",
+    "buildingTier": "V2",
+    "outputRatePerMin": 60,
+    "outputs": [
+      {
+        "itemId": "rotor",
+        "quantity": 6
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "titanium-rod",
+        "quantity": 1
+      },
+      {
+        "itemId": "wolfram-wire",
+        "quantity": 2
+      },
+      {
+        "itemId": "wolfram-plate",
+        "quantity": 1
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/crafter-tier2"
+  },
+  {
+    "id": "recipe_factory_rtsc",
+    "outputItemId": "rtsc",
+    "machine": "Constructorizer",
+    "buildingTier": "V1",
+    "outputRatePerMin": 6,
+    "outputs": [
+      {
+        "itemId": "rtsc",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "anti-radiation-covers",
+        "quantity": 1
+      },
+      {
+        "itemId": "heat-shield",
+        "quantity": 2
+      },
+      {
+        "itemId": "aerogel",
+        "quantity": 2
+      },
+      {
+        "itemId": "pseudorubber-insulator",
+        "quantity": 2
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/factory"
+  },
+  {
+    "id": "recipe_military-assembler_rtsc-generator",
+    "outputItemId": "rtsc-generator",
+    "machine": "Facturer",
+    "buildingTier": "V1",
+    "outputRatePerMin": 3,
+    "outputs": [
+      {
+        "itemId": "rtsc-generator",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "rtsc",
+        "quantity": 2
+      },
+      {
+        "itemId": "generator",
+        "quantity": 4
+      },
+      {
+        "itemId": "laser-emitter",
+        "quantity": 2
+      },
+      {
+        "itemId": "anti-radiation-covers",
+        "quantity": 4
+      },
+      {
+        "itemId": "cyclotrone",
+        "quantity": 1
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/military-assembler"
+  },
+  {
+    "id": "recipe_military-assembler_satellite-body",
+    "outputItemId": "satellite-body",
+    "machine": "Facturer",
+    "buildingTier": "V1",
+    "outputRatePerMin": 3,
+    "outputs": [
+      {
+        "itemId": "satellite-body",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "onboard-instruments",
+        "quantity": 4
+      },
+      {
+        "itemId": "scanner",
+        "quantity": 2
+      },
+      {
+        "itemId": "ion-thrusters",
+        "quantity": 2
+      },
+      {
+        "itemId": "rocket-engine",
+        "quantity": 1
+      },
+      {
+        "itemId": "heat-shield",
+        "quantity": 6
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/military-assembler"
+  },
+  {
+    "id": "recipe_factory_scafolding",
+    "outputItemId": "scafolding",
+    "machine": "Constructorizer",
+    "buildingTier": "V1",
+    "outputRatePerMin": 6,
+    "outputs": [
+      {
+        "itemId": "scafolding",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "uberfilament",
+        "quantity": 2
+      },
+      {
+        "itemId": "reinforced-frame",
+        "quantity": 2
+      },
+      {
+        "itemId": "goethite-lattice",
+        "quantity": 1
+      },
+      {
+        "itemId": "plastic-dust",
+        "quantity": 1
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/factory"
+  },
+  {
+    "id": "recipe_assembler_scanner",
+    "outputItemId": "scanner",
+    "machine": "Assembler",
+    "buildingTier": "V1",
+    "outputRatePerMin": 6,
+    "outputs": [
+      {
+        "itemId": "scanner",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "lens",
+        "quantity": 3
+      },
+      {
+        "itemId": "generator",
+        "quantity": 3
+      },
+      {
+        "itemId": "gyroscope",
+        "quantity": 12
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/assembler"
+  },
+  {
+    "id": "recipe_factory-tier2_scanner-v2",
+    "outputItemId": "scanner",
+    "machine": "Constructorizer",
+    "buildingTier": "V2",
+    "outputRatePerMin": 12,
+    "outputs": [
+      {
+        "itemId": "scanner",
+        "quantity": 2
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "lens",
+        "quantity": 2
+      },
+      {
+        "itemId": "generator",
+        "quantity": 2
+      },
+      {
+        "itemId": "gyroscope",
+        "quantity": 6
+      },
+      {
+        "itemId": "uberfilament",
+        "quantity": 1
+      },
+      {
+        "itemId": "pseudorubber-insulator",
+        "quantity": 3
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/factory-tier2"
+  },
+  {
+    "id": "recipe_food-processor_serpent-sticks",
+    "outputItemId": "serpent-sticks",
+    "machine": "Food Station",
+    "buildingTier": "V1",
+    "outputRatePerMin": 6,
+    "outputs": [
+      {
+        "itemId": "serpent-sticks",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "serpent-root",
+        "quantity": 2
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/food-processor"
+  },
+  {
+    "id": "recipe_item-printer_shotgun-ammo-item-printer",
+    "outputItemId": "shotgun-ammo-item",
+    "machine": "Basic Item Printer",
+    "buildingTier": "V1",
+    "outputRatePerMin": 36,
+    "outputs": [
+      {
+        "itemId": "shotgun-ammo-item",
+        "quantity": 6
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "basic-building-material",
+        "quantity": 10
+      },
+      {
+        "itemId": "calcium-powder",
+        "quantity": 3
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/item-printer"
+  },
+  {
+    "id": "recipe_hammer_shotgun-ammo",
+    "outputItemId": "shotgun-ammo-item",
+    "machine": "Mega Press",
+    "buildingTier": "V1",
+    "outputRatePerMin": 150,
+    "outputs": [
+      {
+        "itemId": "shotgun-ammo-item",
+        "quantity": 15
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "basic-building-material",
+        "quantity": 20
+      },
+      {
+        "itemId": "calcium-powder",
+        "quantity": 6
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/hammer"
+  },
+  {
+    "id": "recipe_furnace_silica-sand",
+    "outputItemId": "silica-sand",
+    "machine": "Furnace",
+    "buildingTier": "V1",
+    "outputRatePerMin": 60,
+    "outputs": [
+      {
+        "itemId": "silica-sand",
+        "quantity": 2
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "calcium-powder",
+        "quantity": 2
+      },
+      {
+        "itemId": "helium-ore",
+        "quantity": 1
+      },
+      {
+        "itemId": "ceramics",
+        "quantity": 2
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/furnace"
+  },
+  {
+    "id": "recipe_item-printer_standard-ammo-item-printer",
+    "outputItemId": "standard-ammo-item",
+    "machine": "Basic Item Printer",
+    "buildingTier": "V1",
+    "outputRatePerMin": 48,
+    "outputs": [
+      {
+        "itemId": "standard-ammo-item",
+        "quantity": 8
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "basic-building-material",
+        "quantity": 9
+      },
+      {
+        "itemId": "wolfram-powder",
+        "quantity": 2
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/item-printer"
+  },
+  {
+    "id": "recipe_hammer_standard-ammo",
+    "outputItemId": "standard-ammo-item",
+    "machine": "Mega Press",
+    "buildingTier": "V1",
+    "outputRatePerMin": 200,
+    "outputs": [
+      {
+        "itemId": "standard-ammo-item",
+        "quantity": 20
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "basic-building-material",
+        "quantity": 18
+      },
+      {
+        "itemId": "wolfram-powder",
+        "quantity": 4
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/hammer"
+  },
+  {
+    "id": "recipe_food-processor_star-bites",
+    "outputItemId": "star-bites",
+    "machine": "Food Station",
+    "buildingTier": "V1",
+    "outputRatePerMin": 6,
+    "outputs": [
+      {
+        "itemId": "star-bites",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "star-tears",
+        "quantity": 2
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/food-processor"
+  },
+  {
+    "id": "recipe_crafter_stator",
+    "outputItemId": "stator",
+    "machine": "Fabricator",
+    "buildingTier": "V1",
+    "outputRatePerMin": 20,
+    "outputs": [
+      {
+        "itemId": "stator",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "titanium-housing",
+        "quantity": 2
+      },
+      {
+        "itemId": "wolfram-wire",
+        "quantity": 1
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/crafter"
+  },
+  {
+    "id": "recipe_crafter-tier2_stator-v2",
+    "outputItemId": "stator",
+    "machine": "Fabricator",
+    "buildingTier": "V2",
+    "outputRatePerMin": 60,
+    "outputs": [
+      {
+        "itemId": "stator",
+        "quantity": 3
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "titanium-housing",
+        "quantity": 1
+      },
+      {
+        "itemId": "wolfram-wire",
+        "quantity": 1
+      },
+      {
+        "itemId": "titanium-sheet",
+        "quantity": 1
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/crafter-tier2"
+  },
+  {
+    "id": "recipe_synthetizer_substance-fhs-135-493",
+    "outputItemId": "substance-fhs-135-493",
+    "machine": "Compounder",
+    "buildingTier": "V1",
+    "outputRatePerMin": 10,
+    "outputs": [
+      {
+        "itemId": "substance-fhs-135-493",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "sulphuric-acid",
+        "quantity": 1
+      },
+      {
+        "itemId": "goethite-powder",
+        "quantity": 3
+      },
+      {
+        "itemId": "liquid-helium",
+        "quantity": 2
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/synthetizer"
+  },
+  {
+    "id": "recipe_food-processor_sulbon",
+    "outputItemId": "sulbon",
+    "machine": "Food Station",
+    "buildingTier": "V1",
+    "outputRatePerMin": 6,
+    "outputs": [
+      {
+        "itemId": "sulbon",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "sulheart",
+        "quantity": 3
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/food-processor"
+  },
+  {
+    "id": "recipe_synthetizer-tier2_sulphuric-acid-v2",
+    "outputItemId": "sulphuric-acid",
+    "machine": "Compounder",
+    "buildingTier": "V2",
+    "outputRatePerMin": 240,
+    "outputs": [
+      {
+        "itemId": "sulphuric-acid",
+        "quantity": 8
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "sulphur-ore",
+        "quantity": 10
+      },
+      {
+        "itemId": "explosive",
+        "quantity": 2
+      },
+      {
+        "itemId": "wolfram-powder",
+        "quantity": 1
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/synthetizer-tier2"
+  },
+  {
+    "id": "recipe_refinery_sulphuric-acid",
+    "outputItemId": "sulphuric-acid",
+    "machine": "Pressurizer",
+    "buildingTier": "V1",
+    "outputRatePerMin": 120,
+    "outputs": [
+      {
+        "itemId": "sulphuric-acid",
+        "quantity": 4
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "sulphur-ore",
+        "quantity": 8
+      },
+      {
+        "itemId": "explosive",
+        "quantity": 4
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/refinery"
+  },
+  {
+    "id": "recipe_synthetizer_superconductor",
+    "outputItemId": "superconductor",
+    "machine": "Compounder",
+    "buildingTier": "V1",
+    "outputRatePerMin": 12,
+    "outputs": [
+      {
+        "itemId": "superconductor",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "synthetic-resin",
+        "quantity": 4
+      },
+      {
+        "itemId": "electromagnet",
+        "quantity": 2
+      },
+      {
+        "itemId": "supermagnet",
+        "quantity": 6
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/synthetizer"
+  },
+  {
+    "id": "recipe_factory-tier2_superconductor-v2",
+    "outputItemId": "superconductor",
+    "machine": "Constructorizer",
+    "buildingTier": "V2",
+    "outputRatePerMin": 24,
+    "outputs": [
+      {
+        "itemId": "superconductor",
+        "quantity": 2
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "synthetic-resin",
+        "quantity": 2
+      },
+      {
+        "itemId": "electromagnet",
+        "quantity": 1
+      },
+      {
+        "itemId": "supermagnet",
+        "quantity": 3
+      },
+      {
+        "itemId": "aerogel",
+        "quantity": 2
+      },
+      {
+        "itemId": "heat-shield",
+        "quantity": 2
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/factory-tier2"
+  },
+  {
+    "id": "recipe_furnace_supermagnet",
+    "outputItemId": "supermagnet",
+    "machine": "Furnace",
+    "buildingTier": "V1",
+    "outputRatePerMin": 20,
+    "outputs": [
+      {
+        "itemId": "supermagnet",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "sulphuric-acid",
+        "quantity": 4
+      },
+      {
+        "itemId": "wolfram-plate",
+        "quantity": 4
+      },
+      {
+        "itemId": "explosive",
+        "quantity": 1
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/furnace"
+  },
+  {
+    "id": "recipe_military-assembler_synthetic-dna",
+    "outputItemId": "synthetic-dna",
+    "machine": "Facturer",
+    "buildingTier": "V1",
+    "outputRatePerMin": 3,
+    "outputs": [
+      {
+        "itemId": "synthetic-dna",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "synthetic-protein",
+        "quantity": 10
+      },
+      {
+        "itemId": "substance-fhs-135-493",
+        "quantity": 6
+      },
+      {
+        "itemId": "nanosyringe",
+        "quantity": 5
+      },
+      {
+        "itemId": "uber-oil",
+        "quantity": 10
+      },
+      {
+        "itemId": "biofilament",
+        "quantity": 2
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/military-assembler"
+  },
+  {
+    "id": "recipe_synthetizer_synthetic-protein",
+    "outputItemId": "synthetic-protein",
+    "machine": "Compounder",
+    "buildingTier": "V1",
+    "outputRatePerMin": 10,
+    "outputs": [
+      {
+        "itemId": "synthetic-protein",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "organic-compound",
+        "quantity": 2
+      },
+      {
+        "itemId": "substance-fhs-135-493",
+        "quantity": 1
+      },
+      {
+        "itemId": "sulphuric-acid",
+        "quantity": 2
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/synthetizer"
+  },
+  {
+    "id": "recipe_synthetizer_synthetic-resin",
+    "outputItemId": "synthetic-resin",
+    "machine": "Compounder",
+    "buildingTier": "V1",
+    "outputRatePerMin": 20,
+    "outputs": [
+      {
+        "itemId": "synthetic-resin",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "hardening-agent",
+        "quantity": 1
+      },
+      {
+        "itemId": "sulphuric-acid",
+        "quantity": 3
+      },
+      {
+        "itemId": "calcite-sheets",
+        "quantity": 6
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/synthetizer"
+  },
+  {
+    "id": "recipe_synthetizer-tier2_synthetic-resin-v2",
+    "outputItemId": "synthetic-resin",
+    "machine": "Compounder",
+    "buildingTier": "V2",
+    "outputRatePerMin": 60,
+    "outputs": [
+      {
+        "itemId": "synthetic-resin",
+        "quantity": 3
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "hardening-agent",
+        "quantity": 2
+      },
+      {
+        "itemId": "sulphuric-acid",
+        "quantity": 5
+      },
+      {
+        "itemId": "calcite-sheets",
+        "quantity": 6
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/synthetizer-tier2"
+  },
+  {
+    "id": "recipe_crafter_syringe",
+    "outputItemId": "syringe",
+    "machine": "Fabricator",
+    "buildingTier": "V1",
+    "outputRatePerMin": 15,
+    "outputs": [
+      {
+        "itemId": "syringe",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "tube",
+        "quantity": 8
+      },
+      {
+        "itemId": "glass",
+        "quantity": 2
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/crafter"
+  },
+  {
+    "id": "recipe_food-processor_termo-res-plasm",
+    "outputItemId": "termo-res-plasm",
+    "machine": "Food Station",
+    "buildingTier": "V1",
+    "outputRatePerMin": 12,
+    "outputs": [
+      {
+        "itemId": "termo-res-plasm",
+        "quantity": 2
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "glowcap",
+        "quantity": 1
+      },
+      {
+        "itemId": "grubbler",
+        "quantity": 1
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/food-processor"
+  },
+  {
+    "id": "recipe_smelter_titanium-bar",
+    "outputItemId": "titanium-bar",
+    "machine": "Smelter",
+    "buildingTier": "V1",
+    "outputRatePerMin": 60,
+    "outputs": [
+      {
+        "itemId": "titanium-bar",
+        "quantity": 2
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "titanium-ore",
+        "quantity": 2
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/smelter"
+  },
+  {
+    "id": "recipe_crafter_titanium-beam",
+    "outputItemId": "titanium-beam",
+    "machine": "Fabricator",
+    "buildingTier": "V1",
+    "outputRatePerMin": 60,
+    "outputs": [
+      {
+        "itemId": "titanium-beam",
+        "quantity": 3
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "titanium-bar",
+        "quantity": 2
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/crafter"
+  },
+  {
+    "id": "recipe_furnace_titanium-housing",
+    "outputItemId": "titanium-housing",
+    "machine": "Furnace",
+    "buildingTier": "V1",
+    "outputRatePerMin": 30,
+    "outputs": [
+      {
+        "itemId": "titanium-housing",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "titanium-beam",
+        "quantity": 1
+      },
+      {
+        "itemId": "titanium-sheet",
+        "quantity": 2
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/furnace"
+  },
+  {
+    "id": "recipe_crafter_titanium-rod",
+    "outputItemId": "titanium-rod",
+    "machine": "Fabricator",
+    "buildingTier": "V1",
+    "outputRatePerMin": 30,
+    "outputs": [
+      {
+        "itemId": "titanium-rod",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "titanium-bar",
+        "quantity": 1
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/crafter"
+  },
+  {
+    "id": "recipe_crafter-tier2_titanium-rod-v2",
+    "outputItemId": "titanium-rod",
     "machine": "Fabricator",
     "buildingTier": "V2",
     "outputRatePerMin": 120,
-    "outputs": [{ "itemId": "rod_titanium", "quantity": 4 }],
-    "inputs": [{ "itemId": "ingot_titanium", "quantity": 2 }],
-    "confidence": "High Confidence",
-    "lastVerified": "2026-06-28",
-    "sourceUrl": "https://starrupture.wiki.gg/wiki/Fabricator_v.2"
+    "outputs": [
+      {
+        "itemId": "titanium-rod",
+        "quantity": 4
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "titanium-bar",
+        "quantity": 2
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/crafter-tier2"
   },
   {
-    "id": "recipe_sheet_titanium_v2",
-    "outputItemId": "sheet_titanium",
+    "id": "recipe_crafter_titanium-sheet",
+    "outputItemId": "titanium-sheet",
+    "machine": "Fabricator",
+    "buildingTier": "V1",
+    "outputRatePerMin": 60,
+    "outputs": [
+      {
+        "itemId": "titanium-sheet",
+        "quantity": 2
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "titanium-bar",
+        "quantity": 1
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/crafter"
+  },
+  {
+    "id": "recipe_crafter-tier2_titanium-sheet-v2",
+    "outputItemId": "titanium-sheet",
     "machine": "Fabricator",
     "buildingTier": "V2",
     "outputRatePerMin": 180,
-    "outputs": [{ "itemId": "sheet_titanium", "quantity": 6 }],
-    "inputs": [{ "itemId": "ingot_titanium", "quantity": 2 }],
-    "confidence": "High Confidence",
-    "lastVerified": "2026-06-28",
-    "sourceUrl": "https://starrupture.wiki.gg/wiki/Fabricator_v.2"
-  },
-  {
-    "id": "recipe_wire_wolfram_v2",
-    "outputItemId": "wire_wolfram",
-    "machine": "Fabricator",
-    "buildingTier": "V2",
-    "outputRatePerMin": 120,
-    "outputs": [{ "itemId": "wire_wolfram", "quantity": 8 }],
-    "inputs": [{ "itemId": "ingot_wolfram", "quantity": 2 }],
-    "confidence": "High Confidence",
-    "lastVerified": "2026-06-28",
-    "sourceUrl": "https://starrupture.wiki.gg/wiki/Fabricator_v.2"
-  },
-  {
-    "id": "recipe_plate_wolfram_v2",
-    "outputItemId": "plate_wolfram",
-    "machine": "Fabricator",
-    "buildingTier": "V2",
-    "outputRatePerMin": 150,
-    "outputs": [{ "itemId": "plate_wolfram", "quantity": 5 }],
-    "inputs": [
-      { "itemId": "ingot_wolfram", "quantity": 2 },
-      { "itemId": "powder_wolfram", "quantity": 1 }
+    "outputs": [
+      {
+        "itemId": "titanium-sheet",
+        "quantity": 6
+      }
     ],
-    "confidence": "High Confidence",
-    "lastVerified": "2026-06-28",
-    "sourceUrl": "https://starrupture.wiki.gg/wiki/Fabricator_v.2"
+    "inputs": [
+      {
+        "itemId": "titanium-bar",
+        "quantity": 2
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/crafter-tier2"
   },
   {
-    "id": "recipe_comp_rotor_v2",
-    "outputItemId": "comp_rotor",
+    "id": "recipe_military-assembler_tracking-device",
+    "outputItemId": "tracking-device",
+    "machine": "Facturer",
+    "buildingTier": "V1",
+    "outputRatePerMin": 4,
+    "outputs": [
+      {
+        "itemId": "tracking-device",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "carbon-sonar",
+        "quantity": 1
+      },
+      {
+        "itemId": "quantum-tranqualizer",
+        "quantity": 1
+      },
+      {
+        "itemId": "lens",
+        "quantity": 1
+      },
+      {
+        "itemId": "onboard-instruments",
+        "quantity": 3
+      },
+      {
+        "itemId": "scanner",
+        "quantity": 1
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/military-assembler"
+  },
+  {
+    "id": "recipe_crafter_tube",
+    "outputItemId": "tube",
     "machine": "Fabricator",
-    "buildingTier": "V2",
+    "buildingTier": "V1",
     "outputRatePerMin": 60,
-    "outputs": [{ "itemId": "comp_rotor", "quantity": 6 }],
-    "inputs": [
-      { "itemId": "rod_titanium", "quantity": 1 },
-      { "itemId": "wire_wolfram", "quantity": 2 },
-      { "itemId": "plate_wolfram", "quantity": 1 }
+    "outputs": [
+      {
+        "itemId": "tube",
+        "quantity": 2
+      }
     ],
-    "confidence": "High Confidence",
-    "lastVerified": "2026-06-28",
-    "sourceUrl": "https://starrupture.wiki.gg/wiki/Fabricator_v.2"
+    "inputs": [
+      {
+        "itemId": "titanium-rod",
+        "quantity": 1
+      },
+      {
+        "itemId": "titanium-sheet",
+        "quantity": 1
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/crafter"
   },
   {
-    "id": "recipe_comp_tube_v2",
-    "outputItemId": "comp_tube",
+    "id": "recipe_crafter-tier2_tube-v2",
+    "outputItemId": "tube",
     "machine": "Fabricator",
     "buildingTier": "V2",
     "outputRatePerMin": 240,
-    "outputs": [{ "itemId": "comp_tube", "quantity": 8 }],
-    "inputs": [
-      { "itemId": "ingot_goethite", "quantity": 1 },
-      { "itemId": "sheet_titanium", "quantity": 1 },
-      { "itemId": "powder_wolfram", "quantity": 1 }
+    "outputs": [
+      {
+        "itemId": "tube",
+        "quantity": 8
+      }
     ],
-    "confidence": "High Confidence",
-    "lastVerified": "2026-06-28",
-    "sourceUrl": "https://starrupture.wiki.gg/wiki/Fabricator_v.2"
+    "inputs": [
+      {
+        "itemId": "goethite-ingot",
+        "quantity": 1
+      },
+      {
+        "itemId": "titanium-sheet",
+        "quantity": 1
+      },
+      {
+        "itemId": "wolfram-powder",
+        "quantity": 1
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/crafter-tier2"
   },
   {
-    "id": "recipe_comp_stator_v2",
-    "outputItemId": "comp_stator",
+    "id": "recipe_hammer_turbine",
+    "outputItemId": "turbine",
+    "machine": "Mega Press",
+    "buildingTier": "V1",
+    "outputRatePerMin": 10,
+    "outputs": [
+      {
+        "itemId": "turbine",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "impeller",
+        "quantity": 1
+      },
+      {
+        "itemId": "stator",
+        "quantity": 1
+      },
+      {
+        "itemId": "rotor",
+        "quantity": 2
+      },
+      {
+        "itemId": "sulphuric-acid",
+        "quantity": 2
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/hammer"
+  },
+  {
+    "id": "recipe_synthetizer_uber-oil",
+    "outputItemId": "uber-oil",
+    "machine": "Compounder",
+    "buildingTier": "V1",
+    "outputRatePerMin": 30,
+    "outputs": [
+      {
+        "itemId": "uber-oil",
+        "quantity": 5
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "refined-oil",
+        "quantity": 3
+      },
+      {
+        "itemId": "sulphuric-acid",
+        "quantity": 1
+      },
+      {
+        "itemId": "explosive",
+        "quantity": 1
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/synthetizer"
+  },
+  {
+    "id": "recipe_forge_uber-titanium",
+    "outputItemId": "uber-titanium",
+    "machine": "Pyro Forge",
+    "buildingTier": "V1",
+    "outputRatePerMin": 150,
+    "outputs": [
+      {
+        "itemId": "uber-titanium",
+        "quantity": 10
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "titanium-ore",
+        "quantity": 10
+      },
+      {
+        "itemId": "goethite-ore",
+        "quantity": 1
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/forge"
+  },
+  {
+    "id": "recipe_forge_uber-wolfram",
+    "outputItemId": "uber-wolfram",
+    "machine": "Pyro Forge",
+    "buildingTier": "V1",
+    "outputRatePerMin": 150,
+    "outputs": [
+      {
+        "itemId": "uber-wolfram",
+        "quantity": 10
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "wolfram-ore",
+        "quantity": 10
+      },
+      {
+        "itemId": "goethite-ore",
+        "quantity": 1
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/forge"
+  },
+  {
+    "id": "recipe_assembler_uberfilament",
+    "outputItemId": "uberfilament",
+    "machine": "Assembler",
+    "buildingTier": "V1",
+    "outputRatePerMin": 15,
+    "outputs": [
+      {
+        "itemId": "uberfilament",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "calcium-powder",
+        "quantity": 6
+      },
+      {
+        "itemId": "goethite-lattice",
+        "quantity": 2
+      },
+      {
+        "itemId": "epoxy",
+        "quantity": 1
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/assembler"
+  },
+  {
+    "id": "recipe_hammer_valve",
+    "outputItemId": "valve",
+    "machine": "Mega Press",
+    "buildingTier": "V1",
+    "outputRatePerMin": 6,
+    "outputs": [
+      {
+        "itemId": "valve",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "titanium-housing",
+        "quantity": 1
+      },
+      {
+        "itemId": "titanium-beam",
+        "quantity": 3
+      },
+      {
+        "itemId": "titanium-rod",
+        "quantity": 2
+      },
+      {
+        "itemId": "nozzle",
+        "quantity": 1
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/hammer"
+  },
+  {
+    "id": "recipe_food-processor_vulpir-meal",
+    "outputItemId": "vulpir-meal",
+    "machine": "Food Station",
+    "buildingTier": "V1",
+    "outputRatePerMin": 6,
+    "outputs": [
+      {
+        "itemId": "vulpir-meal",
+        "quantity": 1
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "vulpir-loot",
+        "quantity": 2
+      },
+      {
+        "itemId": "fox-egg",
+        "quantity": 2
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/food-processor"
+  },
+  {
+    "id": "recipe_smelter_wolfram-bar",
+    "outputItemId": "wolfram-bar",
+    "machine": "Smelter",
+    "buildingTier": "V1",
+    "outputRatePerMin": 60,
+    "outputs": [
+      {
+        "itemId": "wolfram-bar",
+        "quantity": 2
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "wolfram-ore",
+        "quantity": 2
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/smelter"
+  },
+  {
+    "id": "recipe_crafter_wolfram-plate",
+    "outputItemId": "wolfram-plate",
+    "machine": "Fabricator",
+    "buildingTier": "V1",
+    "outputRatePerMin": 60,
+    "outputs": [
+      {
+        "itemId": "wolfram-plate",
+        "quantity": 2
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "wolfram-bar",
+        "quantity": 2
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/crafter"
+  },
+  {
+    "id": "recipe_crafter-tier2_wolfram-plate-v2",
+    "outputItemId": "wolfram-plate",
     "machine": "Fabricator",
     "buildingTier": "V2",
-    "outputRatePerMin": 60,
-    "outputs": [{ "itemId": "comp_stator", "quantity": 3 }],
-    "inputs": [
-      { "itemId": "comp_titanium_housing", "quantity": 1 },
-      { "itemId": "wire_wolfram", "quantity": 1 },
-      { "itemId": "sheet_titanium", "quantity": 1 }
+    "outputRatePerMin": 150,
+    "outputs": [
+      {
+        "itemId": "wolfram-plate",
+        "quantity": 5
+      }
     ],
-    "confidence": "High Confidence",
-    "lastVerified": "2026-06-28",
-    "sourceUrl": "https://starrupture.wiki.gg/wiki/Fabricator_v.2"
+    "inputs": [
+      {
+        "itemId": "wolfram-bar",
+        "quantity": 2
+      },
+      {
+        "itemId": "wolfram-powder",
+        "quantity": 1
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/crafter-tier2"
+  },
+  {
+    "id": "recipe_furnace_wolfram-powder",
+    "outputItemId": "wolfram-powder",
+    "machine": "Furnace",
+    "buildingTier": "V1",
+    "outputRatePerMin": 90,
+    "outputs": [
+      {
+        "itemId": "wolfram-powder",
+        "quantity": 3
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "wolfram-bar",
+        "quantity": 1
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/furnace"
+  },
+  {
+    "id": "recipe_furnace-tier2_wolfram-powder-v2",
+    "outputItemId": "wolfram-powder",
+    "machine": "Furnace",
+    "buildingTier": "V2",
+    "outputRatePerMin": 300,
+    "outputs": [
+      {
+        "itemId": "wolfram-powder",
+        "quantity": 10
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "wolfram-bar",
+        "quantity": 2
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/furnace-tier2"
+  },
+  {
+    "id": "recipe_crafter_wolfram-wire",
+    "outputItemId": "wolfram-wire",
+    "machine": "Fabricator",
+    "buildingTier": "V1",
+    "outputRatePerMin": 30,
+    "outputs": [
+      {
+        "itemId": "wolfram-wire",
+        "quantity": 2
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "wolfram-bar",
+        "quantity": 1
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/crafter"
+  },
+  {
+    "id": "recipe_crafter-tier2_wolfram-wire-v2",
+    "outputItemId": "wolfram-wire",
+    "machine": "Fabricator",
+    "buildingTier": "V2",
+    "outputRatePerMin": 120,
+    "outputs": [
+      {
+        "itemId": "wolfram-wire",
+        "quantity": 8
+      }
+    ],
+    "inputs": [
+      {
+        "itemId": "wolfram-bar",
+        "quantity": 2
+      }
+    ],
+    "confidence": null,
+    "lastVerified": null,
+    "sourceUrl": "https://starrupture.tools/buildings/crafter-tier2"
   }
 ]
