@@ -122,3 +122,9 @@ The export/import format is the `PlanSnapshot` type in `src/store/planStore.ts`;
 - **Validation** — flags unconnected raw outputs and recipe inputs with no feeding edge.
 - **Persistence** — per-browser autosave plus JSON export/import (see above).
 - **Themes** — Blueprint, Holotable, and Terminal (randomly assigned on first run) plus an opt-in Graphite theme, each with matching custom edge rendering.
+
+## License
+
+MIT — see [LICENSE](LICENSE).
+
+This is an unofficial fan-made tool, not affiliated with or endorsed by the developers of Star Rupture. All game content and trademarks belong to their respective owners. Game data is sourced from the community-maintained [starrupture.tools](https://starrupture.tools) database.
