@@ -33,6 +33,9 @@ coverage/
 # OS
 Thumbs.db
 
+# Claude Code personal settings
+.claude/settings.local.json
+
 # wrangler files
 .wrangler
 .dev.vars*
