@@ -2,6 +2,8 @@
 
 A factory-planning web app for the game StarRupture, in the style of Satisfactory planner tools. Built with React 19, TypeScript, Vite, Tailwind v4, Zustand, and `@xyflow/react`; deployed to Cloudflare Workers.
 
+**Live:** https://star-rupture-planner.joel-byren.workers.dev/
+
 ## Quick start
 
 ```bash
