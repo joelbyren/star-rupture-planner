@@ -1,8 +1,8 @@
 # StarRupture Planner
 
-A factory-planning web app for the game StarRupture, in the style of Satisfactory planner tools. Built with React 19, TypeScript, Vite, Tailwind v4, Zustand, and `@xyflow/react`; deployed to Cloudflare Workers.
+A factory-planning web app for the game StarRupture, in the style of Satisfactory planner tools. Built with React 19, TypeScript, Vite, Tailwind v4, Zustand, and `@xyflow/react`; deployed to Vercel.
 
-**Live:** https://star-rupture-planner.joel-byren.workers.dev/
+**Live:** https://sr-planner.byren.se/
 
 ## Quick start
 
@@ -12,16 +12,12 @@ npm run dev       # dev server at http://localhost:5173
 npm test          # run engine/store/lib tests (Vitest)
 npm run lint       # oxlint
 npm run build      # tsc -b && vite build
-npm run preview    # production build, served via `wrangler dev`
-npm run deploy     # production build, deployed via `wrangler deploy`
+npm run preview    # production build, served via `vite preview`
 ```
 
 ## Deployment
 
-The app is a static SPA and can be hosted on either platform:
-
-- **Cloudflare Workers** (current production) — configured by `wrangler.jsonc`, with security/cache headers in `public/_headers`. Workers Builds deploys `main` automatically.
-- **Vercel** — configured by `vercel.json` (Vite preset, `dist/` output, SPA fallback, and the same security/cache headers as `public/_headers`; keep the two in sync). Import the repo in Vercel and it builds with `npm run build`. Vercel sets `VERCEL=1` at build time, which makes `vite.config.ts` skip the Cloudflare plugin so `dist/` is a plain static bundle.
+The app is a static SPA hosted on Vercel, configured by `vercel.json` (Vite preset, `dist/` output, SPA fallback, and security/cache headers). Vercel builds with `npm run build` and deploys `main` automatically.
 
 ## Project layout
 
