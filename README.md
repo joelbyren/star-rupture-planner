@@ -16,6 +16,13 @@ npm run preview    # production build, served via `wrangler dev`
 npm run deploy     # production build, deployed via `wrangler deploy`
 ```
 
+## Deployment
+
+The app is a static SPA and can be hosted on either platform:
+
+- **Cloudflare Workers** (current production) — configured by `wrangler.jsonc`, with security/cache headers in `public/_headers`. Workers Builds deploys `main` automatically.
+- **Vercel** — configured by `vercel.json` (Vite preset, `dist/` output, SPA fallback, and the same security/cache headers as `public/_headers`; keep the two in sync). Import the repo in Vercel and it builds with `npm run build`. Vercel sets `VERCEL=1` at build time, which makes `vite.config.ts` skip the Cloudflare plugin so `dist/` is a plain static bundle.
+
 ## Project layout
 
 ```
