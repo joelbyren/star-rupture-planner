@@ -42,3 +42,6 @@ Thumbs.db
 !.dev.vars.example
 .env*
 !.env.example
+
+# vercel
+.vercel
