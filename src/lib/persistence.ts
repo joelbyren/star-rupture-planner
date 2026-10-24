@@ -99,7 +99,7 @@ export function loadLocalSnapshot(): PlanSnapshot | null {
 /**
  * File System Access picker id + file-type filter. Requires a secure context
  * (HTTPS or localhost) and a Chromium browser — available on the deployed
- * Cloudflare Pages site (HTTPS); falls back to a plain download elsewhere
+ * site (HTTPS); falls back to a plain download elsewhere
  * (Firefox/Safari, or a dev server reached over a non-secure LAN IP).
  */
 const FS_PICKER_ID = 'srp-plans';
